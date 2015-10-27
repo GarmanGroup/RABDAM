@@ -1,6 +1,6 @@
 %% Script to calculate B-damage for protein atom
 % Copyright 2015 Thomas Dixon
-fprintf('Copyright 2015 Tom Dixon\n')
+fprintf('Copyright 2015 Thomas Dixon\n')
 fprintf('\n')
 %Input: the file path to the pdb that you want to calculate B-damage
 %factors for
