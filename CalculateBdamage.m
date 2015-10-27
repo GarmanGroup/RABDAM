@@ -1,4 +1,4 @@
-%% Script to calculate B-damage for proteina atom
+%% Script to calculate B-damage for protein atom
 %Input: the file path to the pdb that you want to calculate B-damage
 %factors for
 function CalculateBdamage(pathToPDB)
