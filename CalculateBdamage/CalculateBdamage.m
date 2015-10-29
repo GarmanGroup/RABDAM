@@ -195,7 +195,7 @@ fprintf('************** Translate the unit cell Section *****************\n')
 fprintf('\n')
 fprintf('Converting the unit cell basis vectors to cartesian coordinates.\n')
 
-%Call function to find the equivalent cartesian coordinates that correspond
+%Call function to find the equivalent Cartesian coordinates that correspond
 %to the unit cell basis vectors.
 [aTrans, bTrans, cTrans] = findCartesianTranslationVectors(unitCellInfo);
 
@@ -327,7 +327,7 @@ excludeAtomsTimer = tic;
 
 fprintf('Getting the atomic coordinates of molecule from the original PDB file.\n')
 
-%Get atomic coordinates of atoms in orginal PDB
+%Get atomic coordinates of atoms in original PDB
 coordinatesPDB = getAtomInfo(locationOfOriginalPDBFile);
     
 fprintf('Finished getting coordinates.\n\n')
@@ -381,7 +381,7 @@ clearvars allAtomicCoordinates
 clearvars remainingUnitCells
 
 if makeKiloPDBFile
-    fprintf('Creating PDB file.\n') %#ok<UNRCH> -The comment to the left suppresess the warning message
+    fprintf('Creating PDB file.\n') %#ok<UNRCH> -The comment to the left suppresses the warning message
     %Create PDB file
     createPDBFile(remainingAtomCoords,pdbPreamble,pdbEOF,outputLocationOfProcessedPDB,'Kilo');
 else
