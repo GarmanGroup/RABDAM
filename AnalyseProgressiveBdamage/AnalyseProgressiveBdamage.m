@@ -1,8 +1,10 @@
 %% Script to analyse how Bdamage varies in a progressive data set
 %Input: file path to folder containing original and subsequent data sets 
 %(in .txt files) for which Bdamage values have already been calculated
+%Copyright 2015 Thomas Dixon
+fprintf('Copyright 2015 Thomas Dixon\n')
+fprintf('\n')
 function AnalyseProgressiveBdamage(pathToBdamageFolder)
-clc
 %% User Input selection of tasks to perform
 
 %choose whether to present Bdamage values on a single scatter graph for all
