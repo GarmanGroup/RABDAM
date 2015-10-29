@@ -42,7 +42,7 @@ fprintf('****************************************************************\n')
 fprintf('************************ Input Section *************************\n')
 fprintf('\n')
 
-%Create a struct containg the filenames of the files within the input
+%Create a struct containing the filenames of the files within the input
 %folder that end in .txt
 fileStruct = dir(fullfile(sprintf('%s',pathToBdamageFolder),'*.txt'));
 
@@ -133,7 +133,7 @@ if calcBprogression
     [allBdamage] = calculateBprogression(allBdamage,numberOfFiles,numberOfAtoms,pathToBdamageFolder);
 end
 
-%If user selected not to claculate Bprogression, output message
+%If user selected not to calculate Bprogression, output message
 if ~calcBprogression
     fprintf('User selected not to calculate Bprogression')
     fprintf('\n')
