@@ -2,8 +2,8 @@
 % Copyright 2015 Thomas Dixon
 fprintf('Copyright 2015 Thomas Dixon\n')
 fprintf('\n')
-%Input: the file path to the pdb that you want to calculate B-damage
-%factors for
+%Input: the file path to the pdb for which you want to calculate B-damage
+%factors
 function CalculateBdamage(pathToPDB)
 
 % Start timer to calculate time taken to run the script
@@ -51,7 +51,7 @@ binSize = 10;
 %1) 'move' - move the file from its current location to the new PDB folder
 %that will be created
 %2) 'copy' - copy the file so that 2 copies of the file exist. 1 is kept in
-%it's original location and the other is copied to the new directory
+%its original location and the other is copied to the new directory
 %3) 'nothing' - do nothing to the original pdb file location and
 pdbFileLocation = 'nothing'; 
 
@@ -193,7 +193,7 @@ fprintf('\n')
 fprintf('****************************************************************\n')
 fprintf('************** Translate the unit cell Section *****************\n')
 fprintf('\n')
-fprintf('Converting the unit cell basis vectors to cartesian coordinates.\n')
+fprintf('Converting the unit cell basis vectors to Cartesian coordinates.\n')
 
 %Call function to find the equivalent Cartesian coordinates that correspond
 %to the unit cell basis vectors.
