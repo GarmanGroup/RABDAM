@@ -4,7 +4,8 @@ def CalculateBdamage(pathToPDB, PDT=14, binSize=10, createUnitCellPDB=0, createT
     print('\n')
     print('Copyright 2015 Thomas Dixon\n')
     #import packages required for running the program
-    import time
+    import time #for 
+    import sys #for terminating script when encountering errors
     #Input: the file path to the pdb for which you want to calculate B-damage factors, the 'Packing Density Threshold' (Angstroms) and bin size
     start = time.time()
     startIndex = time.gmtime()
@@ -18,12 +19,12 @@ def CalculateBdamage(pathToPDB, PDT=14, binSize=10, createUnitCellPDB=0, createT
     print 'This program was run on %d/%d/%d at %02.0f:%02.0f:%02.0f\n\n'%(day, month, year, hour, minute, second)
     print '################################################################'
     print '################################################################'
-    print '### Program to calculate B Damage ##############################'
+    print '########## Program to calculate B Damage #######################'
     print '################################################################'
     print '\n'
     #inform the user of the inputs used in the program
     print '****************************************************************'
-    print '************************ Input Section *************************\n'
+    print '********** Input Section ***************************************\n'
     print 'Calculating B Damage for %s' % pathToPDB
     if PDT == 14:
         print 'No packing density threshold supplied, using default value of 14 Angstroms'
@@ -32,18 +33,33 @@ def CalculateBdamage(pathToPDB, PDT=14, binSize=10, createUnitCellPDB=0, createT
     if binSize == 10:
         print 'No bin size supplied, using default value of 10'
     else:
-        print 'Bin size defined by user at %s\n' % binSize
-    print '******************* End of Input Section ***********************'
+        print 'Bin size defined by user as %s\n' % binSize
+    print '********** End of Input Section ********************************'
     print '****************************************************************'
     print '\n'
     #Process pdb file with PDBCUR to generate a unit cell and then store the name of the processed pdb
     print '****************************************************************'
-    print '********************* Process PDB Section **********************\n'
+    print '********** Process PDB Section *********************************\n'
     print 'Processing PDB file to:'
     print '1 - Remove hydrogen atoms.'
     print '2 - Keep most probable alternate conformation.'
     print '3 - Remove anisotropic records from the file.'
     print '4 - Generate the Unit Cell from Symmetry Operations.\n'
+    #check whether filepath or PDB code supplied
+    if len(pathToPDB) == 4:
+        print 'PDB code supplied'
+        #convert PDB accession code to UPPERCASE
+        pathToPDB = pathToPDB.ascii_uppercase
+        #create URL from which to download .pdb file
+        urlText = 'http://www.rcsb.org/pdb/files/%s.pdb' % pathToPDB
+    else:
+        if pathToPDB[-4:] == '.pdb':
+            print 'Filepath to .pdb file supplied'
+        else:
+            sys.exit('Error 01: Suppplied filepath to PDB is not a .pdb file')
+    print '********** End of Process PDB Section **************************'
+    print '****************************************************************'
+    print '\n'
     time.sleep(2)
     #inform the user of the time elapsed while the program was run
     runtime = time.time() - start
