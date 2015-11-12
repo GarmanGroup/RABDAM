@@ -54,9 +54,10 @@ def CalculateBdamage(pathToPDB, PDT=14, binSize=10, createUnitCellPDB=0, createT
         PDBcode = pathToPDB.upper()
         PDBdirectory = 'Logfiles/%s/' % PDBcode
         pathToPDB = '%s%s.pdb' % (PDBdirectory, PDBcode)
+        #Check if PDB file has already been downloaded
         if os.path.isfile(pathToPDB):
             #inform user that file already exists
-            print 'PDB file already exists locally\n'
+            print 'PDB file already exists locally at %s\n' % pathToPDB
         else:
             #create URL from which to download .pdb file
             urlText = 'http://www.rcsb.org/pdb/files/%s.pdb' % PDBcode
@@ -71,13 +72,37 @@ def CalculateBdamage(pathToPDB, PDT=14, binSize=10, createUnitCellPDB=0, createT
             #write local file containing the downloaded content
             localFile = open(pathToPDB, 'w') 
             localFile.write(origPDB.read())
+            #inform user of file loaction of newly downloaded content
             print 'PDB file saved to %s\n' % pathToPDB
             #close local file to free up memory
             localFile.close()
     else:
         #check supplied filepath is a pdb file, returning error message if not
         if pathToPDB[-4:] == '.pdb':
-            print 'Filepath to .pdb file supplied\n'
+            print 'Filepath to .pdb file supplied'
+            #copy file to Logfiles directory if necessary
+            splitPath = pathToPDB.split("/")
+            filenameIndex = len(splitPath)-1
+            fileName = splitPath[filenameIndex]
+            splitFilename = fileName.split(".")
+            directoryNameIndex = len(splitFilename)-2
+            directoryName = splitFilename[directoryNameIndex]
+            PDBdirectory = 'Logfiles/%s/' % directoryName
+            newPathToPDB = '%s%s' % (PDBdirectory, fileName)
+            #check if file has already been copied to Logfiles
+            if os.path.isfile(newPathToPDB):
+                #inform the user that file already exists
+                print 'PDB file already exists locally at %s\n' % newPathToPDB
+            else:
+                #make local copy in Logfiles
+                if not os.path.exists(PDBdirectory):
+                    os.makedirs(PDBdirectory)
+                origPDB = open(pathToPDB, 'r')
+                #write file containing copied content
+                localFile = open(newPathToPDB, 'w')
+                localFile.write(origPDB.read())
+                #inform user of file location of new copy of PDB file
+                print 'PDB file copied to %s\n' % newPathToPDB
         else:
             sys.exit('Error 01: Supplied filepath to PDB is not a .pdb file')
         #check supplied filepath exists, returning error message if not
