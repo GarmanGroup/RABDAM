@@ -1,8 +1,10 @@
+# Copyright 2015 Thomas Dixon
+# With thanks to Jonathan Brooks-Bartlett, Charles Bury, Markus Gerstel and Elspeth Garman
 def CalculateBdamage(pathToPDB, PDT=14, binSize=10, createUnitCellPDB=0, createTrimmedUnitCellPDB=1):
     # Script to calculate B-damage for protein atom
-    # Copyright 2015 Thomas Dixon
     print('\n')
     print('Copyright 2015 Thomas Dixon\n')
+    print('With thanks to Jonathan Brooks-Bartlett, Charles Bury, Markus Gerstel and Elspeth Garman')
     #import packages required for running the program
     import time #for 
     import sys #for terminating script when encountering errors
@@ -61,17 +63,12 @@ def CalculateBdamage(pathToPDB, PDT=14, binSize=10, createUnitCellPDB=0, createT
         else:
             #create URL from which to download .pdb file
             urlText = 'http://www.rcsb.org/pdb/files/%s.pdb' % PDBcode
-            #check for valid PDB code, returning error message if not
-            try: 
-                urllib2.urlopen(urlText)
-            except urllib2.httpError, err:
-                if err == 404:
-                    sys.exit ('Error 03: PDB code does not exist')
-                else:
-                    sys.exit ('Unknown HTTP Error') 
-                    raise
             #downlaod PDB file and save local copy
-            os.makedirs(PDBdirectory)
+            if os.path.exists(PDBdirectory):
+                print 'Directory %s already exists' % PDBdirectory
+            else:
+                os.makedirs(PDBdirectory)
+                print 'Directory %s created' % PDBdirectory
             origPDB = urllib2.urlopen(urlText)
             #inform user of the URL used to download PDB file
             print 'Downloaded PDB file from %s' % urlText
@@ -82,6 +79,9 @@ def CalculateBdamage(pathToPDB, PDT=14, binSize=10, createUnitCellPDB=0, createT
             print 'PDB file saved to %s' % pathToPDB
             #close local file to free up memory
             localFile.close()
+            #chack that file has downloaded and saved correctly
+            if not os.path.exists(pathToPDB):
+                sys.exit ('Error 03: Failed to download and save PDB - cause unknown')
     else:
         #check supplied filepath is a pdb file, returning error message if not
         if pathToPDB[-4:] == '.pdb':
