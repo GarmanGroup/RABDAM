@@ -92,11 +92,9 @@ def CalculateBdamage(pathToPDB, PDT=14, binSize=10, delhydrogen=1, createUnitCel
             print 'Filepath to .pdb file supplied'
             #copy file to Logfiles directory if necessary
             splitPath = pathToPDB.split("/")
-            filenameIndex = len(splitPath)-1
-            fileName = splitPath[filenameIndex]
+            fileName = splitPath[len(splitPath)-1]
             splitFilename = fileName.split(".")
-            directoryNameIndex = len(splitFilename)-2
-            directoryName = splitFilename[directoryNameIndex]
+            directoryName = splitFilename[len(splitFilename)-2]
             PDBdirectory = 'Logfiles/%s/' % directoryName
             newPathToPDB = '%s%s' % (PDBdirectory, fileName)
             #check if file has already been copied to Logfiles
@@ -123,8 +121,12 @@ def CalculateBdamage(pathToPDB, PDT=14, binSize=10, delhydrogen=1, createUnitCel
     PDBCURinputFile = '%sPDBCURinput.txt' % PDBdirectory
     #generate input file for PDBCUR
     genPDBCURinputs(PDBCURinputFile, delhydrogen)
+    #Create name for output PDBCUR file by appending 'UnitCell' to filename 
+    splitFilePath = pathToPDB.split(".")
+    fileName = splitFilePath[len(splitFilePath)-2]
+    PDBCURoutputPDB = '%sUnitCell.pdb' % fileName
     #runPDBCUR using generated input file
-    runPDBCUR(pathToPDB, PDBCURinputFile)
+    runPDBCUR(pathToPDB, PDBCURoutputPDB, PDBCURinputFile)
     print '********** End of Process PDB Section **************************'
     print '****************************************************************'
     print '\n'
