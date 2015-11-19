@@ -3,15 +3,15 @@ def genPDBCURinputs(pathToPDB, PDBdirectory, delhydrogen):
     #import os for OS usability
     import os
     #create path to PDBCUR input file
-    PDBCURinputFile = '%s/PDBCURinput.txt' % PDBdirectory 
+    PDBCURinputFile = '%sPDBCURinput.txt' % PDBdirectory 
     #check if an input file has already been created
     if os.path.exists(PDBCURinputFile):
         #inform user file already exists
-        print 'Input file for PDBCUR already exist at %s' % PDBCURinputFile
+        print 'Input file for PDBCUR already exists at %s' % PDBCURinputFile
         #exit method if file exists
         return    
     #open a text file for writing
-    print 'Creating input file for PDBCUR at %s' % PDBCURinputFile
+    print 'Creating input file for PDBCUR at %s\n' % PDBCURinputFile
     #write input keywords to file for use with PDBCUR
     with open(PDBCURinputFile,'w') as f:
         #only write input line delhydrogen if not specified otherwise by user

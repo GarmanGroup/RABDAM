@@ -10,6 +10,7 @@ def CalculateBdamage(pathToPDB, PDT=14, binSize=10, delhydrogen=1, createUnitCel
     import sys #for terminating script when encountering errors
     import urllib2 #for dealing with URL stuff
     import os #for operating system usability
+    import math #for using more intricate mathematics
     #Input: the file path to the pdb for which you want to calculate B-damage factors, the 'Packing Density Threshold' (Angstroms) and bin size
     start = time.time()
     startIndex = time.gmtime()
@@ -20,7 +21,7 @@ def CalculateBdamage(pathToPDB, PDT=14, binSize=10, delhydrogen=1, createUnitCel
     minute = startIndex.tm_min
     second = startIndex.tm_sec
     #inform the user of the start time of the program
-    print 'This program was run on %d/%d/%d at %02.0f:%02.0f:%02.0f\n\n'%(day, month, year, hour, minute, second)
+    print 'This program was run on %d/%d/%d at %02.0f:%02.0f:%02.0f\n\n' % (day, month, year, hour, minute, second)
     print '################################################################'
     print '################################################################'
     print '########## Program to calculate B Damage #######################'
@@ -45,10 +46,12 @@ def CalculateBdamage(pathToPDB, PDT=14, binSize=10, delhydrogen=1, createUnitCel
     print '****************************************************************'
     print '********** Process PDB Section *********************************\n'
     print 'Processing PDB file to:'
-    print '1 - Remove hydrogen atoms.'
-    print '2 - Keep most probable alternate conformation.'
-    print '3 - Remove anisotropic records from the file.'
-    print '4 - Generate the Unit Cell from Symmetry Operations.\n'
+    if delhydrogen == 1:
+        print '- Remove Hydrogen atoms'
+    print '- Remove atoms with zero occupancy.'
+    print '- Keep most probable alternate conformation.'
+    print '- Remove anisotropic B factor records from the file.'
+    print '- Generate the Unit Cell from Symmetry Operations.\n'
     #check whether filepath or PDB code supplied
     if len(pathToPDB) == 4:
         print 'PDB code supplied'
@@ -122,7 +125,12 @@ def CalculateBdamage(pathToPDB, PDT=14, binSize=10, delhydrogen=1, createUnitCel
     time.sleep(2)
     #inform the user of the time elapsed while the program was run
     runtime = time.time() - start
-    print 'Program run in %.3f seconds\n' % runtime
-#    print 'Total time taken for program to run was %.0f minutes and %.0f seconds.\n\n' % floor(timetaken/60) % rem(timetaken/60)    
-
+    minutes = math.floor(runtime/60)
+    seconds = math.fmod(runtime,60)
+    if minutes == 0:
+        print 'Total time taken for program to run was %02.3f seconds.\n\n' % seconds
+    elif minutes == 1:
+        print 'Total time taken for program to run was %01.0f minute and %02.3f seconds.\n\n' % (minutes,seconds)   
+    else:
+        print 'Total time taken for program to run was %01.0f minutes and %02.3f seconds.\n\n' % (minutes,seconds)
 #end
