@@ -1,9 +1,7 @@
 #Copyright Thomas Dixon 2015
-def genPDBCURinputs(pathToPDB, PDBdirectory, delhydrogen):
+def genPDBCURinputs(PDBCURinputFile, delhydrogen):
     #import os for OS usability
     import os
-    #create path to PDBCUR input file
-    PDBCURinputFile = '%sPDBCURinput.txt' % PDBdirectory 
     #check if an input file has already been created
     if os.path.exists(PDBCURinputFile):
         #inform user file already exists
@@ -28,4 +26,7 @@ def genPDBCURinputs(pathToPDB, PDBdirectory, delhydrogen):
         #genunit keyword generates a unit cell
         f.write('genunit\n')
         f.close
-#end
+#end genPDBCURinputs
+def runPDBCUR(pathToPDB, PDBCURinputFile):
+    print 'one'
+#end runPDBCUR 
