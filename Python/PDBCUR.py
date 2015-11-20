@@ -27,7 +27,7 @@ def genPDBCURinputs(PDBCURinputFile, delhydrogen):
         f.write('genunit\n')
         f.close
 #end genPDBCURinputs
-def runPDBCUR(pathToPDB, PDBCURoutputPDB, PDBCURinputFile):
+def runPDBCUR(pathToPDB, PDBCURoutputPDB, PDBCURinputFile, PDBCURlog):
     #import os for OS usability
     import os
     #check if output file has already been created
@@ -37,9 +37,14 @@ def runPDBCUR(pathToPDB, PDBCURoutputPDB, PDBCURinputFile):
         #exit method if file exists
         return
     #create a string for command line input to run PDBCUR
-    runPDBCURcommand = 'pdbcur xyzin %s xyzout %s < %s' % (pathToPDB, PDBCURoutputPDB, PDBCURinputFile)
+    runPDBCURcommand = 'pdbcur xyzin %s xyzout %s < %s > %s' % (pathToPDB, PDBCURoutputPDB, PDBCURinputFile, PDBCURlog)
     #run PDBCUR to specifications
     os.system(runPDBCURcommand)
+    #print PDBCUR output to log file
+    PDBCURlogText = open(PDBCURlog,'r')
+    for line in PDBCURlogText:
+        print line
+    PDBCURlogText.close
     #inform user of generated PDBCUR output file
     print 'Creating output file from PDBCUR at %s\n' % PDBCURoutputPDB
 #end runPDBCUR 
