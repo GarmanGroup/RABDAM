@@ -1,10 +1,10 @@
 %% Script to calculate B-damage for protein atom
+function CalculateBdamage(pathToPDB)
 % Copyright 2015 Thomas Dixon
 fprintf('Copyright 2015 Thomas Dixon\n')
 fprintf('\n')
 %Input: the file path to the pdb for which you want to calculate B-damage
 %factors
-function CalculateBdamage(pathToPDB)
 
 % Start timer to calculate time taken to run the script
 mainTimer = tic;

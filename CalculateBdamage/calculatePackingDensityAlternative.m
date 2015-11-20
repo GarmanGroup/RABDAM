@@ -22,7 +22,7 @@ xyzSurroundingAtom = cell2mat(allSurroundingAtomCoords(:,9:11));
 
 %Function to loop through each atom and calculate the packing density for
 %each one
-packingDensityArray = calcPackingDensityLoop_mex(xyzPDBAtom,xyzSurroundingAtom,numberOfAtomsInPDB,numberOfSurroundingAtoms,packingDensityThreshold);
+packingDensityArray = calcPackingDensityLoop(xyzPDBAtom,xyzSurroundingAtom,numberOfAtomsInPDB,numberOfSurroundingAtoms,packingDensityThreshold);
 
 %Put the packing densities in the 18th column of the atom coordinates array
 pdbAtomCoordsWithPackingDensity(:,18) = num2cell(packingDensityArray);
