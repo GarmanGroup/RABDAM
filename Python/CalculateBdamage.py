@@ -1,6 +1,6 @@
 # Copyright 2015 Thomas Dixon
 # With thanks to Jonathan Brooks-Bartlett, Charles Bury, Markus Gerstel and Elspeth Garman
-def CalculateBdamage(pathToPDB, PDT=14, binSize=10, delhydrogen=1, createUnitCellPDB=0, createTrimmedUnitCellPDB=1):
+def CalculateBdamage(pathToPDB, PDT=14, binSize=10, createUnitCellPDB=0, createTrimmedUnitCellPDB=1):
     # Script to calculate B-damage for protein atom
     print('\n')
     print('Copyright 2015 Thomas Dixon\n')
@@ -47,8 +47,7 @@ def CalculateBdamage(pathToPDB, PDT=14, binSize=10, delhydrogen=1, createUnitCel
     print '****************************************************************'
     print '********** Process PDB Section *********************************\n'
     print 'Processing PDB file to:'
-    if delhydrogen == 1:
-        print '- Remove Hydrogen atoms'
+    print '- Remove Hydrogen atoms'
     print '- Remove atoms with zero occupancy.'
     print '- Keep most probable alternate conformation.'
     print '- Remove anisotropic B factor records from the file.'
@@ -122,7 +121,7 @@ def CalculateBdamage(pathToPDB, PDT=14, binSize=10, delhydrogen=1, createUnitCel
     #generate path to PDBCUR log file
     PDBCURlog = '%sPDBCURlog.txt' % PDBdirectory
     #generate input file for PDBCUR
-    genPDBCURinputs(PDBCURinputFile, delhydrogen)
+    genPDBCURinputs(PDBCURinputFile)
     #Create name for output PDBCUR file by appending 'UnitCell' to filename 
     splitFilePath = pathToPDB.split(".")
     fileName = splitFilePath[len(splitFilePath)-2]
