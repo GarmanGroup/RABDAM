@@ -132,7 +132,6 @@ def CalculateBdamage(pathToPDB, PDT=14, binSize=10, delhydrogen=1, createUnitCel
     print '********** End of Process PDB Section **************************'
     print '****************************************************************'
     print '\n'
-    time.sleep(2)
     #inform the user of the time elapsed while the program was run
     runtime = time.time() - start
     minutes = math.floor(runtime/60)
