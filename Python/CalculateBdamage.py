@@ -128,7 +128,14 @@ def CalculateBdamage(pathToPDB, PDT=14, binSize=10, createUnitCellPDB=0, createT
     PDBCURoutputPDB = '%sUnitCell.pdb' % fileName
     #runPDBCUR using generated input file
     runPDBCUR(pathToPDB, PDBCURoutputPDB, PDBCURinputFile, PDBCURlog)
-    print '********** End of Process PDB Section **************************'
+    print '\n********** End of Process PDB Section **************************'
+    print '****************************************************************'
+    print '\n'
+    #Parse the newly generated unit cell PDB file
+    print '****************************************************************'
+    print '********** Parsing PDB Section *********************************\n'
+    
+    print '\n********** End of Process PDB Section **************************'
     print '****************************************************************'
     print '\n'
     #inform the user of the time elapsed while the program was run
