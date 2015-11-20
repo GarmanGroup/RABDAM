@@ -1,7 +1,7 @@
 # B_Damage
 A program use to calculate B_Damage values for a biomolecular structure whose atomic coordinates are stored in PDB format.
 
-** NOTE: The program is currently written in MATLAB but a version written in Python is currently under development.**
+**NOTE: The program is currently written in MATLAB but a version written in Python is currently under development.**
 
 ## Introduction
 For molecular structures determined using X-ray crystallography each atom in the structure is assigned an ***atomic B factor*** value. This value effectively represents our level of uncertainty about the allocated position of that atom. The most mobile atoms will have the highest B factor values. However an atom's mobility could be due to different factors: increased thermal motion due to absorbed energy from the incident X-ray photons (a sign of *radiation damage*), or it could simply be due to the atom being in a highly flexible region of the protein and it is not surrounded by other 'stationary' atoms. ***B_Damage*** is a metric that attempts to deconvolute these factors to give an "effective" B factor value that is just a measure of the damage.   
