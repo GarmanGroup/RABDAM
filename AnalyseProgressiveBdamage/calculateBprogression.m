@@ -31,8 +31,7 @@ for file = 1 : numberOfFiles
 end
 
 %Write the Bdamage to output folder in the input directory
-fprintf(sprintf('writing the calculated Bprogression values to output file %s\\Bprogression.txt',pathToBdamageFolder))
+fprintf(sprintf('writing the calculated Bprogression values to output file %s\\ Bprogression.txt',pathToBdamageFolder))
 fprintf('\n')
-
 
 end
