@@ -1,4 +1,6 @@
-%% Script to calculate B-damage for protein atom
+%% Script to calculate B-damage for protein atoms
+%Input: the file path to the pdb for which you want to calculate B-damage 
+%factors
 function CalculateBdamage(pathToPDB)
 % Copyright 2015 Thomas Dixon
 fprintf('Copyright 2015 Thomas Dixon\n')
@@ -6,7 +8,7 @@ fprintf('\n')
 %Input: the file path to the pdb for which you want to calculate B-damage
 %factors
 
-% Start timer to calculate time taken to run the script
+%Start timer to calculate time taken to run the script
 mainTimer = tic;
 
 fprintf('################################################################\n')
@@ -52,7 +54,7 @@ binSize = 10;
 %that will be created
 %2) 'copy' - copy the file so that 2 copies of the file exist. 1 is kept in
 %its original location and the other is copied to the new directory
-%3) 'nothing' - do nothing to the original pdb file location and
+%3) 'nothing' - do nothing to the original pdb file location
 pdbFileLocation = 'nothing'; 
 
 %Choose whether or not you would like to create the mega and kilo pdb
@@ -308,7 +310,7 @@ if makeMegaPDBFile
     fprintf('\n')
     
 else
-    fprintf('User specified not to create the Mega PDB file.')
+    fprintf('User specified not to create the Mega PDB file.') %#ok<UNRCH> -The comment to the left suppresses the warning.
     fprintf('\n')
 end
 fprintf('**************** End of Create PDBs Section ********************\n')
@@ -385,7 +387,7 @@ if makeKiloPDBFile
     %Create PDB file
     createPDBFile(remainingAtomCoords,pdbPreamble,pdbEOF,outputLocationOfProcessedPDB,'Kilo');
 else
-    fprintf('User specified not to create a Kilo PDB file.\n')
+    fprintf('User specified not to create a Kilo PDB file.\n') %#ok<UNRCH> -The comment to the left suppresses the warning.
 end
 
 %Stop Timing

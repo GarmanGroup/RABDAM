@@ -135,7 +135,7 @@ def CalculateBdamage(pathToPDB, PDT=14, binSize=10, createUnitCellPDB=0, createT
     print '****************************************************************'
     print '********** Parsing PDB Section *********************************\n'
     
-    print '\n********** End of Process PDB Section **************************'
+    print '\n********** End of Parsing PDB Section **************************'
     print '****************************************************************'
     print '\n'
     #inform the user of the time elapsed while the program was run
