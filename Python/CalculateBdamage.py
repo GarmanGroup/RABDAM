@@ -1,7 +1,7 @@
 # Copyright 2015 Thomas Dixon
 # With thanks to Jonathan Brooks-Bartlett, Charles Bury, Markus Gerstel and Elspeth Garman
+#Script to calculate B-damage for protein atom
 def CalculateBdamage(pathToPDB, PDT=14, binSize=10, createUnitCellPDB=0, createTrimmedUnitCellPDB=1):
-    # Script to calculate B-damage for protein atom
     print('\n')
     print('Copyright 2015 Thomas Dixon\n')
     print('With thanks to Jonathan Brooks-Bartlett, Charles Bury, Markus Gerstel and Elspeth Garman')
