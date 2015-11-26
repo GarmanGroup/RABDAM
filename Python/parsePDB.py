@@ -1,6 +1,5 @@
 # Copyright Thomas Dixon 2015
 # With thanks to Charles Bury
-import os
 class atom(object):
     #Initialise class for a PDB file
     def __init__(self,atomnum=0,residuenum=0,atomtype="",resitype="",
@@ -20,6 +19,8 @@ class atom(object):
         print summaryString
 #parse pdb file with name 'fileName' and return list of atoms from 'atom' class above
 def parsePDB(fileName):
+    import os
+    from parsePDB import atom
     #check that file exists
     if not os.path.exists(fileName):
         print 'Error!!\nFile name {} not found'.format(fileName)
