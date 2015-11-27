@@ -140,6 +140,13 @@ def CalculateBdamage(pathToPDB, PDT=14, binSize=10, createUnitCellPDB=0, createT
     print '\n********** End of Parsing PDB Section **************************'
     print '****************************************************************'
     print '\n'
+    #Translate the Unit Cell and append the new atom locations to the atomList
+    print '****************************************************************'
+    print '********** Translate Unit Cell Section *************************\n'
+    
+    print '\n********** Translate Unit Cell Section *************************'
+    print '****************************************************************'
+    print '\n'
     #inform the user of the time elapsed while the program was run
     runtime = time.time() - start
     minutes = math.floor(runtime/60)
