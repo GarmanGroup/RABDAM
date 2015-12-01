@@ -17,15 +17,17 @@ class atom(object):
     def getAtomSummary(self):
         summaryString = 'Chain: {}\nResidue: {}{}\nAtom type: {}'.format(self.chainID,self.resiType,self.resiNum,self.atomType)
         print summaryString
+#end atom class
+        
 #parse pdb file with name 'fileName' and return list of atoms from 'atom' class above
 def parsePDB(fileName):
-    import os
-    from parsePDB import atom
+    import os #for operating system usability
+    from parsePDB import atom #for utilising the 'atom' class
     #check that file exists
     if not os.path.exists(fileName):
         print 'Error!!\nFile name {} not found'.format(fileName)
         return
-    #creat puppet list to fill with atom objects
+    #create puppet list to fill with atom objects
     atomList = [] 
     #open correct file name for reading
     fileOpen = open(fileName,'r') 
@@ -48,11 +50,37 @@ def parsePDB(fileName):
             y.atomID    = str(line[76:78].strip())  
             #append new 'atom' object to list
             atomList.append(y)
-        else: 
-            continue 
     fileOpen.close() #close .pdb file after reading
     #provide feedback to user
     print 'Finished reading in atoms --> {} atoms found in file'.format(len(atomList))
     #return list of atoms as output of function
     return atomList
-#end
+#end parsePDB
+    
+#obtain unit cell parameters from PDB file
+def getUnitCellParams(fileName):
+    import os #for operating system usability
+    #check that file exists
+    if not os.path.exists(fileName):
+        print 'Error!!\nFile name {} not found'.format(fileName)
+        return
+    #open correct file name for reading
+    fileOpen = open(fileName,'r') 
+    #find and read the CRYST1 line
+    for line in fileOpen.readlines():
+        #only select infoprmation from CRYST1 line
+        if('CRYST1' in str(line[0:6])):
+            params = line.split()
+            #create object 'y' with attributes for each of the Unit Cell Parameters
+            a = str(params[1])
+            b = str(params[2])
+            c = str(params[3])
+            alpha = str(params[4])
+            beta = str(params[5])
+            gamma = str(params[6])
+            break
+    #provide feedback to user
+    print 'Unit cell parameters obtained successfully extracted'
+    fileOpen.close() #close .pdb file
+    return (a, b, c, alpha, beta, gamma)
+#end getUnitCellParams
