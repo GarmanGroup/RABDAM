@@ -13,6 +13,7 @@ def CalculateBdamage(pathToPDB, PDT=14, binSize=10, createUnitCellPDB=0, createT
     import math #for using more intricate mathematics
     from PDBCUR import genPDBCURinputs,runPDBCUR #facilitates PDBCUR functionality
     from parsePDB import parsePDB, getUnitCellParams #for taking information from PDB file to a usable format
+    from translateUnitCell import convertToCartesian,translateUnitCell #translates unit cell
     #Input: the file path to the pdb for which you want to calculate B-damage factors, the 'Packing Density Threshold' (Angstroms) and bin size
     start = time.time()
     startIndex = time.gmtime()
@@ -144,8 +145,8 @@ def CalculateBdamage(pathToPDB, PDT=14, binSize=10, createUnitCellPDB=0, createT
     #Translate the Unit Cell and append the new atom locations to the atomList
     print '****************************************************************'
     print '********** Translate Unit Cell Section *************************\n'
-    print 'Converting the unit cell basis vectors to Cartesian coordinates'
-    
+    cartesianVectors = convertToCartesian(unitCell)
+    translateUnitCell(atomList, cartesianVectors)
     print '\n********** Translate Unit Cell Section *************************'
     print '****************************************************************'
     print '\n'

@@ -38,7 +38,7 @@ aBasisVector = [1;0;0];
 bBasisVector = [0;1;0];
 cBasisVector = [0;0;1];
 
-%Convert the lattice basis vector in each direction to cartesian
+%Convert the lattice basis vector in each direction to Cartesian
 %coordinates
 aCartesianVector = conversionMatrix * aBasisVector;
 bCartesianVector = conversionMatrix * bBasisVector;

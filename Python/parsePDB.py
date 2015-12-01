@@ -59,7 +59,8 @@ def parsePDB(fileName):
     
 #obtain unit cell parameters from PDB file
 def getUnitCellParams(fileName):
-    import os #for operating system usability
+    import os #for operating system usability   
+    import math #for converting degrees to radians
     #check that file exists
     if not os.path.exists(fileName):
         print 'Error!!\nFile name {} not found'.format(fileName)
@@ -72,12 +73,12 @@ def getUnitCellParams(fileName):
         if('CRYST1' in str(line[0:6])):
             params = line.split()
             #create object 'y' with attributes for each of the Unit Cell Parameters
-            a = str(params[1])
-            b = str(params[2])
-            c = str(params[3])
-            alpha = str(params[4])
-            beta = str(params[5])
-            gamma = str(params[6])
+            a = float(params[1])
+            b = float(params[2])
+            c = float(params[3])
+            alpha = math.radians(float(params[4]))
+            beta = math.radians(float(params[5]))
+            gamma = math.radians(float(params[6]))
             break
     #provide feedback to user
     print 'Unit cell parameters obtained successfully extracted'
