@@ -24,8 +24,7 @@ def convertToCartesian(unitCell):
     a32 = 0
     a33 = c*(v/math.sin(gamma))
     #create the conversion matrix
-    conversionArray = ([a11,a12,a13],[a21,a22,a23],[a31,a32,a33])
-    conversionMatrix = np.array(conversionArray)
+    conversionMatrix = np.array([[a11,a12,a13],[a21,a22,a23],[a31,a32,a33]])
     #define the fractional basis vectors for each direction; a, b and c
     aVector = np.array([[1],[0],[0]])
     bVector = np.array([[0],[1],[0]])
@@ -39,6 +38,24 @@ def convertToCartesian(unitCell):
     print 'Conversion complete\n'
 #end translateUnitCell
     
-def translateUnitCell(atomList, cartesianVectors):
-    print cartesianVectors
+def translateUnitCell(atomList, cartesianVectors, atrans, btrans, ctrans):
+    from parsePDB import atom #for utilising the 'atom' class
+    import numpy as np #facilitates matrix manipulation
+    #create puppet list to fill with atom objects
+    transAtoms = [] 
+    #loop through all atoms in supplied list
+    for atm in xrange (0,len(atomList)):
+        #obtain atom information for atom n from atomList
+        n = atom(atomList(atm))
+        #turn the xyzCoords of atom n into a matrix
+        cartCoords = np.array(n.xyzCoords)
+        #create a matrix of the number of unit cells to translate in a,b,c axes
+        fracVectorTrans = np.array([atrans, btrans, ctrans])
+        #multiply the above matrices to give a Cartesian translation
+        vectorTrans = np.dot(fracVectorTrans, cartesianVectors)
+        #apply this transformation to the atoms xyzCoords and write back to atom n
+        n.xyzCoords = np.dot(vectorTrans, cartCoords)
+        #append the translated atom object to list
+        transAtoms.append(n)
+    return transAtoms   
 #end TranslateUnitCell

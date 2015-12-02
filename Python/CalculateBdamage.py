@@ -146,7 +146,12 @@ def CalculateBdamage(pathToPDB, PDT=14, binSize=10, createUnitCellPDB=0, createT
     print '****************************************************************'
     print '********** Translate Unit Cell Section *************************\n'
     cartesianVectors = convertToCartesian(unitCell)
-    translateUnitCell(atomList, cartesianVectors)
+    #loop through running the translation subroutine for all combinations of 
+    #translations +/- 1 unit cell in a, b and c directions
+    for a in range (-1, 2):
+        for b in range (-1, 2):
+            for c in range (-1, 2):
+                atomList(a,b,c) = translateUnitCell(atomList, cartesianVectors, a, b, c)
     print '\n********** Translate Unit Cell Section *************************'
     print '****************************************************************'
     print '\n'
