@@ -46,8 +46,8 @@ def runPDBCUR(pathToPDB, PDBCURoutputPDB, PDBCURinputFile, PDBCURlog):
     PDBCURlogText = open(PDBCURlog,'r')
     for line in PDBCURlogText:
         print line
-    PDBCURlogText.close
+    PDBCURlogText.close()
     #delete separate PDBCUR log file and input file
-    os.remove(PDBCURlog)
     os.remove(PDBCURinputFile)
+    os.remove(PDBCURlog)
 #end runPDBCUR 
