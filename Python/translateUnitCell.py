@@ -4,15 +4,15 @@ def convertToCartesian(unitCell):
     import math #facilitates using more intricate maths operations
     import numpy as np #facilitates matrix manipulation
     print 'Converting the unit cell basis vectors to Cartesian coordinates'
-    a = unitCell(0)
-    b = unitCell(1)
-    c = unitCell(2)
-    alpha = unitCell(3)
-    beta = unitCell(4)
-    gamma = unitCell(5)
-    #define parameter v, whcih is the volume fo the unit cell
-    v = math.sqrt(1-(math.cos(alpha))^2-(math.cos(beta))^2-(math.cos(gamma))^2
-                  +2*(math.cos(alpha))*(math.cos(beta))*(math.cos(gamma)))
+    a = float(unitCell[0])
+    b = float(unitCell[1])
+    c = float(unitCell[2])
+    alpha = float(unitCell[3])
+    beta = float(unitCell[4])
+    gamma = float(unitCell[5])
+    #define parameter v, which is the volume of a unit parallelepiped with the 
+    #same angles as the unit cell
+    v = math.sqrt(1 - math.pow((math.cos(alpha)),2) - math.pow((math.cos(beta)),2) - math.pow((math.cos(gamma)),2) + 2*(math.cos(alpha))*(math.cos(beta))*(math.cos(gamma)))
     #define the elements of the conversion matrix
     a11 = a
     a12 = b*math.cos(gamma)
@@ -24,16 +24,21 @@ def convertToCartesian(unitCell):
     a32 = 0
     a33 = c*(v/math.sin(gamma))
     #create the conversion matrix
-    conversionMatrix = np.array([a11,a12,a13],[a21,a22,a23],[a31,a32,a33])
+    conversionArray = ([a11,a12,a13],[a21,a22,a23],[a31,a32,a33])
+    conversionMatrix = np.array(conversionArray)
     #define the fractional basis vectors for each direction; a, b and c
-    aVector = np.array([1],[0],[0])
-    bVector = np.array([0],[1],[0])
-    cVector = np.array([0],[0],[1])
+    aVector = np.array([[1],[0],[0]])
+    bVector = np.array([[0],[1],[0]])
+    cVector = np.array([[0],[0],[1]])
     #convert the lattice basis vector in each direction to Cartesian coordinates
-    aCartesianVector = np.multiply(conversionMatrix, aVector)
-    bCartesianVector = np.multiply(conversionMatrix, bVector)
-    cCartesianVector = np.multiply(conversionMatrix, cVector)
+    aCartesianVector = np.dot(conversionMatrix, aVector)
+    bCartesianVector = np.dot(conversionMatrix, bVector)
+    cCartesianVector = np.dot(conversionMatrix, cVector)
     cartesianVectors = ([aCartesianVector],[bCartesianVector],[cCartesianVector])
     return cartesianVectors
-    print unitCell
+    print 'Conversion complete\n'
 #end translateUnitCell
+    
+def translateUnitCell(atomList, cartesianVectors):
+    print cartesianVectors
+#end TranslateUnitCell

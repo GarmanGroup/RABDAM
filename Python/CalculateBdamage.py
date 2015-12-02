@@ -154,7 +154,9 @@ def CalculateBdamage(pathToPDB, PDT=14, binSize=10, createUnitCellPDB=0, createT
     runtime = time.time() - start
     minutes = math.floor(runtime/60)
     seconds = math.fmod(runtime,60)
-    if minutes == 0:
+    if seconds ==1:
+        print 'Total time taken for program to run was %02.3f second.\n\n' % seconds
+    elif minutes == 0:
         print 'Total time taken for program to run was %02.3f seconds.\n\n' % seconds
     elif minutes == 1:
         print 'Total time taken for program to run was %01.0f minute and %02.3f seconds.\n\n' % (minutes,seconds)   

@@ -81,7 +81,7 @@ def getUnitCellParams(fileName):
             gamma = math.radians(float(params[6]))
             break
     #provide feedback to user
-    print 'Unit cell parameters obtained successfully extracted'
+    print 'Unit cell parameters successfully extracted'
     fileOpen.close() #close .pdb file
     return (a, b, c, alpha, beta, gamma)
 #end getUnitCellParams
