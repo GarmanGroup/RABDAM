@@ -33,29 +33,38 @@ def convertToCartesian(unitCell):
     aCartesianVector = np.dot(conversionMatrix, aVector)
     bCartesianVector = np.dot(conversionMatrix, bVector)
     cCartesianVector = np.dot(conversionMatrix, cVector)
-    cartesianVectors = ([aCartesianVector],[bCartesianVector],[cCartesianVector])
+    cartesianVectors = (aCartesianVector,bCartesianVector,cCartesianVector)
     return cartesianVectors
     print 'Conversion complete\n'
-#end translateUnitCell
+#end convertToCartesian
     
-def translateUnitCell(atomList, cartesianVectors, atrans, btrans, ctrans):
-    from parsePDB import atom #for utilising the 'atom' class
+def translateUnitCell(atomList, cartesianVectors, aTrans, bTrans, cTrans, transAtoms):
+    if aTrans == 0:
+        if bTrans == 0: 
+            if cTrans == 0:
+                return transAtoms
     import numpy as np #facilitates matrix manipulation
-    #create puppet list to fill with atom objects
-    transAtoms = [] 
+    #convert a/b/cTrans into matrices
+    aTransMat = np.array([[aTrans],[aTrans],[aTrans]])
+    bTransMat = np.array([[bTrans],[bTrans],[bTrans]])
+    cTransMat = np.array([[cTrans],[cTrans],[cTrans]])
+    #multiply a/b/cTrans matrices by the a/b/c Cartesian translation vector
+    aVec = np.multiply(aTransMat,cartesianVectors[0])
+    bVec = np.multiply(bTransMat,cartesianVectors[1])
+    cVec = np.multiply(cTransMat,cartesianVectors[2])
+    #add the three vectors together to give a single translation vector
+    transVector = np.add(aVec, bVec)
+    transVector = np.add(transVector, cVec)
+    print transVector
     #loop through all atoms in supplied list
     for atm in xrange (0,len(atomList)):
         #obtain atom information for atom n from atomList
-        n = atom(atomList(atm))
+        n = atomList[atm].xyzCoords
         #turn the xyzCoords of atom n into a matrix
-        cartCoords = np.array(n.xyzCoords)
-        #create a matrix of the number of unit cells to translate in a,b,c axes
-        fracVectorTrans = np.array([atrans, btrans, ctrans])
-        #multiply the above matrices to give a Cartesian translation
-        vectorTrans = np.dot(fracVectorTrans, cartesianVectors)
+        cartCoords = np.array(n)
         #apply this transformation to the atoms xyzCoords and write back to atom n
-        n.xyzCoords = np.dot(vectorTrans, cartCoords)
+        atomList[atm].xyzCoords = np.add(cartCoords, transVector)
         #append the translated atom object to list
-        transAtoms.append(n)
+        transAtoms.append(atomList[atm])
     return transAtoms   
-#end TranslateUnitCell
+#end translateUnitCell

@@ -22,11 +22,11 @@ class atom(object):
 #parse pdb file with name 'fileName' and return list of atoms from 'atom' class above
 def parsePDB(fileName):
     import os #for operating system usability
+    import sys #for terminating script when encountering errors
     from parsePDB import atom #for utilising the 'atom' class
     #check that file exists
     if not os.path.exists(fileName):
-        print 'Error!!\nFile name {} not found'.format(fileName)
-        return
+        sys.exit('Error!!\nFile name {} not found'.format(fileName))
     #create puppet list to fill with atom objects
     atomList = [] 
     #open correct file name for reading
