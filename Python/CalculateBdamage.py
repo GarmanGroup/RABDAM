@@ -157,6 +157,7 @@ def CalculateBdamage(pathToPDB, PDT=14, binSize=10, createUnitCellPDB=0, createT
                 if not newTransAtoms == []:
                     #append the translated atom object to list
                     transAtomList.append(newTransAtoms)
+    print 'successfully translated unit cell 26 times\n'
     print '\n********** Translate Unit Cell Section *************************'
     print '****************************************************************'
     print '\n'
