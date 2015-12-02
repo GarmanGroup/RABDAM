@@ -34,16 +34,20 @@ def convertToCartesian(unitCell):
     bCartesianVector = np.dot(conversionMatrix, bVector)
     cCartesianVector = np.dot(conversionMatrix, cVector)
     cartesianVectors = (aCartesianVector,bCartesianVector,cCartesianVector)
-    return cartesianVectors
     print 'Conversion complete\n'
+    return cartesianVectors
+    
 #end convertToCartesian
     
-def translateUnitCell(atomList, cartesianVectors, aTrans, bTrans, cTrans, transAtoms):
+def translateUnitCell(atomList, cartesianVectors, aTrans, bTrans, cTrans):
     if aTrans == 0:
         if bTrans == 0: 
             if cTrans == 0:
-                return transAtoms
+                return []
     import numpy as np #facilitates matrix manipulation
+    from parsePDB import atom 
+    #create puppet list to fill with atom objects
+    newTransAtoms = []
     #convert a/b/cTrans into matrices
     aTransMat = np.array([[aTrans],[aTrans],[aTrans]])
     bTransMat = np.array([[bTrans],[bTrans],[bTrans]])
@@ -59,12 +63,13 @@ def translateUnitCell(atomList, cartesianVectors, aTrans, bTrans, cTrans, transA
     #loop through all atoms in supplied list
     for atm in xrange (0,len(atomList)):
         #obtain atom information for atom n from atomList
-        n = atomList[atm].xyzCoords
+        n = atom(atomList[atm])
         #turn the xyzCoords of atom n into a matrix
-        cartCoords = np.array(n)
+        cartCoords = np.array(n.xyzCoords)
         #apply this transformation to the atoms xyzCoords and write back to atom n
-        atomList[atm].xyzCoords = np.add(cartCoords, transVector)
+        newCoords = np.add(cartCoords, transVector)
+        n.xyzCoords = np.array(newCoords).tolist()
         #append the translated atom object to list
-        transAtoms.append(atomList[atm])
-    return transAtoms   
+        newTransAtoms.append(atomList[atm])
+    return newTransAtoms   
 #end translateUnitCell
