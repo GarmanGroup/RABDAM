@@ -45,9 +45,9 @@ def parsePDB(fileName):
             y.resiType  = str(line[17:20].strip())                       
             y.chainID   = str(line[21:22].strip())                     
             y.resiNum   = int(line[22:26].strip())  
-            y.xyzCoords = [float(line[30:38].strip()),
-                           float(line[38:46].strip()),
-                           float(line[46:54].strip())]    
+            y.xyzCoords = [[float(line[30:38].strip())],
+                           [float(line[38:46].strip())],
+                           [float(line[46:54].strip())]]    
             y.occupancy = float(line[54:60].strip())                                                    
             y.bFactor   = float(line[60:66].strip())
             y.atomID    = str(line[76:78].strip())

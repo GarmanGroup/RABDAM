@@ -59,15 +59,17 @@ def translateUnitCell(atomList, cartesianVectors, aTrans, bTrans, cTrans):
     transVector = np.add(aVec, bVec)
     transVector = np.add(transVector, cVec)
     #loop through all atoms in supplied list
+    n = 0
+    noOfAtoms = len(atomList)
     for atm in atomList:
-        #turn the xyzCoords of atom 'atm' into a matrix
-        cartCoords = np.array(atm.xyzCoords)
-        cartCoords = ([cartCoords[0]],[cartCoords[1]],[cartCoords[2]])
-        cartCoords = np.array(cartCoords)
-        #apply this transformation to the atoms xyzCoords and write back to atom 'atm'
-        newCoords = np.add(cartCoords, transVector)
-        atm.xyzCoords = np.array(newCoords).tolist()
-        #append the translated atom object to list
-        newTransAtoms.append(atm)
+        while n < noOfAtoms:
+            #turn the xyzCoords of atom 'atm' into a matrix
+            cartCoords = np.array(atm.xyzCoords)
+            #apply this transformation to the atoms xyzCoords and write back to atom 'atm'
+            newCoords = np.add(cartCoords, transVector)
+            atm.xyzCoords = np.array(newCoords).tolist()
+            #append the translated atom object to list
+            newTransAtoms.append(atm)
+            n = n+1        
     return newTransAtoms   
 #end translateUnitCell

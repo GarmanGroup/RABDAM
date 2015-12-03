@@ -136,6 +136,7 @@ def CalculateBdamage(pathToPDB, PDT=14, binSize=10, createAllUnitCellsPDB=1, cre
     PDBCURoutputPDB = '%sUnitCell.pdb' % fileName
     #runPDBCUR using generated input file
     runPDBCUR(pathToPDB, PDBCURoutputPDB, PDBCURinputFile, PDBCURlog)
+    os.remove(PDBCURinputFile)
     print '\n********** End of Process PDB Section **************************'
     print '****************************************************************'
     print '\n'
@@ -182,4 +183,5 @@ def CalculateBdamage(pathToPDB, PDT=14, binSize=10, createAllUnitCellsPDB=1, cre
         print 'Total time taken for program to run was %01.0f minute and %02.3f seconds.\n\n' % (minutes,seconds)   
     else:
         print 'Total time taken for program to run was %01.0f minutes and %02.3f seconds.\n\n' % (minutes,seconds)
-#end
+#end       
+CalculateBdamage('2bn3')
