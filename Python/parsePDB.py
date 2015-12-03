@@ -2,8 +2,9 @@
 # With thanks to Charles Bury
 class atom(object):
     #Initialise class for a PDB file
-    def __init__(self,atomnum=0,residuenum=0,atomtype="",resitype="",
-                 chainID="",xyz_coords=[],atomidentifier="",bfactor=0,occupancy=1):   
+    def __init__(self,lineidentifier="",atomnum=0,residuenum=0,atomtype="",resitype="",
+                 chainID="",xyz_coords=[],atomidentifier="",bfactor=0,occupancy=1,charge=""):   
+        self.lineID     = lineidentifier
         self.atomNum    = atomnum
         self.resiNum    = residuenum
         self.atomType   = atomtype
@@ -11,8 +12,9 @@ class atom(object):
         self.chainID    = chainID
         self.xyzCoords  = xyz_coords
         self.atomID     = atomidentifier
-        self.bfactor    = bfactor
+        self.bFactor    = bfactor
         self.occupancy  = occupancy
+        self.charge     = charge
     #print a summary of atom info to command line 
     def getAtomSummary(self):
         summaryString = 'Chain: {}\nResidue: {}{}\nAtom type: {}'.format(self.chainID,self.resiType,self.resiNum,self.atomType)
@@ -37,17 +39,19 @@ def parsePDB(fileName):
         if ('ATOM' in str(line[0:6])) or ('HETATM' in str(line[0:6])):
             y = atom() #make new 'atom' object here
             #get atom properties here
+            y.lineID    = str(line[0:6].strip())
             y.atomNum   = int(line[6:11].strip())
             y.atomType  = str(line[12:16].strip())
             y.resiType  = str(line[17:20].strip())                       
-            y.chainID   = str(line[21])                     
+            y.chainID   = str(line[21:22].strip())                     
             y.resiNum   = int(line[22:26].strip())  
             y.xyzCoords = [float(line[30:38].strip()),
                            float(line[38:46].strip()),
                            float(line[46:54].strip())]    
-            y.occupancy = str(line[54:60].strip())                                                    
-            y.bfactor   = str(line[60:66].strip())
-            y.atomID    = str(line[76:78].strip())  
+            y.occupancy = float(line[54:60].strip())                                                    
+            y.bFactor   = float(line[60:66].strip())
+            y.atomID    = str(line[76:78].strip())
+            y.charge    = str(line[78:80].strip())
             #append new 'atom' object to list
             atomList.append(y)
     fileOpen.close() #close .pdb file after reading

@@ -35,8 +35,7 @@ def convertToCartesian(unitCell):
     cCartesianVector = np.dot(conversionMatrix, cVector)
     cartesianVectors = (aCartesianVector,bCartesianVector,cCartesianVector)
     print 'Conversion complete\n'
-    return cartesianVectors
-    
+    return cartesianVectors    
 #end convertToCartesian
     
 def translateUnitCell(atomList, cartesianVectors, aTrans, bTrans, cTrans):
@@ -59,17 +58,16 @@ def translateUnitCell(atomList, cartesianVectors, aTrans, bTrans, cTrans):
     #add the three vectors together to give a single translation vector
     transVector = np.add(aVec, bVec)
     transVector = np.add(transVector, cVec)
-    print transVector
     #loop through all atoms in supplied list
-    for atm in xrange (0,len(atomList)):
-        #obtain atom information for atom n from atomList
-        n = atom(atomList[atm])
-        #turn the xyzCoords of atom n into a matrix
-        cartCoords = np.array(n.xyzCoords)
-        #apply this transformation to the atoms xyzCoords and write back to atom n
+    for atm in atomList:
+        #turn the xyzCoords of atom 'atm' into a matrix
+        cartCoords = np.array(atm.xyzCoords)
+        cartCoords = ([cartCoords[0]],[cartCoords[1]],[cartCoords[2]])
+        cartCoords = np.array(cartCoords)
+        #apply this transformation to the atoms xyzCoords and write back to atom 'atm'
         newCoords = np.add(cartCoords, transVector)
-        n.xyzCoords = np.array(newCoords).tolist()
+        atm.xyzCoords = np.array(newCoords).tolist()
         #append the translated atom object to list
-        newTransAtoms.append(atomList[atm])
+        newTransAtoms.append(atm)
     return newTransAtoms   
 #end translateUnitCell

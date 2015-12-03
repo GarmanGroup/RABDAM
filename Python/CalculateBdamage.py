@@ -1,7 +1,7 @@
 # Copyright 2015 Thomas Dixon
 # With thanks to Jonathan Brooks-Bartlett, Charles Bury, Markus Gerstel and Elspeth Garman
 #Script to calculate B-damage for protein atom
-def CalculateBdamage(pathToPDB, PDT=14, binSize=10, createUnitCellPDB=0, createTrimmedUnitCellPDB=1):
+def CalculateBdamage(pathToPDB, PDT=14, binSize=10, createAllUnitCellsPDB=1, createTrimmedAtomsPDB=1):
     print('\n')
     print('Copyright 2015 Thomas Dixon\n')
     print('With thanks to Jonathan Brooks-Bartlett, Charles Bury, Markus Gerstel and Elspeth Garman')
@@ -14,6 +14,7 @@ def CalculateBdamage(pathToPDB, PDT=14, binSize=10, createUnitCellPDB=0, createT
     from PDBCUR import genPDBCURinputs,runPDBCUR #facilitates PDBCUR functionality
     from parsePDB import parsePDB, getUnitCellParams #for taking information from PDB file to a usable format
     from translateUnitCell import convertToCartesian,translateUnitCell #translates unit cell
+    from makePDB import makePDB #allows new PDB files to be written from a list of atom objects
     #Input: the file path to the pdb for which you want to calculate B-damage factors, the 'Packing Density Threshold' (Angstroms) and bin size
     start = time.time()
     startIndex = time.gmtime()
@@ -112,6 +113,11 @@ def CalculateBdamage(pathToPDB, PDT=14, binSize=10, createUnitCellPDB=0, createT
                 localFile.write(origPDB.read())
                 #inform user of file location of new copy of PDB file
                 print 'PDB file copied to %s' % newPathToPDB
+            #close local file to free up memory
+            localFile.close()
+            #chack that file has downloaded and saved correctly
+            if not os.path.exists(newPathToPDB):
+                sys.exit ('Error 04: Failed to copy PDB to a local version. Check that supplied PDB is not in use by another program')
         else:
             sys.exit('Error 01: Supplied filepath to PDB is not a .pdb file')
         #check supplied filepath exists, returning error message if not
@@ -158,6 +164,9 @@ def CalculateBdamage(pathToPDB, PDT=14, binSize=10, createUnitCellPDB=0, createT
                     #append the translated atom object to list
                     transAtomList.append(newTransAtoms)
     print 'successfully translated unit cell 26 times\n'
+    if createAllUnitCellsPDB == 1:
+        aucPDBfilepath = '%sAllUnitCells.pdb' % PDBdirectory
+        makePDB(transAtomList, aucPDBfilepath)
     print '\n********** Translate Unit Cell Section *************************'
     print '****************************************************************'
     print '\n'
