@@ -29,14 +29,23 @@ def parsePDB(fileName):
     #check that file exists
     if not os.path.exists(fileName):
         sys.exit('Error!!\nFile name {} not found'.format(fileName))
-    #create puppet list to fill with atom objects
+    #create puppet lists to fill with atom objects
+    bof = []
     atomList = [] 
+    eof = []
+    beforeAtoms = True
     #open correct file name for reading
     fileOpen = open(fileName,'r') 
     #read 'ATOM' and 'HETATM' lines
     for line in fileOpen.readlines():
+        if not ('ATOM  ' in str(line[0:6])) or ('HETATM' in str(line[0:6])) or ('ANISOU' in str(line[0:6])):
+            if beforeAtoms:
+                bof.append(line)
+            else:
+                eof.append(line)  
         #only select information from ATOM or HETATM lines
-        if ('ATOM' in str(line[0:6])) or ('HETATM' in str(line[0:6])):
+        if ('ATOM  ' in str(line[0:6])) or ('HETATM' in str(line[0:6])):
+            beforeAtoms = False
             y = atom() #make new 'atom' object here
             #get atom properties here
             y.lineID    = str(line[0:6].strip())
@@ -58,7 +67,7 @@ def parsePDB(fileName):
     #provide feedback to user
     print 'Finished reading in atoms --> {} atoms found in file'.format(len(atomList))
     #return list of atoms as output of function
-    return atomList
+    return bof, atomList, eof
 #end parsePDB
     
 #obtain unit cell parameters from PDB file

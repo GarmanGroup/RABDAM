@@ -144,7 +144,7 @@ def CalculateBdamage(pathToPDB, PDT=14, binSize=10, createAllUnitCellsPDB=1, cre
     print '****************************************************************'
     print '********** Parsing PDB Section *********************************\n'
     #return a list of atoms and attributes
-    atomList = parsePDB(PDBCURoutputPDB)
+    bof, atomList, eof = parsePDB(PDBCURoutputPDB)
     unitCell = getUnitCellParams(pathToPDB)
     print '\n********** End of Parsing PDB Section **************************'
     print '****************************************************************'
@@ -153,8 +153,11 @@ def CalculateBdamage(pathToPDB, PDT=14, binSize=10, createAllUnitCellsPDB=1, cre
     print '****************************************************************'
     print '********** Translate Unit Cell Section *************************\n'
     cartesianVectors = convertToCartesian(unitCell)
-    #create list of atoms to which all translated atomic positions will be added
-    transAtomList = atomList 
+    #create puppet list of atoms to which all translated atomic positions will be added
+    transAtomList = [] 
+    #add the original atoms to this list to initialise
+    for atm in atomList:
+        transAtomList.append(atm)
     #loop through running the translation subroutine for all combinations of 
     #translations +/- 1 unit cell in a, b and c directions
     for a in range (-1, 2):
@@ -168,15 +171,15 @@ def CalculateBdamage(pathToPDB, PDT=14, binSize=10, createAllUnitCellsPDB=1, cre
                             identityTranslation = True
                 if not identityTranslation:
                     #Translate all atoms in the unit cell
-                    print len(atomList)
+                    newTransAtoms = []
                     newTransAtoms = translateUnitCell(atomList, cartesianVectors, a, b, c)
                     #append the translated atom object to list
                     for atm in newTransAtoms:
                         transAtomList.append(atm)
-    print 'successfully translated unit cell 26 times\n'
+    print ''
     if createAllUnitCellsPDB == 1:
         aucPDBfilepath = '%sAllUnitCells.pdb' % PDBdirectory
-        makePDB(transAtomList, aucPDBfilepath)
+        makePDB(bof, transAtomList, eof, aucPDBfilepath)
     print '\n********** Translate Unit Cell Section *************************'
     print '****************************************************************'
     print '\n'
@@ -193,4 +196,4 @@ def CalculateBdamage(pathToPDB, PDT=14, binSize=10, createAllUnitCellsPDB=1, cre
     else:
         print 'Total time taken for program to run was %01.0f minutes and %02.3f seconds.\n\n' % (minutes,seconds)
 #end       
-CalculateBdamage('Logfiles/TestPDB/TestPDB.pdb')
+CalculateBdamage('2bn3')
