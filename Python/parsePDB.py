@@ -140,7 +140,7 @@ def getAUparams(atomList):
 #remove atoms from a list that lie outside of a set of given spatial parameters
 def trimAtoms(atomList, params, PDT):
     import atom as a #for utilising the 'atom' class
-    from atomCheck import isInParams
+    from atomCheck import isInXYZparams
     totalAtm = len(atomList)
     atmIndex= 0
     keptAtoms = 0
@@ -148,7 +148,7 @@ def trimAtoms(atomList, params, PDT):
         #extract xyz coordinates from atom information
         atomXYZ = atomList[atmIndex].xyzCoords
         #if the newly considered atoms coordinates lie within the params, retain this atom
-        if isInParams(atomXYZ, params):
+        if isInXYZparams(atomXYZ, params):
             #advance the index by 1 to red the next line
             atmIndex = atmIndex + 1
             #keep a record of the number of retained atoms
