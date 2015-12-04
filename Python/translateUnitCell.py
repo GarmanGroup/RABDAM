@@ -39,10 +39,6 @@ def convertToCartesian(unitCell):
 #end convertToCartesian
     
 def translateUnitCell(atomList, cartesianVectors, aTrans, bTrans, cTrans):
-    if aTrans == 0:
-        if bTrans == 0: 
-            if cTrans == 0:
-                return []
     import numpy as np #facilitates matrix manipulation
     from parsePDB import atom 
     #create puppet list to fill with atom objects
@@ -59,17 +55,18 @@ def translateUnitCell(atomList, cartesianVectors, aTrans, bTrans, cTrans):
     transVector = np.add(aVec, bVec)
     transVector = np.add(transVector, cVec)
     #loop through all atoms in supplied list
-    n = 0
     noOfAtoms = len(atomList)
+    print noOfAtoms
     for atm in atomList:
-        while n < noOfAtoms:
-            #turn the xyzCoords of atom 'atm' into a matrix
-            cartCoords = np.array(atm.xyzCoords)
-            #apply this transformation to the atoms xyzCoords and write back to atom 'atm'
-            newCoords = np.add(cartCoords, transVector)
-            atm.xyzCoords = np.array(newCoords).tolist()
-            #append the translated atom object to list
-            newTransAtoms.append(atm)
-            n = n+1        
+        #turn the xyzCoords of atom 'atm' into a matrix
+        cartCoords = np.array(atm.xyzCoords)
+        #apply this transformation to the atoms xyzCoords and write back to atom 'atm'
+        newCoords = np.add(cartCoords, transVector)
+        atm.xyzCoords = newCoords.tolist()
+        #append the translated atom object to list
+        newTransAtoms.append(atm)
+        if len(newTransAtoms) == noOfAtoms:
+            break
+    print 'Successfully translated cell (%2s,%2s,%2s)' % (aTrans, bTrans, cTrans)
     return newTransAtoms   
 #end translateUnitCell

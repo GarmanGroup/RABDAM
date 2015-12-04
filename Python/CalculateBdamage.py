@@ -113,8 +113,8 @@ def CalculateBdamage(pathToPDB, PDT=14, binSize=10, createAllUnitCellsPDB=1, cre
                 localFile.write(origPDB.read())
                 #inform user of file location of new copy of PDB file
                 print 'PDB file copied to %s' % newPathToPDB
-            #close local file to free up memory
-            localFile.close()
+                #close local file to free up memory
+                localFile.close()
             #chack that file has downloaded and saved correctly
             if not os.path.exists(newPathToPDB):
                 sys.exit ('Error 04: Failed to copy PDB to a local version. Check that supplied PDB is not in use by another program')
@@ -160,10 +160,19 @@ def CalculateBdamage(pathToPDB, PDT=14, binSize=10, createAllUnitCellsPDB=1, cre
     for a in range (-1, 2):
         for b in range (-1, 2):
             for c in range (-1, 2):
-                newTransAtoms = translateUnitCell(atomList, cartesianVectors, a, b, c)
-                if not newTransAtoms == []:
+                #don't translate cells ine the case of an identity translation
+                identityTranslation = False
+                if a == 0:
+                    if b == 0:
+                        if c == 0:
+                            identityTranslation = True
+                if not identityTranslation:
+                    #Translate all atoms in the unit cell
+                    print len(atomList)
+                    newTransAtoms = translateUnitCell(atomList, cartesianVectors, a, b, c)
                     #append the translated atom object to list
-                    transAtomList.append(newTransAtoms)
+                    for atm in newTransAtoms:
+                        transAtomList.append(atm)
     print 'successfully translated unit cell 26 times\n'
     if createAllUnitCellsPDB == 1:
         aucPDBfilepath = '%sAllUnitCells.pdb' % PDBdirectory
@@ -184,4 +193,4 @@ def CalculateBdamage(pathToPDB, PDT=14, binSize=10, createAllUnitCellsPDB=1, cre
     else:
         print 'Total time taken for program to run was %01.0f minutes and %02.3f seconds.\n\n' % (minutes,seconds)
 #end       
-CalculateBdamage('2bn3')
+CalculateBdamage('Logfiles/TestPDB/TestPDB.pdb')

@@ -9,16 +9,17 @@ def makePDB(atomList, newPDBfilename):
     for atm in atomList:
         #take object information to a set of temporary variables
         a = str(atm.lineID)
-        print a
         b = int(atm.atomNum)
         c = str(atm.atomType)
         d = str(atm.resiType)    
         e = str(atm.chainID)
         f = int(atm.resiNum)
         g = (atm.xyzCoords)
-        print g
         h = g[1]
+        h = h[0]
         j = g[2]
+        j = j[0]
+        g = g[0]
         g = g[0]
         k = float(atm.occupancy)
         l = float(atm.bFactor)
