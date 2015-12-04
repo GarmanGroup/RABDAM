@@ -192,14 +192,15 @@ def CalculateBdamage(pathToPDB, PDT=14, binSize=10, createAllUnitCellsPDB=1, cre
     eof1.remove
     auParams = getAUparams(AUatomList)
     print 'Obtained asymmetric unit parameters:'
-    print auParams
     print 'xMin = %8.3f' % auParams[0][0]
     print 'xMax = %8.3f' % auParams[1][0]
     print 'yMin = %8.3f' % auParams[2][0]
     print 'yMax = %8.3f' % auParams[3][0]
     print 'zMin = %8.3f' % auParams[4][0]
     print 'zMax = %8.3f\n' % auParams[5][0]
-    trimAtoms(transAtomList, auParams, PDT)
+    #add PDT to auParams in all dimensions
+    keepParams = convertParams(auParams, PDT)
+    trimAtoms(transAtomList, keepParams)
     print '\n********** Trim Crystal Section ********************************'
     print '****************************************************************'
     print '\n'

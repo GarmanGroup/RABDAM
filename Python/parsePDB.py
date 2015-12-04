@@ -138,7 +138,7 @@ def getAUparams(atomList):
 #end getAUparams
     
 #remove atoms from a list that lie outside of a set of given spatial parameters
-def trimAtoms(atomList, params, PDT):
+def trimAtoms(atomList, params):
     from parsePDB import atom as a #for utilising the 'atom' class
     from atomCheck import isInXYZparams
     totalAtm = len(atomList)
