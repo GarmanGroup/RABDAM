@@ -98,3 +98,36 @@ def getUnitCellParams(fileName):
     fileOpen.close() #close .pdb file
     return (a, b, c, alpha, beta, gamma)
 #end getUnitCellParams
+    
+#get minimum and maximum xyz coordinates of the asymmetric unit
+def getAUparams(atomList):
+    from parsePDB import atom as a
+    firstAtomXYZ = atomList[0].xyzCoords
+    #initialise xyz minima and maxima
+    xMin = firstAtomXYZ[0]
+    xMax = firstAtomXYZ[0]
+    yMin = firstAtomXYZ[1]
+    yMax = firstAtomXYZ[1]
+    zMin = firstAtomXYZ[2]
+    zMax = firstAtomXYZ[2]
+    #loop through all atoms in input list
+    for atom in atomList:
+        #extract xyz coordinates from atom information
+        atomXYZ = atom.xyzCoords
+        #if the newly considered atoms coordinates lie outside of the previous 
+        #max/minima, replace the relevant parameter(s)
+        if xMin > atomXYZ[0]:
+            xMin = atomXYZ[0]
+        elif xMax < atomXYZ[0]:
+            xMax = atomXYZ[0]
+        if yMin > atomXYZ[1]:
+            yMin = atomXYZ[1]
+        elif yMax < atomXYZ[1]:
+            yMax = atomXYZ[1]
+        if zMin > atomXYZ[2]:
+            zMin = atomXYZ[2]
+        elif zMax < atomXYZ[2]:
+            zMax = atomXYZ[2]
+    auParams = (xMin, xMax, yMin, yMax, zMin, zMax)
+    return auParams
+#end getAUparams

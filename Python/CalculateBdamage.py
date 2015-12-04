@@ -1,6 +1,6 @@
 # Copyright 2015 Thomas Dixon
 # With thanks to Jonathan Brooks-Bartlett, Charles Bury, Markus Gerstel and Elspeth Garman
-#Script to calculate B-damage for protein atom
+#Script to calculate B-damage for protein atoms
 def CalculateBdamage(pathToPDB, PDT=14, binSize=10, createAllUnitCellsPDB=1, createTrimmedAtomsPDB=1):
     print('\n')
     print('Copyright 2015 Thomas Dixon\n')
@@ -12,7 +12,7 @@ def CalculateBdamage(pathToPDB, PDT=14, binSize=10, createAllUnitCellsPDB=1, cre
     import os #for operating system usability
     import math #for using more intricate mathematics
     from PDBCUR import genPDBCURinputs,runPDBCUR #facilitates PDBCUR functionality
-    from parsePDB import parsePDB, getUnitCellParams #for taking information from PDB file to a usable format
+    from parsePDB import parsePDB, getUnitCellParams, getAUparams #for taking information from PDB file to a usable format
     from translateUnitCell import convertToCartesian,translateUnitCell #translates unit cell
     from makePDB import makePDB #allows new PDB files to be written from a list of atom objects
     #Input: the file path to the pdb for which you want to calculate B-damage factors, the 'Packing Density Threshold' (Angstroms) and bin size
@@ -181,6 +181,17 @@ def CalculateBdamage(pathToPDB, PDT=14, binSize=10, createAllUnitCellsPDB=1, cre
         aucPDBfilepath = '%sAllUnitCells.pdb' % PDBdirectory
         makePDB(bof, transAtomList, eof, aucPDBfilepath)
     print '\n********** Translate Unit Cell Section *************************'
+    print '****************************************************************'
+    print '\n'
+    #Discard atoms too far from the asymmetric unit
+    print '****************************************************************'
+    print '********** Trim Crystal Section ********************************\n'
+    bof1, AUatomList, eof1 = parsePDB(pathToPDB)
+    bof1.remove
+    eof1.remove
+    auParams = getAUparams(AUatomList)
+    print auParams
+    print '\n********** Trim Crystal Section ********************************'
     print '****************************************************************'
     print '\n'
     #inform the user of the time elapsed while the program was run
