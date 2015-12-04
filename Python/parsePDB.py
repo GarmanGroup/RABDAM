@@ -15,10 +15,14 @@ class atom(object):
         self.bFactor    = bfactor
         self.occupancy  = occupancy
         self.charge     = charge
+    #end Initialise class
+        
     #print a summary of atom info to command line 
     def getAtomSummary(self):
         summaryString = 'Chain: {}\nResidue: {}{}\nAtom type: {}'.format(self.chainID,self.resiType,self.resiNum,self.atomType)
         print summaryString
+    #end getAtomSummary
+
 #end atom class
         
 #parse pdb file with name 'fileName' and return list of atoms from 'atom' class above
@@ -111,9 +115,9 @@ def getAUparams(atomList):
     zMin = firstAtomXYZ[2]
     zMax = firstAtomXYZ[2]
     #loop through all atoms in input list
-    for atom in atomList:
+    for atm in atomList:
         #extract xyz coordinates from atom information
-        atomXYZ = atom.xyzCoords
+        atomXYZ = atm.xyzCoords
         #if the newly considered atoms coordinates lie outside of the previous 
         #max/minima, replace the relevant parameter(s)
         if xMin > atomXYZ[0]:
@@ -128,6 +132,32 @@ def getAUparams(atomList):
             zMin = atomXYZ[2]
         elif zMax < atomXYZ[2]:
             zMax = atomXYZ[2]
-    auParams = (xMin, xMax, yMin, yMax, zMin, zMax)
+    #combine all parameters into a single list
+    auParams = [xMin, xMax, yMin, yMax, zMin, zMax]
     return auParams
 #end getAUparams
+    
+#remove atoms from a list that lie outside of a set of given spatial parameters
+def trimAtoms(atomList, params, PDT):
+    import atom as a
+    from atomCheck import isInParams
+    totalAtm = len(atomList)
+    atmIndex= 0
+    keptAtoms = 0
+    while atmIndex < totalAtm:
+        #extract xyz coordinates from atom information
+        atomXYZ = atomList[atmIndex].xyzCoords
+        #if the newly considered atoms coordinates lie within the params, retain this atom
+        if isInParams(atomXYZ, params):
+            #advance the index by 1 to red the next line
+            atmIndex = atmIndex + 1
+            #keep a record of the number of retained atoms
+            keptAtoms = keptAtoms + 1
+        #otherwise, discard the atom 
+        else:
+            #remove atom information from atomList
+            atomList.pop(atmIndex)
+            #reduce the number of total atoms in atomList by 1
+            totalAtm = totalAtm - 1
+    print 'kept %.0f atoms' % keptAtoms
+#end trimAtoms

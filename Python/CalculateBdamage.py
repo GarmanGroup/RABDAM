@@ -12,7 +12,7 @@ def CalculateBdamage(pathToPDB, PDT=14, binSize=10, createAllUnitCellsPDB=1, cre
     import os #for operating system usability
     import math #for using more intricate mathematics
     from PDBCUR import genPDBCURinputs,runPDBCUR #facilitates PDBCUR functionality
-    from parsePDB import parsePDB, getUnitCellParams, getAUparams #for taking information from PDB file to a usable format
+    from parsePDB import parsePDB, getUnitCellParams, getAUparams, trimAtoms #for taking information from PDB file to a usable format
     from translateUnitCell import convertToCartesian,translateUnitCell #translates unit cell
     from makePDB import makePDB #allows new PDB files to be written from a list of atom objects
     #Input: the file path to the pdb for which you want to calculate B-damage factors, the 'Packing Density Threshold' (Angstroms) and bin size
@@ -186,11 +186,19 @@ def CalculateBdamage(pathToPDB, PDT=14, binSize=10, createAllUnitCellsPDB=1, cre
     #Discard atoms too far from the asymmetric unit
     print '****************************************************************'
     print '********** Trim Crystal Section ********************************\n'
+    #parse a new set of atomic coordinates from the provided asymmetric unit file    
     bof1, AUatomList, eof1 = parsePDB(pathToPDB)
     bof1.remove
     eof1.remove
     auParams = getAUparams(AUatomList)
-    print auParams
+    print 'Obtained asymmetric unit parameters:'
+    print 'xMin = %8.3f' % auParams[0]
+    print 'xMax = %8.3f' % auParams[1]
+    print 'yMin = %8.3f' % auParams[2]
+    print 'yMax = %8.3f' % auParams[3]
+    print 'zMin = %8.3f' % auParams[4]
+    print 'zMax = %8.3f\n' % auParams[5]
+    trimAtoms()
     print '\n********** Trim Crystal Section ********************************'
     print '****************************************************************'
     print '\n'
