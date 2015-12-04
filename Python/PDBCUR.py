@@ -1,7 +1,6 @@
 # Copyright Thomas Dixon 2015
 def genPDBCURinputs(PDBCURinputFile):
-    #import os for OS usability
-    import os
+    import os #for operating system usability
     #check if an input file has already been created
     if os.path.exists(PDBCURinputFile):
         #inform user file already exists
@@ -27,8 +26,7 @@ def genPDBCURinputs(PDBCURinputFile):
 #end genPDBCURinputs
         
 def runPDBCUR(pathToPDB, PDBCURoutputPDB, PDBCURinputFile, PDBCURlog):
-    #import os for OS usability
-    import os
+    import os #for operating system usability
     #check if output file has already been created
     if os.path.exists(PDBCURoutputPDB):
         #inform user file already exists

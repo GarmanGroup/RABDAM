@@ -1,7 +1,8 @@
 # Copyright Thomas Dixon 2015
+#method to make a pdb from complete set of atom information and pdb header/footer 
 def makePDB(bof, atomList, eof, newPDBfilename):
-    import os
-    from parsePDB import atom
+    import os #for operating system usability
+    from parsePDB import atom #for utilising the 'atom' class
     if os.path.exists(newPDBfilename):
         print 'File %s already exists' % newPDBfilename
         return

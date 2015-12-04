@@ -40,7 +40,7 @@ def convertToCartesian(unitCell):
     
 def translateUnitCell(atomList, cartesianVectors, aTrans, bTrans, cTrans):
     import numpy as np #facilitates matrix manipulation
-    from parsePDB import atom 
+    from parsePDB import atom  #for utilising the 'atom' class
     #create puppet list to fill with atom objects
     newTransAtoms = []
     #convert a/b/cTrans into matrices
