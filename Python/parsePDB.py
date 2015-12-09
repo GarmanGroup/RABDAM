@@ -5,7 +5,8 @@
 class atom(object):
     #Initialise class for a PDB file
     def __init__(self,lineidentifier="",atomnum=0,residuenum=0,atomtype="",resitype="",
-                 chainID="",xyz_coords=[],atomidentifier="",bfactor=0,occupancy=1,charge=""):   
+                 chainID="",xyz_coords=[],atomidentifier="",bfactor=0,occupancy=1,charge="",
+                 packingdensity=0,groupnumber=0):   
         self.lineID     = lineidentifier
         self.atomNum    = atomnum
         self.resiNum    = residuenum
@@ -17,6 +18,8 @@ class atom(object):
         self.bFactor    = bfactor
         self.occupancy  = occupancy
         self.charge     = charge
+        self.PD         = packingdensity
+        self.GN         = groupnumber
     #end Initialise class
         
     #print a summary of atom info to command line 

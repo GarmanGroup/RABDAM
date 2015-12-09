@@ -218,7 +218,7 @@ def CalculateBdamage(pathToPDB, PDT=14, binSize=10, createAllUnitCellsPDB=1, cre
     print '****************************************************************'
     print '********** Calculate Packing Density Section *******************\n'
     auAtomList, minPD, maxPD = calcPDT(auAtomList, trimmedAtomList, PDT)
-    environmentIndices = binAtoms(auAtomList, minPD, maxPD)
+    auAtomList, noOfGroups = binAtoms(auAtomList, binSize, minPD, maxPD)
     print '\n********** End of Calculate Packing Density Section ************'
     print '****************************************************************'
     print '\n'

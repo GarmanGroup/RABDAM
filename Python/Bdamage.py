@@ -16,13 +16,12 @@ def calcDist(atomA, atomB):
     return d
 #end calcDist
 
-
 def countInRadius(atm, atomList, r):
     from parsePDB import atom as a #for utilising the 'atom' class
     from Bdamage import calcDist #calcualtes the distance between two atoms in 3D space
     #set packing density counter to 0
     PD = 0
-    #for every retained atom
+    #for every atom
     for atm in atomList:
         #calcualte the distance between the two atoms
         if calcDist(atm, atm) < r:
@@ -49,11 +48,26 @@ def calcPDT(auAtomList, atomList, PDT):
             minPD = auAtm.PD
         elif auAtm.PD > maxPD:
             maxPD = auAtm.PD
+    print 'Packing Density (PD) values successfully calculated'
     return auAtomList, minPD, maxPD
 #end calcPackingDensity
     
 #Segregate atoms into bins based on PD
-def binAtoms(atomList, binSize):
+def binAtoms(atomList, binSize, minPD, maxPD):
     from parsePDB import atom as a #for utilising the 'atom' class
-    
+    import math #to utilise more intricate maths functions
+    #create value for 'adjustment number' which is a factor to be taken off all
+    #PDs in order to define their group number by a ceiling function
+    adjtNo = (math.floor(minPD/binSize))*binSize
+    #for every atom in the atom list
+    for atm in atomList:
+        #obtain the PD value
+        actlPD = atm.PD
+        #reduce PD by the adjustment value
+        adjdPD = actlPD - adjtNo
+        #define group number as the ceiling of adjdPD divided by bin size
+        groupNo = math.ceil(adjdPD/binSize)
+        atm.GN = groupNo
+    noOfGroups = math.ceil((maxPD-adjtNo)/binSize)
+    return atomList, noOfGroups
 #end binAtoms
