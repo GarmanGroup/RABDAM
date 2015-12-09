@@ -16,7 +16,8 @@ def CalculateBdamage(pathToPDB, PDT=14, binSize=10, createAllUnitCellsPDB=1, cre
     from parsePDB import parsePDB, getUnitCellParams, getAUparams, trimAtoms #for taking information from PDB file to a usable format
     from translateUnitCell import convertToCartesian,translateUnitCell #translates unit cell
     from makePDB import makePDB #allows new PDB files to be written from a list of atom objects
-    from atomCheck import convertParams
+    from atomCheck import convertParams #adds the PDT to the Cartesian limits of the unit cell
+    from Bdamage import calcPDT, binAtoms #calculates the PDT of each atom in the proivided structure
     #Input: the file path to the pdb for which you want to calculate B-damage factors, the 'Packing Density Threshold' (Angstroms) and bin size
     start = time.time()
     startIndex = time.gmtime()
@@ -189,10 +190,10 @@ def CalculateBdamage(pathToPDB, PDT=14, binSize=10, createAllUnitCellsPDB=1, cre
     print '****************************************************************'
     print '********** Trim Crystal Section ********************************\n'
     #parse a new set of atomic coordinates from the provided asymmetric unit file    
-    bof1, AUatomList, eof1 = parsePDB(pathToPDB)
+    bof1, auAtomList, eof1 = parsePDB(pathToPDB)
     bof1.remove
     eof1.remove
-    auParams = getAUparams(AUatomList)
+    auParams = getAUparams(auAtomList)
     print 'Obtained asymmetric unit parameters:'
     print 'xMin = %8.3f' % auParams[0][0]
     print 'xMax = %8.3f' % auParams[1][0]
@@ -216,7 +217,8 @@ def CalculateBdamage(pathToPDB, PDT=14, binSize=10, createAllUnitCellsPDB=1, cre
     #Calculate the packing density of each atom
     print '****************************************************************'
     print '********** Calculate Packing Density Section *******************\n'
-    
+    auAtomList, minPD, maxPD = calcPDT(auAtomList, trimmedAtomList, PDT)
+    environmentIndices = binAtoms(auAtomList, minPD, maxPD)
     print '\n********** End of Calculate Packing Density Section ************'
     print '****************************************************************'
     print '\n'
