@@ -1,4 +1,5 @@
 #Copyright Thomas Dixon 2015
+
 #convert the unit cell paramenters to Cartesian coordinates
 def convertToCartesian(unitCell):
     import math #facilitates using more intricate maths operations

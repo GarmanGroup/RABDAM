@@ -1,4 +1,5 @@
 # Copyright Thomas Dixon 2015
+
 def convertParams(params, margin):
     params[0][0] = params[0][0] - margin
     params[1][0] = params[1][0] + margin

@@ -1,4 +1,5 @@
 # Copyright Thomas Dixon 2015
+
 #method to make a pdb from complete set of atom information and pdb header/footer 
 def makePDB(bof, atomList, eof, newPDBfilename):
     import os #for operating system usability

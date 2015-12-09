@@ -1,4 +1,5 @@
 # Copyright Thomas Dixon 2015
+
 def genPDBCURinputs(PDBCURinputFile):
     import os #for operating system usability
     #check if an input file has already been created

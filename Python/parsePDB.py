@@ -1,5 +1,7 @@
 # Copyright Thomas Dixon 2015
 # With thanks to Charles Bury
+
+#define class of atom objects
 class atom(object):
     #Initialise class for a PDB file
     def __init__(self,lineidentifier="",atomnum=0,residuenum=0,atomtype="",resitype="",
@@ -141,6 +143,7 @@ def getAUparams(atomList):
 def trimAtoms(atomList, params):
     from parsePDB import atom as a #for utilising the 'atom' class
     from atomCheck import isInXYZparams
+    print 'Excluding the atoms that lie outside of the box'
     totalAtm = len(atomList)
     atmIndex= 0
     keptAtoms = 0
@@ -159,5 +162,7 @@ def trimAtoms(atomList, params):
             atomList.pop(atmIndex)
             #reduce the number of total atoms in atomList by 1
             totalAtm = totalAtm - 1
-    print 'kept %.0f atoms' % keptAtoms
+    print '%.0f atoms have been retained' % keptAtoms
+    #output a list of retained atom objects
+    return atomList
 #end trimAtoms
