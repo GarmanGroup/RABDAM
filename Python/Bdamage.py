@@ -61,14 +61,12 @@ def binAtoms(atomList, binSize, minPD, maxPD):
     adjtNo = (math.floor(minPD/binSize))*binSize
     #for every atom in the atom list
     for atm in atomList:
-        #obtain the PD value
-        actlPD = atm.pd
         #reduce PD by the adjustment value
-        adjdPD = actlPD - adjtNo + 1
+        adjdPD = atm.pd - adjtNo + 1
         #define group number as the ceiling of adjdPD divided by bin size
         groupNo = math.ceil(adjdPD/binSize)
         atm.gn = groupNo
-    noOfGroups = int(math.ceil((maxPD-adjtNo)/binSize))
+    noOfGroups = int(math.ceil((maxPD-adjtNo +1)/binSize))
     return atomList, noOfGroups
 #end binAtoms
     
@@ -77,8 +75,8 @@ def calcBdam(atomList, numberOfGroups):
     from parsePDB import atom as a #for utilising the 'atom' class
     #initialise variables for all group numbers
     sumB = [0] * numberOfGroups
-    noAtm = [0 for col in range(numberOfGroups)]
-    avB = [0 for col in range(numberOfGroups)]
+    noAtm = [0] * numberOfGroups
+    avB = [0] * numberOfGroups
     #find sum of all B factors of atoms in their groups
     for atom in atomList:
         gNo = int(atom.gn - 1) #take away 1 to account for cardinality vs ordinality

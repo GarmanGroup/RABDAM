@@ -12,6 +12,7 @@ def CalculateBdamage(pathToPDB, PDT=14, binSize=10, createAllUnitCellsPDB=1, cre
     import urllib2 #for dealing with URL stuff
     import os #for operating system usability
     import math #for using more intricate mathematics
+    import copy #for making shallow copies of variables/lists/objects etc.
     from PDBCUR import genPDBCURinputs,runPDBCUR #facilitates PDBCUR functionality
     from parsePDB import parsePDB, getUnitCellParams, getAUparams, trimAtoms #for taking information from PDB file to a usable format
     from translateUnitCell import convertToCartesian,translateUnitCell #translates unit cell
@@ -156,11 +157,8 @@ def CalculateBdamage(pathToPDB, PDT=14, binSize=10, createAllUnitCellsPDB=1, cre
     print '****************************************************************'
     print '********** Translate Unit Cell Section *************************\n'
     cartesianVectors = convertToCartesian(unitCell)
-    #create puppet list of atoms to which all translated atomic positions will be added
-    transAtomList = [] 
-    #add the original atoms to this list to initialise
-    for atm in atomList:
-        transAtomList.append(atm)
+    #create shallow copy of the list of atoms to which all translated atomic positions will be added
+    transAtomList = copy.copy(atomList) 
     #loop through running the translation subroutine for all combinations of 
     #translations +/- 1 unit cell in a, b and c directions
     for a in range (-1, 2):
@@ -178,7 +176,7 @@ def CalculateBdamage(pathToPDB, PDT=14, binSize=10, createAllUnitCellsPDB=1, cre
                     newTransAtoms = translateUnitCell(atomList, cartesianVectors, a, b, c)
                     #append the translated atom object to list
                     for atm in newTransAtoms:
-                        transAtomList.append(atm)
+                        transAtomList.append(copy.copy(atm))
     print ''
     if createAllUnitCellsPDB == 1:
         aucPDBfilepath = '%sAllUnitCells.pdb' % PDBdirectory
