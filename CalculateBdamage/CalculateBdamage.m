@@ -557,7 +557,7 @@ fprintf(fileID,'\n');
 fprintf(fileID,'%-6s%5s %s%s %s %s   %s  %s %-8s%-8s%-8s%s  %s%10s  %s  %-6.2s %-6.4s%3s %4s      %-15s %4s\n','REC','SER','ATM','A','RES','C','RS','IN','XPOS','YPOS','ZPOS','OCC','BFAC','EL','CH','AVB','BDAM','PD','GN','BIN','ANUM');
 
 for eachAtom = 1 : length(fullAtomInformation)
-    fprintf(fileID,'%6s%5s %s%s%s %s%s%s%11s%8s%8s%s%s%12s%s%6.2f%8.4f%4d%4d%20s%4d\n',fullAtomInformation{eachAtom,:});
+    fprintf(fileID,'%6s%5s %s%s%s %s%s%s%11s%8s%8s%s%s%12s  %s%6.2f%8.4f%4d%4d%20s%4d\n',fullAtomInformation{eachAtom,:});
 end
 
 %Close file
