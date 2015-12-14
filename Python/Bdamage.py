@@ -28,8 +28,8 @@ def countInRadius(atm, atomList, r):
             #if the distance is less than the PDT, increment the counter
             PD = PD + 1
     #return packing density of the atom once all comparisons have been made
-    atm.PD = PD
-    return atm.PD
+    atm.pd = PD
+    return atm.pd
         
 #Calculate packing density for all atoms in the original PDB file
 def calcPDT(auAtomList, atomList, PDT):
@@ -44,10 +44,10 @@ def calcPDT(auAtomList, atomList, PDT):
         auAtm = auAtomList[atm]
         auAtm.PD = countInRadius(auAtm, atomList, PDT)
         #update min/maxPD if necessary
-        if auAtm.PD < minPD:
+        if auAtm.pd < minPD:
             minPD = auAtm.PD
-        elif auAtm.PD > maxPD:
-            maxPD = auAtm.PD
+        elif auAtm.pd > maxPD:
+            maxPD = auAtm.pd
     print 'Packing Density (PD) values successfully calculated'
     return auAtomList, minPD, maxPD
 #end calcPackingDensity
@@ -62,12 +62,35 @@ def binAtoms(atomList, binSize, minPD, maxPD):
     #for every atom in the atom list
     for atm in atomList:
         #obtain the PD value
-        actlPD = atm.PD
+        actlPD = atm.pd
         #reduce PD by the adjustment value
-        adjdPD = actlPD - adjtNo
+        adjdPD = actlPD - adjtNo + 1
         #define group number as the ceiling of adjdPD divided by bin size
         groupNo = math.ceil(adjdPD/binSize)
-        atm.GN = groupNo
-    noOfGroups = math.ceil((maxPD-adjtNo)/binSize)
+        atm.gn = groupNo
+    noOfGroups = int(math.ceil((maxPD-adjtNo)/binSize))
     return atomList, noOfGroups
 #end binAtoms
+    
+#calculate Bdamage value for every atom in AU
+def calcBdam(atomList, numberOfGroups):
+    from parsePDB import atom as a #for utilising the 'atom' class
+    #initialise variables for all group numbers
+    sumB = [0] * numberOfGroups
+    noAtm = [0 for col in range(numberOfGroups)]
+    avB = [0 for col in range(numberOfGroups)]
+    #find sum of all B factors of atoms in their groups
+    for atom in atomList:
+        gNo = int(atom.gn - 1) #take away 1 to account for cardinality vs ordinality
+        sumB[gNo] = float(sumB[gNo]) + float(atom.bFactor)
+        noAtm[gNo] = int(noAtm[gNo]) + 1
+    #find the average B factor for each group number
+    for gNo in xrange(numberOfGroups-1):
+        avB[gNo] = float(sumB[gNo])/int(noAtm[gNo])
+    #calculate B damage for each atom and update this value for the atom object
+    for atom in atomList:
+        gNo = int(atom.gn - 1)
+        atom.bd = float(atom.bFactor)/float(avB[gNo])
+    #return outputs of the script
+    return atomList, noAtm, avB
+#end calcBdam        

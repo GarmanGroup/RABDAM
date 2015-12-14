@@ -19,13 +19,16 @@ def makePDB(bof, atomList, eof, newPDBfilename):
         d = str(atm.resiType)    
         e = str(atm.chainID)
         f = int(atm.resiNum)
-        g = (atm.xyzCoords)
-        h = g[1]
-        h = h[0]
-        j = g[2]
-        j = j[0]
-        g = g[0]
-        g = g[0]
+        g = float(atm.xyzCoords[0][0])
+        h = float(atm.xyzCoords[1][0])
+        j = float(atm.xyzCoords[2][0])
+#        g = (atm.xyzCoords)
+#        h = g[1]
+#        h = h[0]
+#        j = g[2]
+#        j = j[0]
+#        g = g[0]
+#        g = g[0]
         k = float(atm.occupancy)
         l = float(atm.bFactor)
         m = str(atm.atomID)
@@ -40,3 +43,38 @@ def makePDB(bof, atomList, eof, newPDBfilename):
     print 'New PDB file saved to %s' % newPDBfilename
     newPDBfile.close()
 #end makePDB
+    
+#method to write an output file for the calculated Bdamage values
+def writeBdam(atomList, filename):
+    import os #for operating system usability
+    from parsePDB import atom #for utilising the 'atom' class
+    if os.path.exists(filename):
+        print 'File %s already exists' % newPDBfilename
+        return
+    newFile = open(filename,'a')
+    #write preamble legend to output file
+    newFile.write('REC  = RECORD NAME\n'
+                  'SER  = ATOM SERIAL NUMBER\n'
+                  'ATM  = ATOM NAME\n'
+                  'A    = ALETERNATE LOCATION IDENTIFIER'
+                  'RES  = RESIDUE NAME\n'
+                  'C    = CHAIN IDENTIFIER\n'
+                  'RS   = RESIDUE SEQUENCE NUMBER\n'
+                  'IN   = CODE FOR INSERTION OF RESIDUES\n'
+                  'XPOS = ORTHOGONAL COORDINATES FOR X IN ANGSTROMS\n'
+                  'YPOS = ORTHOGONAL COORDINATES FOR Y IN ANGSTROMS\n'
+                  'ZPOS = ORTHOGONAL COORDINATES FOR Z IN ANGSTROMS\n'
+                  'OCC  = OCCUPANCY\n'
+                  'BFAC = B FACTOR (TEMPERATURE FACTOR)\n'
+                  'EL   = ELEMENT SYMBOL\n'
+                  'CH   = CHARGE ON ATOM\n'
+                  'PD   = PACKING DENSITY (ATOMIC CONTACT NUMBER)\n'
+                  'BIN  = SIMILAR PACKING DENSITY BIN\n'
+                  'GN   = SIMILAR PACKING DENSITY ENVIRONMENT GROUP NUMBER\n'
+                  'ANUM = NUMBER OF ATOMS IN SIMILAR PACKING DENSITY GROUP\n'
+                  'AVB  = AVERAGE B FACTOR FOR ATOMS IN SIMILAR PACKING DENSITY ENVIRONMENT\n'
+                  'BDAM = BDAMAGE VALUE\n'
+                  '\n')
+    #write column headers
+    newFile.write('REC     SER ATMA RES C   RES IN XPOS    YPOS    ZPOS    OCC  BFAC        EL  CH  PD   BIN             GN      ANUM AV     BDAM   ')
+    #

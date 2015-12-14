@@ -6,7 +6,7 @@ class atom(object):
     #Initialise class for a PDB file
     def __init__(self,lineidentifier="",atomnum=0,residuenum=0,atomtype="",resitype="",
                  chainID="",xyz_coords=[],atomidentifier="",bfactor=0,occupancy=1,charge="",
-                 packingdensity=0,groupnumber=0):   
+                 packingdensity=0,groupnumber=0,bdamage=0):   
         self.lineID     = lineidentifier
         self.atomNum    = atomnum
         self.resiNum    = residuenum
@@ -18,8 +18,9 @@ class atom(object):
         self.bFactor    = bfactor
         self.occupancy  = occupancy
         self.charge     = charge
-        self.PD         = packingdensity
-        self.GN         = groupnumber
+        self.pd         = packingdensity
+        self.group      = groupnumber
+        self.bd         = bdamage
     #end Initialise class
         
     #print a summary of atom info to command line 
@@ -27,7 +28,6 @@ class atom(object):
         summaryString = 'Chain: {}\nResidue: {}{}\nAtom type: {}'.format(self.chainID,self.resiType,self.resiNum,self.atomType)
         print summaryString
     #end getAtomSummary
-
 #end atom class
         
 #parse pdb file with name 'fileName' and return list of atoms from 'atom' class above

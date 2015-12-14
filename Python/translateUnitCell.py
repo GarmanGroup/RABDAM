@@ -67,6 +67,6 @@ def translateUnitCell(atomList, cartesianVectors, aTrans, bTrans, cTrans):
         newTransAtoms.append(atm)
         if len(newTransAtoms) == noOfAtoms:
             break
-    print 'Successfully translated %.0f atoms (%2sa,%2sb,%2sc) unit cells' % (noOfAtoms, aTrans, bTrans, cTrans)
+    print 'Successfully translated by (%2sa,%2sb,%2sc) unit cells' % (noOfAtoms, aTrans, bTrans, cTrans)
     return newTransAtoms   
 #end translateUnitCell
