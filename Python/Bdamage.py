@@ -59,14 +59,18 @@ def binAtoms(atomList, binSize, minPD, maxPD):
     #create value for 'adjustment number' which is a factor to be taken off all
     #PDs in order to define their group number by a ceiling function
     adjtNo = (math.floor(minPD/binSize))*binSize
+    #create puppet value for the highest group number
+    noOfGroups = 0
     #for every atom in the atom list
     for atm in atomList:
         #reduce PD by the adjustment value
         adjdPD = atm.pd - adjtNo + 1
         #define group number as the ceiling of adjdPD divided by bin size
-        groupNo = math.ceil(adjdPD/binSize)
+        groupNo = int(math.ceil(adjdPD/binSize))
         atm.gn = groupNo
-    noOfGroups = int(math.ceil((maxPD-adjtNo +1)/binSize))
+        #update noOfGroups if necessary
+        if groupNo > noOfGroups:
+            noOfGroups = groupNo
     return atomList, noOfGroups
 #end binAtoms
     
