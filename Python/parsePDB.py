@@ -47,7 +47,7 @@ def parsePDB(fileName):
     fileOpen = open(fileName,'r') 
     #read 'ATOM' and 'HETATM' lines
     for line in fileOpen.readlines():
-        if not ('ATOM  ' in str(line[0:6])) or ('HETATM' in str(line[0:6])) or ('ANISOU' in str(line[0:6])):
+        if not ('ATOM  ' in str(line[0:6])) or not ('HETATM' in str(line[0:6])) or not ('ANISOU' in str(line[0:6])) or not ('TER   ' in str(line[0:6])):
             if beforeAtoms:
                 bof.append(line)
             else:
@@ -165,7 +165,7 @@ def trimAtoms(atomList, params):
             atomList.pop(atmIndex)
             #reduce the number of total atoms in atomList by 1
             totalAtm = totalAtm - 1
-    print '%.0f atoms have been retained' % keptAtoms
+    print '%.0f atoms have been retained\n' % keptAtoms
     #output a list of retained atom objects
     return atomList
 #end trimAtoms
