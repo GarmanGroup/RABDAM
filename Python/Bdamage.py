@@ -22,34 +22,33 @@ def countInRadius(atm, atomList, r):
     #set packing density counter to 0
     PD = 0
     #for every atom
-    for atm in atomList:
+    for atom in atomList:
         #calcualte the distance between the two atoms
-        if calcDist(atm, atm) < r:
+        if calcDist(atm, atom) < r:
             #if the distance is less than the PDT, increment the counter
             PD = PD + 1
     #return packing density of the atom once all comparisons have been made
     atm.pd = PD
-    return atm.pd
+    return
         
 #Calculate packing density for all atoms in the original PDB file
 def calcPDT(auAtomList, atomList, PDT):
     from parsePDB import atom as a #for utilising the 'atom' class
     from Bdamage import countInRadius #counts atoms within PDT
     #set initial values for min/maxPD
-    firstPD = countInRadius(auAtomList[0], atomList, PDT)
-    minPD = firstPD
-    maxPD = firstPD
+    countInRadius(auAtomList[0], atomList, PDT)
+    minPD = auAtomList[0].pd
+    maxPD = auAtomList[0].pd
     #for every atom in the asymmetric unit
-    for atm in xrange (1,len(auAtomList)):
-        auAtm = auAtomList[atm]
-        auAtm.PD = countInRadius(auAtm, atomList, PDT)
+    for atm in auAtomList:
+        countInRadius(atm, atomList, PDT)
         #update min/maxPD if necessary
-        if auAtm.pd < minPD:
-            minPD = auAtm.PD
-        elif auAtm.pd > maxPD:
-            maxPD = auAtm.pd
+        if atm.pd < minPD:
+            minPD = atm.pd
+        elif atm.pd > maxPD:
+            maxPD = atm.pd
     print 'Packing Density (PD) values successfully calculated'
-    return auAtomList, minPD, maxPD
+    return auAtomList, int(minPD), int(maxPD)
 #end calcPackingDensity
     
 #Segregate atoms into bins based on PD
@@ -87,8 +86,10 @@ def calcBdam(atomList, numberOfGroups):
         sumB[gNo] = float(sumB[gNo]) + float(atom.bFactor)
         noAtm[gNo] = int(noAtm[gNo]) + 1
     #find the average B factor for each group number
-    for gNo in xrange(numberOfGroups-1):
-        avB[gNo] = float(sumB[gNo])/int(noAtm[gNo])
+    for gNo in xrange(numberOfGroups):
+        #don't calculate when 0 atoms are in the bin
+        if not noAtm[gNo] == 0:
+            avB[gNo] = float(sumB[gNo])/int(noAtm[gNo])
     #calculate B damage for each atom and update this value for the atom object
     for atom in atomList:
         gNo = int(atom.gn - 1)

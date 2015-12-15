@@ -231,7 +231,7 @@ def CalculateBdamage(pathToPDB, PDT=14, binSize=10, createAllUnitCellsPDB=1, cre
     print 'Calculating Bdamage values'
     auAtomList, groupNoAtoms, groupAvBfacs = calcBdam(auAtomList, noOfGroups)
     print 'Writing Bdamage data to output file'
-    bDamFileName = '%s%sBdamage.txt' % PDBdirectory % fileName
+    bDamFileName = '%sBdamage.txt' % fileName
     writeBdam(auAtomList, bDamFileName)
     print '\n********** End of Calculate Bdamage Section ********************'
     print '****************************************************************'

@@ -55,8 +55,6 @@ def translateUnitCell(atomList, cartesianVectors, aTrans, bTrans, cTrans):
     #add the three vectors together to give a single translation vector
     transVector = np.add(aVec, bVec)
     transVector = np.add(transVector, cVec)
-    #loop through all atoms in supplied list
-    noOfAtoms = len(atomList)
     for atm in atomList:
         #turn the xyzCoords of atom 'atm' into a matrix
         cartCoords = np.array(atm.xyzCoords)
@@ -65,8 +63,6 @@ def translateUnitCell(atomList, cartesianVectors, aTrans, bTrans, cTrans):
         atm.xyzCoords = newCoords.tolist()
         #append the translated atom object to list
         newTransAtoms.append(atm)
-        if len(newTransAtoms) == noOfAtoms:
-            break
     print 'Successfully translated by (%2sa,%2sb,%2sc) unit cells' % (aTrans, bTrans, cTrans)
     return newTransAtoms   
 #end translateUnitCell

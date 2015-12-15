@@ -49,7 +49,7 @@ def writeBdam(atomList, filename):
     import os #for operating system usability
     from parsePDB import atom #for utilising the 'atom' class
     if os.path.exists(filename):
-        print 'File %s already exists' % newPDBfilename
+        print 'File %s already exists' % filename
         return
     newFile = open(filename,'a')
     #write preamble legend to output file
