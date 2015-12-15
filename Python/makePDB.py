@@ -69,7 +69,7 @@ def writeBdam(atomList, filename, noAtm, avB):
                   'BDAM = BDAMAGE VALUE\n'
                   '\n')
     #write column headers
-    newFile.write('REC     SER ATMA RES C   RES IN XPOS    YPOS    ZPOS    OCC  BFAC            EL CH PD   BIN             GN     ANUM  AV      BDAM\n')
+    newFile.write('REC     SER ATMA RES C   RES IN XPOS    YPOS    ZPOS    OCC  BFAC            EL CH  PD BIN              GN     ANUM  AV      BDAM\n')
     for atm in atomList:
         #take object information to a set of temporary variables
         a = str(atm.lineID)
