@@ -141,6 +141,8 @@ def CalculateBdamage(pathToPDB, PDT=14, binSize=10, createAllUnitCellsPDB=1, cre
     #runPDBCUR using generated input file
     runPDBCUR(pathToPDB, PDBCURoutputPDB, PDBCURinputFile, PDBCURlog)
     os.remove(PDBCURinputFile)
+    if not os.path.exists(PDBCURoutputPDB):
+        sys.exit('Error 05: Failed to generate Unit Cell PDB file')
     print '\n********** End of Process PDB Section **************************'
     print '****************************************************************'
     print '\n'
