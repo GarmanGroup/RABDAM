@@ -68,8 +68,8 @@ def parsePDB(fileName):
                            [float(line[46:54].strip())]]    
             y.occupancy = float(line[54:60].strip())                                                    
             y.bFactor   = float(line[60:66].strip())
-            y.atomID    = str(line[76:78].strip())
-            y.charge    = str(line[78:80].strip())
+            y.atomID    = str(line[77:79].strip())
+            y.charge    = str(line[79:81].strip())
             #append new 'atom' object to list
             atomList.append(y)
     fileOpen.close() #close .pdb file after reading

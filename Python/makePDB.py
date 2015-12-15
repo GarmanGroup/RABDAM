@@ -22,13 +22,6 @@ def makePDB(bof, atomList, eof, newPDBfilename):
         g = float(atm.xyzCoords[0][0])
         h = float(atm.xyzCoords[1][0])
         j = float(atm.xyzCoords[2][0])
-#        g = (atm.xyzCoords)
-#        h = g[1]
-#        h = h[0]
-#        j = g[2]
-#        j = j[0]
-#        g = g[0]
-#        g = g[0]
         k = float(atm.occupancy)
         l = float(atm.bFactor)
         m = str(atm.atomID)
@@ -45,7 +38,7 @@ def makePDB(bof, atomList, eof, newPDBfilename):
 #end makePDB
     
 #method to write an output file for the calculated Bdamage values
-def writeBdam(atomList, filename):
+def writeBdam(atomList, filename, noAtm, avB):
     import os #for operating system usability
     from parsePDB import atom #for utilising the 'atom' class
     if os.path.exists(filename):
@@ -76,5 +69,33 @@ def writeBdam(atomList, filename):
                   'BDAM = BDAMAGE VALUE\n'
                   '\n')
     #write column headers
-    newFile.write('REC     SER ATMA RES C   RES IN XPOS    YPOS    ZPOS    OCC  BFAC        EL  CH  PD   BIN             GN      ANUM AV     BDAM   ')
-    #
+    newFile.write('REC     SER ATMA RES C   RES IN XPOS    YPOS    ZPOS    OCC  BFAC            EL CH PD   BIN             GN     ANUM  AV      BDAM\n')
+    for atm in atomList:
+        #take object information to a set of temporary variables
+        a = str(atm.lineID)
+        b = int(atm.atomNum)
+        c = str(atm.atomType)
+        d = str(atm.resiType)    
+        e = str(atm.chainID)
+        f = int(atm.resiNum)
+        g = float(atm.xyzCoords[0][0])
+        h = float(atm.xyzCoords[1][0])
+        j = float(atm.xyzCoords[2][0])
+        k = float(atm.occupancy)
+        l = float(atm.bFactor)
+        m = str(atm.atomID)
+        n = str(atm.charge)
+        o = int(atm.pd)
+        p = str('               ')
+        q = int(atm.gn)
+        gNo = q - 1
+        r = int(noAtm[gNo])
+        s = float(avB[gNo])
+        t = float(atm.bd)
+        #concatenate temporary variables into a single string with correct PDB formatting
+        newLine = '%-6s%5d %4s %3s %1s%4d    %8.3f%8.3f%8.3f%6.2f%6.2f          %2s %2s %4d %15s %3d     %4d %6.2f %6.2f\n' % (a,b,c,d,e,f,g,h,j,k,l,m,n,o,p,q,r,s,t)
+        #write line to new PDB file
+        newFile.write(newLine)
+    print 'New PDB file saved to %s' % filename
+    newFile.close()
+#end writeBdam

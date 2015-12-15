@@ -48,7 +48,7 @@ def calcPDT(auAtomList, atomList, PDT):
         elif atm.pd > maxPD:
             maxPD = atm.pd
     print 'Packing Density (PD) values successfully calculated'
-    return auAtomList, int(minPD), int(maxPD)
+    return int(minPD), int(maxPD)
 #end calcPackingDensity
     
 #Segregate atoms into bins based on PD
@@ -70,7 +70,7 @@ def binAtoms(atomList, binSize, minPD, maxPD):
         #update noOfGroups if necessary
         if groupNo > noOfGroups:
             noOfGroups = groupNo
-    return atomList, noOfGroups
+    return noOfGroups
 #end binAtoms
     
 #calculate Bdamage value for every atom in AU
@@ -95,5 +95,5 @@ def calcBdam(atomList, numberOfGroups):
         gNo = int(atom.gn - 1)
         atom.bd = float(atom.bFactor)/float(avB[gNo])
     #return outputs of the script
-    return atomList, noAtm, avB
+    return noAtm, avB
 #end calcBdam        
