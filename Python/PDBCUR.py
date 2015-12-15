@@ -23,6 +23,8 @@ def genPDBCURinputs(PDBCURinputFile):
         f.write('noanisou\n')
         #genunit keyword generates a unit cell
         f.write('genunit\n')
+        #delter keyword deletes PDB 'TER' cards
+        f.write('delter\n')
         f.close
 #end genPDBCURinputs
         
