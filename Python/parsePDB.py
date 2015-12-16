@@ -111,32 +111,33 @@ def getUnitCellParams(fileName):
 #get minimum and maximum xyz coordinates of the asymmetric unit
 def getAUparams(atomList):
     from parsePDB import atom as a #for utilising the 'atom' class
-    firstAtomXYZ = atomList[0].xyzCoords
     #initialise xyz minima and maxima
-    xMin = firstAtomXYZ[0]
-    xMax = firstAtomXYZ[0]
-    yMin = firstAtomXYZ[1]
-    yMax = firstAtomXYZ[1]
-    zMin = firstAtomXYZ[2]
-    zMax = firstAtomXYZ[2]
+    xMin = float(atomList[0].xyzCoords[0][0])
+    xMax = float(atomList[0].xyzCoords[0][0])
+    yMin = float(atomList[0].xyzCoords[1][0])
+    yMax = float(atomList[0].xyzCoords[1][0])
+    zMin = float(atomList[0].xyzCoords[2][0])
+    zMax = float(atomList[0].xyzCoords[2][0])
     #loop through all atoms in input list
     for atm in atomList:
         #extract xyz coordinates from atom information
-        atomXYZ = atm.xyzCoords
+        x = float(atm.xyzCoords[0][0])
+        y = float(atm.xyzCoords[1][0])
+        z = float(atm.xyzCoords[2][0])
         #if the newly considered atoms coordinates lie outside of the previous 
         #max/minima, replace the relevant parameter(s)
-        if xMin > atomXYZ[0]:
-            xMin = atomXYZ[0]
-        elif xMax < atomXYZ[0]:
-            xMax = atomXYZ[0]
-        if yMin > atomXYZ[1]:
-            yMin = atomXYZ[1]
-        elif yMax < atomXYZ[1]:
-            yMax = atomXYZ[1]
-        if zMin > atomXYZ[2]:
-            zMin = atomXYZ[2]
-        elif zMax < atomXYZ[2]:
-            zMax = atomXYZ[2]
+        if x < xMin:
+            xMin = x
+        elif x > xMax:
+            xMax = x
+        if y < yMin:
+            yMin = y
+        elif y > yMax:
+            yMax = y
+        if z < zMin:
+            zMin = z
+        elif z < zMax:
+            zMax = z
     #combine all parameters into a single list
     auParams = [xMin, xMax, yMin, yMax, zMin, zMax]
     return auParams

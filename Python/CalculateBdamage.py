@@ -195,12 +195,12 @@ def CalculateBdamage(pathToPDB, PDT=14, binSize=10, createAllUnitCellsPDB=1, cre
     eof1.remove
     auParams = getAUparams(auAtomList)
     print 'Obtained asymmetric unit parameters:'
-    print 'xMin = %8.3f' % auParams[0][0]
-    print 'xMax = %8.3f' % auParams[1][0]
-    print 'yMin = %8.3f' % auParams[2][0]
-    print 'yMax = %8.3f' % auParams[3][0]
-    print 'zMin = %8.3f' % auParams[4][0]
-    print 'zMax = %8.3f\n' % auParams[5][0]
+    print 'xMin = %8.3f' % auParams[0]
+    print 'xMax = %8.3f' % auParams[1]
+    print 'yMin = %8.3f' % auParams[2]
+    print 'yMax = %8.3f' % auParams[3]
+    print 'zMin = %8.3f' % auParams[4]
+    print 'zMax = %8.3f\n' % auParams[5]
     #add PDT to auParams in all dimensions
     print 'Now creating a box surrounding the atoms'
     print 'We only want to consider atoms in this box when we calculate the packing density'
@@ -249,3 +249,4 @@ def CalculateBdamage(pathToPDB, PDT=14, binSize=10, createAllUnitCellsPDB=1, cre
     else:
         print 'Total time taken for program to run was %01.0f minutes and %02.3f seconds.\n\n' % (minutes,seconds)
 #end
+CalculateBdamage('2BN3')
