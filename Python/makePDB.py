@@ -27,7 +27,7 @@ def makePDB(bof, atomList, eof, newPDBfilename):
         m = str(atm.atomID)
         n = str(atm.charge)
         #concatenate temporary variables into a single string with correct PDB formatting
-        newLine = '%-6s%5d %4s %3s %1s%4d    %8.3f%8.3f%8.3f%6.2f%6.2f          %2s%2s\n' % (a,b,c,d,e,f,g,h,j,k,l,m,n)
+        newLine = '%-6s%5d  %-3s %3s %1s%4d    %8.3f%8.3f%8.3f%6.2f%6.2f          %2s%2s\n' % (a,b,c,d,e,f,g,h,j,k,l,m,n)
         #write line to new PDB file
         newPDBfile.write(newLine)
     for line in eof:
@@ -49,7 +49,7 @@ def writeBdam(atomList, filename, noAtm, avB):
     newFile.write('REC  = RECORD NAME\n'
                   'SER  = ATOM SERIAL NUMBER\n'
                   'ATM  = ATOM NAME\n'
-                  'A    = ALETERNATE LOCATION IDENTIFIER'
+                  'A    = ALETERNATE LOCATION IDENTIFIER\n'
                   'RES  = RESIDUE NAME\n'
                   'C    = CHAIN IDENTIFIER\n'
                   'RS   = RESIDUE SEQUENCE NUMBER\n'
@@ -93,7 +93,7 @@ def writeBdam(atomList, filename, noAtm, avB):
         s = float(avB[gNo])
         t = float(atm.bd)
         #concatenate temporary variables into a single string with correct PDB formatting
-        newLine = '%-6s%5d %4s %3s %1s%4d    %8.3f%8.3f%8.3f%6.2f%6.2f          %2s %2s %4d %15s %3d     %4d %6.2f %6.2f\n' % (a,b,c,d,e,f,g,h,j,k,l,m,n,o,p,q,r,s,t)
+        newLine = '%-6s%5d  %-3s %3s %1s%4d    %8.3f%8.3f%8.3f%6.2f%6.2f          %2s %2s %4d %15s %3d     %4d %6.2f %6.2f\n' % (a,b,c,d,e,f,g,h,j,k,l,m,n,o,p,q,r,s,t)
         #write line to new PDB file
         newFile.write(newLine)
     print 'New PDB file saved to %s' % filename
