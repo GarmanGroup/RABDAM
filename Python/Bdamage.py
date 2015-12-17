@@ -5,17 +5,18 @@ def calcDist(atomA, atomB):
     from parsePDB import atom as a #for utilising the 'atom' class
     import math #for obtaining the square root
     #obtain two sets of atom coordinates for the atoms
-    Acoords = atomA.xyzCoords
-    Bcoords = atomB.xyzCoords
+    aCoords = atomA.xyzCoords
+    bCoords = atomB.xyzCoords
     #find the linear displaements of the atoms from each other along the three Cartesian axes
-    x = Acoords[0][0] - Bcoords[0][0]
-    y = Acoords[1][0] - Bcoords[1][0]
-    z = Acoords[2][0] - Bcoords[2][0]
+    x = aCoords[0][0] - bCoords[0][0]
+    y = aCoords[1][0] - bCoords[1][0]
+    z = aCoords[2][0] - bCoords[2][0]
     #find the distance between the two atoms 
     d = math.sqrt(x**2 + y**2 + z**2)
     return d
 #end calcDist
 
+#method to count the number of atoms within the given radius of an atom
 def countInRadius(atm, atomList, r):
     from parsePDB import atom as a #for utilising the 'atom' class
     from Bdamage import calcDist #calcualtes the distance between two atoms in 3D space
@@ -23,7 +24,7 @@ def countInRadius(atm, atomList, r):
     PD = 0
     #for every atom
     for atom in atomList:
-        #calcualte the distance between the two atoms
+        #calculate the distance between the two atoms
         if calcDist(atm, atom) < r:
             #if the distance is less than the PDT, increment the counter
             PD = PD + 1
@@ -36,9 +37,8 @@ def calcPDT(auAtomList, atomList, PDT):
     from parsePDB import atom as a #for utilising the 'atom' class
     from Bdamage import countInRadius #counts atoms within PDT
     #set initial values for min/maxPD
-    countInRadius(auAtomList[0], atomList, PDT)
-    minPD = auAtomList[0].pd
-    maxPD = auAtomList[0].pd
+    minPD = len(atomList)
+    maxPD = 0
     #for every atom in the asymmetric unit
     for atm in auAtomList:
         countInRadius(atm, atomList, PDT)

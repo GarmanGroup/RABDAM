@@ -2,7 +2,7 @@
 # With thanks to Jonathan Brooks-Bartlett, Charles Bury, Markus Gerstel and Elspeth Garman
 
 #Script to calculate B-damage for protein atoms
-def CalculateBdamage(pathToPDB, PDT=14, binSize=10, createAllUnitCellsPDB=1, createTrimmedAtomsPDB=1):
+def CalculateBdamage(pathToPDB, PDT=14, binSize=10, createAllUnitCellsPDB=True, createTrimmedAtomsPDB=True):
     print('\n')
     print('Copyright 2015 Thomas Dixon\n')
     print('With thanks to Jonathan Brooks-Bartlett, Charles Bury, Markus\nGerstel and Elspeth Garman')
@@ -14,7 +14,7 @@ def CalculateBdamage(pathToPDB, PDT=14, binSize=10, createAllUnitCellsPDB=1, cre
     import math #for using more intricate mathematics
     import copy #for making shallow copies of variables/lists/objects etc.
     from PDBCUR import genPDBCURinputs,runPDBCUR #facilitates PDBCUR functionality
-    from parsePDB import parsePDB, getUnitCellParams, getAUparams, trimAtoms #for taking information from PDB file to a usable format
+    from parsePDB import parsePDB, getUnitCellParams, getAUparams, trimAtoms2 #for taking information from PDB file to a usable format
     from translateUnitCell import convertToCartesian,translateUnitCell #translates unit cell
     from makePDB import makePDB, writeBdam #allows new PDB files to be written from a list of atom objects
     from atomCheck import convertParams #adds the PDT to the Cartesian limits of the unit cell
@@ -180,7 +180,7 @@ def CalculateBdamage(pathToPDB, PDT=14, binSize=10, createAllUnitCellsPDB=1, cre
                     for atm in newTransAtoms:
                         transAtomList.append(copy.copy(atm))
     print ''
-    if createAllUnitCellsPDB == 1:
+    if createAllUnitCellsPDB:
         aucPDBfilepath = '%sAllUnitCells.pdb' % PDBdirectory
         makePDB(bof, transAtomList, eof, aucPDBfilepath)
     print '\n********** End of Translate Unit Cell Section ******************'
@@ -203,12 +203,13 @@ def CalculateBdamage(pathToPDB, PDT=14, binSize=10, createAllUnitCellsPDB=1, cre
     print 'zMax = %8.3f\n' % auParams[5]
     #add PDT to auParams in all dimensions
     print 'Now creating a box surrounding the atoms'
-    print 'We only want to consider atoms in this box when we calculate the packing density'
+    print 'We only want to consider atoms in this box when we calculate the'
+    print 'packing density'
     keepParams = convertParams(auParams, PDT)
     #discard all atoms not in cube defined above
-    trimmedAtomList = trimAtoms(transAtomList, keepParams)
+    trimmedAtomList = trimAtoms2(transAtomList, keepParams)
     #create PDB file of retained atoms
-    if createTrimmedAtomsPDB == 1:
+    if createTrimmedAtomsPDB:
         taPDBfilepath = '%sTrimmedAtoms.pdb' % PDBdirectory
         makePDB(bof, trimmedAtomList, eof, taPDBfilepath)
     print '\n********** End of Trim Crystal Section *************************'

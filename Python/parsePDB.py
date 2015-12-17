@@ -37,7 +37,7 @@ def parsePDB(fileName):
     from parsePDB import atom #for utilising the 'atom' class
     #check that file exists
     if not os.path.exists(fileName):
-        sys.exit('Error!!\nFile name {} not found'.format(fileName))
+        sys.exit('Error!!\nFile name %s not found' % fileName)
     #create puppet lists to fill with atom objects
     bof = []
     atomList = [] 
@@ -47,7 +47,10 @@ def parsePDB(fileName):
     fileOpen = open(fileName,'r') 
     #read 'ATOM' and 'HETATM' lines
     for line in fileOpen.readlines():
-        if not ('ATOM  ' in str(line[0:6])) or not ('HETATM' in str(line[0:6])) or not ('ANISOU' in str(line[0:6])) or not ('TER   ' in str(line[0:6])):
+        if (not ('ATOM  ' in str(line[0:6])) 
+            or not ('HETATM' in str(line[0:6])) 
+            or not ('ANISOU' in str(line[0:6])) 
+            or not ('TER   ' in str(line[0:6]))):
             if beforeAtoms:
                 bof.append(line)
             else:
@@ -74,7 +77,8 @@ def parsePDB(fileName):
             atomList.append(y)
     fileOpen.close() #close .pdb file after reading
     #provide feedback to user
-    print 'Finished reading in atoms --> {} atoms found in file'.format(len(atomList))
+    print 'Finished reading in atoms --> %d atoms found in' % int(len(atomList))
+    print '%s' % fileName
     #return list of atoms as output of function
     return bof, atomList, eof
 #end parsePDB
@@ -149,8 +153,7 @@ def trimAtoms(atomList, params):
     from atomCheck import isInXYZparams
     print 'Excluding the atoms that lie outside of the box'
     totalAtm = len(atomList)
-    atmIndex= 0
-    keptAtoms = 0
+    atmIndex = 0
     while atmIndex < totalAtm:
         #extract xyz coordinates from atom information
         atomXYZ = atomList[atmIndex].xyzCoords
@@ -158,15 +161,28 @@ def trimAtoms(atomList, params):
         if isInXYZparams(atomXYZ, params):
             #advance the index by 1 to red the next line
             atmIndex = atmIndex + 1
-            #keep a record of the number of retained atoms
-            keptAtoms = keptAtoms + 1
         #otherwise, discard the atom 
         else:
             #remove atom information from atomList
             atomList.pop(atmIndex)
             #reduce the number of total atoms in atomList by 1
             totalAtm = totalAtm - 1
-    print '%.0f atoms have been retained\n' % keptAtoms
+    print '%.0f atoms have been retained\n' % totalAtm
     #output a list of retained atom objects
     return atomList
 #end trimAtoms
+    
+def trimAtoms2(atomList, params):
+    from parsePDB import atom as a #for utilising the 'atom' class
+    from atomCheck import isInXYZparams
+    print 'Excluding the atoms that lie outside of the box'
+    trimAtomList = []
+    for atom in atomList:
+        atomXYZ = atom.xyzCoords
+        if isInXYZparams(atomXYZ, params):
+            trimAtomList.append(atom)
+    print '%.0f atoms have been retained\n' % int(len(trimAtomList))
+    #output a list of retained atom objects
+    return trimAtomList
+#end trimAtoms2
+            

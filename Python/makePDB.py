@@ -69,7 +69,7 @@ def writeBdam(atomList, filename, noAtm, avB):
                   'BDAM = BDAMAGE VALUE\n'
                   '\n')
     #write column headers
-    newFile.write('REC     SER ATMA RES C   RES IN XPOS    YPOS    ZPOS    OCC  BFAC            EL CH  PD BIN              GN     ANUM  AV      BDAM\n')
+    newFile.write('REC     SER ATMA RES C   RES IN XPOS    YPOS    ZPOS    OCC  BFAC            EL CH PD  BIN              GN     ANUM  AV    BDAM\n')
     for atm in atomList:
         #take object information to a set of temporary variables
         a = str(atm.lineID)
@@ -93,7 +93,7 @@ def writeBdam(atomList, filename, noAtm, avB):
         s = float(avB[gNo])
         t = float(atm.bd)
         #concatenate temporary variables into a single string with correct PDB formatting
-        newLine = '%-6s%5d  %-3s %3s %1s%4d    %8.3f%8.3f%8.3f%6.2f%6.2f          %2s %2s %4d %15s %3d     %4d %6.2f %6.2f\n' % (a,b,c,d,e,f,g,h,j,k,l,m,n,o,p,q,r,s,t)
+        newLine = '%-6s%5d  %-3s %3s %1s%4d    %8.3f%8.3f%8.3f%6.2f%6.2f          %2s %2s %4d %15s %3d     %4d %6.2f %5.4f\n' % (a,b,c,d,e,f,g,h,j,k,l,m,n,o,p,q,r,s,t)
         #write line to new PDB file
         newFile.write(newLine)
     print 'New PDB file saved to %s' % filename

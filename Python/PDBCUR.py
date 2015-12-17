@@ -40,7 +40,7 @@ def runPDBCUR(pathToPDB, PDBCURoutputPDB, PDBCURinputFile, PDBCURlog):
     print 'Running PDBCUR (Winn et al. 2011) to process the PDB file'
     os.system(runPDBCURcommand)
     #inform user of generated PDBCUR output file
-    print 'PDBCUR log is printed below %s\n' % PDBCURoutputPDB
+    print 'PDBCUR log is printed below\n'
     #print PDBCUR output to log file
     PDBCURlogText = open(PDBCURlog,'r')
     for line in PDBCURlogText:
