@@ -38,7 +38,7 @@ def makePDB(bof, atomList, eof, newPDBfilename):
 #end makePDB
     
 #method to write an output file for the calculated Bdamage values
-def writeBdam(atomList, filename, noAtm, avB):
+def writeBdam(atomList, filename, noAtm, avB, binSize, minPD, adjNo):
     import os #for operating system usability
     from parsePDB import atom #for utilising the 'atom' class
     if os.path.exists(filename):
@@ -86,12 +86,14 @@ def writeBdam(atomList, filename, noAtm, avB):
         m = str(atm.atomID)
         n = str(atm.charge)
         o = int(atm.pd)
-        p = str('               ')
         q = int(atm.gn)
         gNo = q - 1
         r = int(noAtm[gNo])
         s = float(avB[gNo])
         t = float(atm.bd)
+        binMin = int(adjNo + gNo*binSize)
+        binMax = int(adjNo + q*binSize)
+        p = str(' %3d < PD < %-3d' %(binMin,binMax))
         #concatenate temporary variables into a single string with correct PDB formatting
         newLine = '%-6s%5d  %-3s %3s %1s%4d    %8.3f%8.3f%8.3f%6.2f%6.2f          %2s %2s %4d %15s %3d     %4d %6.2f %5.4f\n' % (a,b,c,d,e,f,g,h,j,k,l,m,n,o,p,q,r,s,t)
         #write line to new PDB file

@@ -219,7 +219,7 @@ def CalculateBdamage(pathToPDB, PDT=14, binSize=10, createAllUnitCellsPDB=True, 
     print '****************************************************************'
     print '********** Calculate Packing Density Section *******************\n'
     minPD, maxPD = calcPDT(auAtomList, trimmedAtomList, PDT)
-    noOfGroups = binAtoms(auAtomList, binSize, minPD, maxPD)
+    noOfGroups, adjtNo = binAtoms(auAtomList, binSize, minPD, maxPD)
     print 'Lowest calculated Packing Density was %s' % minPD
     print 'Highest calculated Packing Density was %s' % maxPD
     print 'Atoms separated into %s bins\n' % noOfGroups
@@ -233,7 +233,7 @@ def CalculateBdamage(pathToPDB, PDT=14, binSize=10, createAllUnitCellsPDB=True, 
     groupNoAtoms, groupAvBfacs = calcBdam(auAtomList, noOfGroups)
     print 'Writing Bdamage data to output file'
     bDamFileName = '%sBdamage.txt' % fileName
-    writeBdam(auAtomList, bDamFileName, groupNoAtoms, groupAvBfacs)
+    writeBdam(auAtomList, bDamFileName, groupNoAtoms, groupAvBfacs, binSize, minPD, adjtNo)
     print '\n********** End of Calculate Bdamage Section ********************'
     print '****************************************************************'
     print '\n'

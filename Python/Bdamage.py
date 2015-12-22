@@ -70,7 +70,7 @@ def binAtoms(atomList, binSize, minPD, maxPD):
         #update noOfGroups if necessary
         if groupNo > noOfGroups:
             noOfGroups = groupNo
-    return noOfGroups
+    return noOfGroups, adjtNo
 #end binAtoms
     
 #calculate Bdamage value for every atom in AU
