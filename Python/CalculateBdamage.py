@@ -94,8 +94,8 @@ def CalculateBdamage(pathToPDB, PDT=14, binSize=10, createAllUnitCellsPDB=True, 
                 sys.exit ('Error 03: Failed to download and save PDB - cause unknown')
     else:
         #check supplied filepath is a pdb file, returning error message if not
-        if pathToPDB[-4:] == '.pdb':
-            print 'Filepath to .pdb file supplied'
+        if pathToPDB[-4:] == '.pdb' or pathToPDB[-4:] == '.txt' :
+            print 'Filepath to .pdb or .txt file supplied'
             #copy file to Logfiles directory if necessary
             splitPath = pathToPDB.split("/")
             fileName = splitPath[len(splitPath)-1]
@@ -121,9 +121,9 @@ def CalculateBdamage(pathToPDB, PDT=14, binSize=10, createAllUnitCellsPDB=True, 
                 localFile.close()
             #chack that file has downloaded and saved correctly
             if not os.path.exists(newPathToPDB):
-                sys.exit ('Error 04: Failed to copy PDB to a local version. Check that supplied PDB is not in use by another program')
+                sys.exit ('Error 04: Failed to copy PDB to a local version.\nCheck that supplied PDB is not in use by another program')
         else:
-            sys.exit('Error 01: Supplied filepath to PDB is not a .pdb file')
+            sys.exit('Error 01: Supplied filepath to PDB is not a .pdb or .txt file')
         #check supplied filepath exists, returning error message if not
         if not os.path.exists(pathToPDB):
             sys.exit ('Error 02: Supplied filepath does not exist')
@@ -250,4 +250,4 @@ def CalculateBdamage(pathToPDB, PDT=14, binSize=10, createAllUnitCellsPDB=True, 
     else:
         print 'Total time taken for program to run was %01.0f minutes and %02.3f seconds.\n\n' % (minutes,seconds)
 #end
-CalculateBdamage('2BN3')
+CalculateBdamage('Logfiles/Test/Test.txt')
