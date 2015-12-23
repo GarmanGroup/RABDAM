@@ -250,4 +250,4 @@ def CalculateBdamage(pathToPDB, PDT=14, binSize=10, createAllUnitCellsPDB=True, 
     else:
         print 'Total time taken for program to run was %01.0f minutes and %02.3f seconds.\n\n' % (minutes,seconds)
 #end
-CalculateBdamage('Logfiles/Test/Test.txt')
+CalculateBdamage('2BN3')

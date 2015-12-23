@@ -21,13 +21,13 @@ def countInRadius(atm, atomList, r):
     from parsePDB import atom as a #for utilising the 'atom' class
     from Bdamage import calcDist #calcualtes the distance between two atoms in 3D space
     #set packing density counter to 0
-    PD = 0
+    PD = int(0)
     #for every atom
     for atom in atomList:
         #calculate the distance between the two atoms
         if calcDist(atm, atom) < r:
             #if the distance is less than the PDT, increment the counter
-            PD = PD + 1
+            PD = int(PD + 1)
     #return packing density of the atom once all comparisons have been made
     atm.pd = PD
     return

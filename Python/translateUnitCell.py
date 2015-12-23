@@ -41,7 +41,8 @@ def convertToCartesian(unitCell):
     
 def translateUnitCell(atomList, cartesianVectors, aTrans, bTrans, cTrans):
     import numpy as np #facilitates matrix manipulation
-    from parsePDB import atom  #for utilising the 'atom' class
+    import copy #for making shallow copies of variables/lists/objects etc.
+    from parsePDB import atom as a #for utilising the 'atom' class
     #create puppet list to fill with atom objects
     newTransAtoms = []
     #convert a/b/cTrans into matrices
@@ -55,10 +56,12 @@ def translateUnitCell(atomList, cartesianVectors, aTrans, bTrans, cTrans):
     #add the three vectors together to give a single translation vector
     transVector = np.add(aVec, bVec)
     transVector = np.add(transVector, cVec)
-    for atm in atomList:
+    for atom in atomList:
+        #create a shallow copy of the atom
+        atm = copy.copy(atom)
         #turn the xyzCoords of atom 'atm' into a matrix
         cartCoords = np.array(atm.xyzCoords)
-        #apply this transformation to the atoms xyzCoords and write back to atom 'atm'
+        #apply this transformation to the atoms xyzCoords and write back to 'atom'
         newCoords = np.add(cartCoords, transVector)
         atm.xyzCoords = newCoords.tolist()
         #append the translated atom object to list
