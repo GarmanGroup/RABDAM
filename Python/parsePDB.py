@@ -140,7 +140,7 @@ def getAUparams(atomList):
             yMax = y
         if z < zMin:
             zMin = z
-        elif z < zMax:
+        elif z > zMax:
             zMax = z
     #combine all parameters into a single list
     auParams = [xMin, xMax, yMin, yMax, zMin, zMax]
@@ -173,6 +173,7 @@ def trimAtoms(atomList, params):
 #end trimAtoms
     
 def trimAtoms2(atomList, params):
+    import copy #for making shallow copies of variables/lists/objects etc.    
     from parsePDB import atom as a #for utilising the 'atom' class
     from atomCheck import isInXYZparams
     print 'Excluding the atoms that lie outside of the box'
@@ -180,7 +181,7 @@ def trimAtoms2(atomList, params):
     for atom in atomList:
         atomXYZ = atom.xyzCoords
         if isInXYZparams(atomXYZ, params):
-            trimAtomList.append(atom)
+            trimAtomList.append(copy.copy(atom))
     print '%.0f atoms have been retained\n' % int(len(trimAtomList))
     #output a list of retained atom objects
     return trimAtomList
