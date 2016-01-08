@@ -83,7 +83,7 @@ def cambda(pathToPDB, PDT=14, binSize=10, createAllUnitCellsPDB=True, createTrim
             #inform user of the URL used to download PDB file
             print 'Downloaded PDB file from %s' % urlText
             #write local file containing the downloaded content
-            localFile = open(pathToPDB, 'w') 
+            localFile = open(pathToPDB, 'w')
             localFile.write(origPDB.read())
             #inform user of file loaction of newly downloaded content
             print 'PDB file saved to %s' % pathToPDB
@@ -134,7 +134,7 @@ def cambda(pathToPDB, PDT=14, binSize=10, createAllUnitCellsPDB=True, createTrim
     PDBCURlog = '%sPDBCURlog.txt' % PDBdirectory
     #generate input file for PDBCUR
     genPDBCURinputs(PDBCURinputFile)
-    #Create name for output PDBCUR file by appending 'UnitCell' to filename 
+    #Create name for output PDBCUR file by appending 'UnitCell' to filename
     splitFilePath = pathToPDB.split(".")
     fileName = splitFilePath[len(splitFilePath)-2]
     PDBCURoutputPDB = '%sUnitCell.pdb' % fileName
@@ -160,8 +160,8 @@ def cambda(pathToPDB, PDT=14, binSize=10, createAllUnitCellsPDB=True, createTrim
     print '********** Translate Unit Cell Section *************************\n'
     cartesianVectors = convertToCartesian(unitCell)
     #create shallow copy of the list of atoms to which all translated atomic positions will be added
-    transAtomList = copy.copy(atomList) 
-    #loop through running the translation subroutine for all combinations of 
+    transAtomList = copy.copy(atomList)
+    #loop through running the translation subroutine for all combinations of
     #translations +/- 1 unit cell in a, b and c directions
     for a in range (-1, 2):
         for b in range (-1, 2):
@@ -189,7 +189,7 @@ def cambda(pathToPDB, PDT=14, binSize=10, createAllUnitCellsPDB=True, createTrim
     #Discard atoms too far from the asymmetric unit
     print '****************************************************************'
     print '********** Trim Crystal Section ********************************\n'
-    #parse a new set of atomic coordinates from the provided asymmetric unit file    
+    #parse a new set of atomic coordinates from the provided asymmetric unit file
     bof1, auAtomList, eof1 = parsePDB(pathToPDB)
     bof1.remove
     eof1.remove
@@ -246,7 +246,7 @@ def cambda(pathToPDB, PDT=14, binSize=10, createAllUnitCellsPDB=True, createTrim
     elif minutes == 0:
         print 'Total time taken for program to run was %02.3f seconds.\n\n' % seconds
     elif minutes == 1:
-        print 'Total time taken for program to run was %01.0f minute and %02.3f seconds.\n\n' % (minutes,seconds)   
+        print 'Total time taken for program to run was %01.0f minute and %02.3f seconds.\n\n' % (minutes,seconds)
     else:
         print 'Total time taken for program to run was %01.0f minutes and %02.3f seconds.\n\n' % (minutes,seconds)
 #end

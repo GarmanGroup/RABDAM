@@ -7,8 +7,8 @@ def convertParams(params, margin):
     params[3] = float(params[3]) + margin
     params[4] = float(params[4]) - margin
     params[5] = float(params[5]) + margin
-    return params    
-#end convertParams
+    return params
+# end convertParams
 
 def isInXYZparams(atomXYZ, params):
     x = float(atomXYZ[0][0])
@@ -19,4 +19,4 @@ def isInXYZparams(atomXYZ, params):
             if float(params[4]) < z < float(params[5]):
                 return True
     return False
-#end isInParams
+# end isInParams
