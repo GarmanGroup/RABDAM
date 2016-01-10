@@ -38,7 +38,7 @@ def parsePDB(fileName):
     #check that file exists
     if not os.path.exists(fileName):
         sys.exit('Error!!\nFile name %s not found' % fileName)
-    #create puppet lists to fill with atom objects
+    #create puppet lists to fill with lines of text or atom objects
     bof = []
     atomList = []
     eof = []
@@ -158,4 +158,4 @@ def trimAtoms(atomList, params):
     print '%.0f atoms have been retained\n' % int(len(trimAtomList))
     #output a list of retained atom objects
     return trimAtomList
-#end trimAtoms2
+#end trimAtoms
