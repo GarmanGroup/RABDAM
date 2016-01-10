@@ -12,10 +12,10 @@ def cambda(pathToPDB, PDT=14, binSize=10, createAllUnitCellsPDB=True, createTrim
     import urllib2 #for dealing with URL stuff
     import os #for operating system usability
     import math #for using more intricate mathematics
-    import copy #for making shallow copies of variables/lists/objects etc.
+    import copy.copy #for making shallow copies of variables/lists/objects etc.
     from PDBCUR import genPDBCURinputs,runPDBCUR #facilitates PDBCUR functionality
     from parsePDB import parsePDB, getUnitCellParams, getAUparams, trimAtoms #for taking information from PDB file to a usable format
-    from translateUnitCell import convertToCartesian,translateUnitCell #translates unit cell
+    from translateUnitCell import convertToCartesian, getXYZlist, translateUnitCell #translates unit cell
     from makePDB import makePDB, writeBdam #allows new output files to be written from a list of atom objects
     from atomCheck import convertParams #adds the PDT to the Cartesian limits of the unit cell
     from Bdamage import calcPDT, binAtoms, calcBdam #calculates the PDT of each atom in the proivided structure
@@ -150,35 +150,36 @@ def cambda(pathToPDB, PDT=14, binSize=10, createAllUnitCellsPDB=True, createTrim
     print '****************************************************************'
     print '********** Parsing PDB Section *********************************\n'
     #return a list of atoms and attributes
-    bof, atomList, eof = parsePDB(PDBCURoutputPDB)
+    bof, ucAtomList, eof = parsePDB(PDBCURoutputPDB)
     unitCell = getUnitCellParams(pathToPDB)
     print '\n********** End of Parsing PDB Section **************************'
     print '****************************************************************'
     print '\n'
-    #Translate the Unit Cell and append the new atom locations to the atomList
+    #Translate the Unit Cell and append the new atom locations to the ucAtomList
     print '****************************************************************'
     print '********** Translate Unit Cell Section *************************\n'
+    #convert the unit cell paramenters to Cartesian coordinates     
     cartesianVectors = convertToCartesian(unitCell)
+    #obtain an array of XYZcoordinates from input list of atom objects
+    xyzList = getXYZlist(ucAtomList)
     #create shallow copy of the list of atoms to which all translated atomic positions will be added
-    transAtomList = copy.copy(atomList)
-    #loop through running the translation subroutine for all combinations of
+    transAtomList = copy.copy(ucAtomList)
+    #loop through running the translation subroutine for all combinations of 
     #translations +/- 1 unit cell in a, b and c directions
-    for a in range (-1, 2):
-        for b in range (-1, 2):
-            for c in range (-1, 2):
+    for a in xrange (-1, 2):
+        for b in xrange (-1, 2):
+            for c in xrange (-1, 2):
                 #don't translate cells ine the case of an identity translation
-                identityTranslation = False
-                if a == 0:
-                    if b == 0:
-                        if c == 0:
-                            identityTranslation = True
-                if not identityTranslation:
+                if a==0 and b==0 and c==0:
+                    pass
+                else:
                     #Translate all atoms in the unit cell
-                    newTransAtoms = []
-                    newTransAtoms = translateUnitCell(atomList, cartesianVectors, a, b, c)
+                    newXYZlist = translateUnitCell(xyzList, cartesianVectors, a, b, c)
                     #append the translated atom object to list
-                    for atm in newTransAtoms:
-                        transAtomList.append(copy.copy(atm))
+                    for n in xrange (len(newXYZlist)):
+                        atm = copy.copy(ucAtomList[n])
+                        atm.xyzCoords = copy.copy(newXYZlist[n])
+                        transAtomList.append(atm)
     print ''
     if createAllUnitCellsPDB:
         aucPDBfilepath = '%sAllUnitCells.pdb' % PDBdirectory
@@ -241,13 +242,14 @@ def cambda(pathToPDB, PDT=14, binSize=10, createAllUnitCellsPDB=True, createTrim
     runtime = time.time() - start
     minutes = math.floor(runtime/60)
     seconds = math.fmod(runtime,60)
-    if seconds ==1:
-        print 'Total time taken for program to run was %02.3f second.\n\n' % seconds
-    elif minutes == 0:
-        print 'Total time taken for program to run was %02.3f seconds.\n\n' % seconds
+    if minutes == 0:
+        if seconds ==1:
+            print 'Total time taken for program to run was %02.3f second.\n\n' % seconds
+        else:
+            print 'Total time taken for program to run was %02.3f seconds.\n\n' % seconds            
     elif minutes == 1:
         print 'Total time taken for program to run was %01.0f minute and %02.3f seconds.\n\n' % (minutes,seconds)
     else:
         print 'Total time taken for program to run was %01.0f minutes and %02.3f seconds.\n\n' % (minutes,seconds)
 #end
-cambda('2BN3')
+cambda('Logfiles/2BN3/2BN3.pdb')
