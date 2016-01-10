@@ -38,7 +38,7 @@ def parsePDB(fileName):
     #check that file exists
     if not os.path.exists(fileName):
         sys.exit('Error!!\nFile name %s not found' % fileName)
-    #create puppet lists to fill with atom objects
+    #create puppet lists to fill with lines of text or atom objects
     bof = []
     atomList = [] 
     eof = []
@@ -47,15 +47,6 @@ def parsePDB(fileName):
     fileOpen = open(fileName,'r') 
     #read 'ATOM' and 'HETATM' lines
     for line in fileOpen.readlines():
-        if (not ('ATOM  ' in str(line[0:6])) 
-            or not ('HETATM' in str(line[0:6])) 
-            or not ('ANISOU' in str(line[0:6])) 
-            or not ('TER   ' in str(line[0:6]))):
-            if beforeAtoms:
-                bof.append(line)
-            else:
-                eof.append(line)  
-        #only select information from ATOM or HETATM lines
         if ('ATOM  ' in str(line[0:6])) or ('HETATM' in str(line[0:6])):
             beforeAtoms = False
             y = atom() #make new 'atom' object here
@@ -75,6 +66,14 @@ def parsePDB(fileName):
             y.charge    = str(line[79:81].strip())
             #append new 'atom' object to list
             atomList.append(y)
+        elif ('TER   ' in str(line[0:6])) or ('ANISOU' in str(line[0:6])):
+            continue
+        else:
+            if beforeAtoms:
+                bof.append(line)
+            else:
+                eof.append(line)  
+        #only select information from ATOM or HETATM lines
     fileOpen.close() #close .pdb file after reading
     #provide feedback to user
     print 'Finished reading in atoms --> %d atoms found in' % int(len(atomList))
@@ -132,15 +131,15 @@ def getAUparams(atomList):
         #max/minima, replace the relevant parameter(s)
         if x < xMin:
             xMin = x
-        elif x > xMax:
+        if x > xMax:
             xMax = x
         if y < yMin:
             yMin = y
-        elif y > yMax:
+        if y > yMax:
             yMax = y
         if z < zMin:
             zMin = z
-        elif z < zMax:
+        if z > zMax:
             zMax = z
     #combine all parameters into a single list
     auParams = [xMin, xMax, yMin, yMax, zMin, zMax]
@@ -184,5 +183,5 @@ def trimAtoms2(atomList, params):
     print '%.0f atoms have been retained\n' % int(len(trimAtomList))
     #output a list of retained atom objects
     return trimAtomList
-#end trimAtoms2
+#end trimAtoms
             
