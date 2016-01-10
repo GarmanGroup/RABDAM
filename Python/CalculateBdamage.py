@@ -2,7 +2,7 @@
 # With thanks to Jonathan Brooks-Bartlett, Charles Bury, Markus Gerstel and Elspeth Garman
 
 #Script to calculate B-damage for protein atoms
-def CalculateBdamage(pathToPDB, PDT=14, binSize=10, createAllUnitCellsPDB=True, createTrimmedAtomsPDB=True):
+def cambda(pathToPDB, PDT=14, binSize=10, createAllUnitCellsPDB=True, createTrimmedAtomsPDB=True):
     print('\n')
     print('Copyright 2015 Thomas Dixon\n')
     print('With thanks to Jonathan Brooks-Bartlett, Charles Bury, Markus\nGerstel and Elspeth Garman')
@@ -12,11 +12,11 @@ def CalculateBdamage(pathToPDB, PDT=14, binSize=10, createAllUnitCellsPDB=True, 
     import urllib2 #for dealing with URL stuff
     import os #for operating system usability
     import math #for using more intricate mathematics
-    import copy #for making shallow copies of variables/lists/objects etc.
+    import copy.copy #for making shallow copies of variables/lists/objects etc.
     from PDBCUR import genPDBCURinputs,runPDBCUR #facilitates PDBCUR functionality
-    from parsePDB import atom, parsePDB, getUnitCellParams, getAUparams, trimAtoms2 #for taking information from PDB file to a usable format
+    from parsePDB import parsePDB, getUnitCellParams, getAUparams, trimAtoms #for taking information from PDB file to a usable format
     from translateUnitCell import convertToCartesian, getXYZlist, translateUnitCell #translates unit cell
-    from makePDB import makePDB, writeBdam #allows new PDB files to be written from a list of atom objects
+    from makePDB import makePDB, writeBdam #allows new output files to be written from a list of atom objects
     from atomCheck import convertParams #adds the PDT to the Cartesian limits of the unit cell
     from Bdamage import calcPDT, binAtoms, calcBdam #calculates the PDT of each atom in the proivided structure
     #Input: the file path to the pdb for which you want to calculate B-damage factors, the 'Packing Density Threshold' (Angstroms) and bin size
@@ -83,7 +83,7 @@ def CalculateBdamage(pathToPDB, PDT=14, binSize=10, createAllUnitCellsPDB=True, 
             #inform user of the URL used to download PDB file
             print 'Downloaded PDB file from %s' % urlText
             #write local file containing the downloaded content
-            localFile = open(pathToPDB, 'w') 
+            localFile = open(pathToPDB, 'w')
             localFile.write(origPDB.read())
             #inform user of file loaction of newly downloaded content
             print 'PDB file saved to %s' % pathToPDB
@@ -134,7 +134,7 @@ def CalculateBdamage(pathToPDB, PDT=14, binSize=10, createAllUnitCellsPDB=True, 
     PDBCURlog = '%sPDBCURlog.txt' % PDBdirectory
     #generate input file for PDBCUR
     genPDBCURinputs(PDBCURinputFile)
-    #Create name for output PDBCUR file by appending 'UnitCell' to filename 
+    #Create name for output PDBCUR file by appending 'UnitCell' to filename
     splitFilePath = pathToPDB.split(".")
     fileName = splitFilePath[len(splitFilePath)-2]
     PDBCURoutputPDB = '%sUnitCell.pdb' % fileName
@@ -190,7 +190,7 @@ def CalculateBdamage(pathToPDB, PDT=14, binSize=10, createAllUnitCellsPDB=True, 
     #Discard atoms too far from the asymmetric unit
     print '****************************************************************'
     print '********** Trim Crystal Section ********************************\n'
-    #parse a new set of atomic coordinates from the provided asymmetric unit file    
+    #parse a new set of atomic coordinates from the provided asymmetric unit file
     bof1, auAtomList, eof1 = parsePDB(pathToPDB)
     bof1.remove
     eof1.remove
@@ -208,7 +208,7 @@ def CalculateBdamage(pathToPDB, PDT=14, binSize=10, createAllUnitCellsPDB=True, 
     print 'packing density'
     keepParams = convertParams(auParams, PDT)
     #discard all atoms not in cube defined above
-    trimmedAtomList = trimAtoms2(transAtomList, keepParams)
+    trimmedAtomList = trimAtoms(transAtomList, keepParams)
     #create PDB file of retained atoms
     if createTrimmedAtomsPDB:
         taPDBfilepath = '%sTrimmedAtoms.pdb' % PDBdirectory
@@ -248,8 +248,8 @@ def CalculateBdamage(pathToPDB, PDT=14, binSize=10, createAllUnitCellsPDB=True, 
         else:
             print 'Total time taken for program to run was %02.3f seconds.\n\n' % seconds            
     elif minutes == 1:
-        print 'Total time taken for program to run was %01.0f minute and %02.3f seconds.\n\n' % (minutes,seconds)   
+        print 'Total time taken for program to run was %01.0f minute and %02.3f seconds.\n\n' % (minutes,seconds)
     else:
         print 'Total time taken for program to run was %01.0f minutes and %02.3f seconds.\n\n' % (minutes,seconds)
 #end
-CalculateBdamage('Logfiles/2BN3/2BN3.pdb', createAllUnitCellsPDB=True, createTrimmedAtomsPDB=False)
+cambda('Logfiles/2BN3/2BN3.pdb')
