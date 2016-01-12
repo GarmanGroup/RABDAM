@@ -13,9 +13,10 @@ def cambda(pathToPDB, PDT=14, binSize=10, createAllUnitCellsPDB=False, createTri
     import os #for operating system usability
     import math #for using more intricate mathematics
     import copy #for making shallow copies of variables/lists/objects etc.
+    duplicate = copy.copy
     from PDBCUR import genPDBCURinputs,runPDBCUR #facilitates PDBCUR functionality
     from parsePDB import parsePDB, getUnitCellParams, getAUparams, trimAtoms #for taking information from PDB file to a usable format
-    from translateUnitCell import convertToCartesian,translateUnitCell #translates unit cell
+    from translateUnitCell import convertToCartesian, getXYZlist, translateUnitCell #translates unit cell
     from makePDB import makePDB, writeBdam #allows new output files to be written from a list of atom objects
     from atomCheck import convertParams #adds the PDT to the Cartesian limits of the unit cell
     from Bdamage import calcPDT, binAtoms, calcBdam #calculates the PDT of each atom in the proivided structure
@@ -83,7 +84,7 @@ def cambda(pathToPDB, PDT=14, binSize=10, createAllUnitCellsPDB=False, createTri
             #inform user of the URL used to download PDB file
             print 'Downloaded PDB file from %s' % urlText
             #write local file containing the downloaded content
-            localFile = open(pathToPDB, 'w') 
+            localFile = open(pathToPDB, 'w')
             localFile.write(origPDB.read())
             #inform user of file loaction of newly downloaded content
             print 'PDB file saved to %s' % pathToPDB
@@ -134,7 +135,7 @@ def cambda(pathToPDB, PDT=14, binSize=10, createAllUnitCellsPDB=False, createTri
     PDBCURlog = '%sPDBCURlog.txt' % PDBdirectory
     #generate input file for PDBCUR
     genPDBCURinputs(PDBCURinputFile)
-    #Create name for output PDBCUR file by appending 'UnitCell' to filename 
+    #Create name for output PDBCUR file by appending 'UnitCell' to filename
     splitFilePath = pathToPDB.split(".")
     fileName = splitFilePath[len(splitFilePath)-2]
     PDBCURoutputPDB = '%sUnitCell.pdb' % fileName
@@ -150,35 +151,37 @@ def cambda(pathToPDB, PDT=14, binSize=10, createAllUnitCellsPDB=False, createTri
     print '****************************************************************'
     print '********** Parsing PDB Section *********************************\n'
     #return a list of atoms and attributes
-    bof, atomList, eof = parsePDB(PDBCURoutputPDB)
+    bof, ucAtomList, eof = parsePDB(PDBCURoutputPDB)
     unitCell = getUnitCellParams(pathToPDB)
     print '\n********** End of Parsing PDB Section **************************'
     print '****************************************************************'
     print '\n'
-    #Translate the Unit Cell and append the new atom locations to the atomList
+    #Translate the Unit Cell and append the new atom locations to the ucAtomList
     print '****************************************************************'
     print '********** Translate Unit Cell Section *************************\n'
+    #convert the unit cell paramenters to Cartesian coordinates     
     cartesianVectors = convertToCartesian(unitCell)
+    #obtain an array of XYZcoordinates from input list of atom objects
+    xyzList = getXYZlist(ucAtomList)
     #create shallow copy of the list of atoms to which all translated atomic positions will be added
-    transAtomList = copy.copy(atomList) 
+    transAtomList = duplicate(ucAtomList)
+    taAppend = transAtomList.append
     #loop through running the translation subroutine for all combinations of 
     #translations +/- 1 unit cell in a, b and c directions
-    for a in range (-1, 2):
-        for b in range (-1, 2):
-            for c in range (-1, 2):
+    for a in xrange (-1, 2):
+        for b in xrange (-1, 2):
+            for c in xrange (-1, 2):
                 #don't translate cells ine the case of an identity translation
-                identityTranslation = False
-                if a == 0:
-                    if b == 0:
-                        if c == 0:
-                            identityTranslation = True
-                if not identityTranslation:
+                if a==0 and b==0 and c==0:
+                    pass
+                else:
                     #Translate all atoms in the unit cell
-                    newTransAtoms = []
-                    newTransAtoms = translateUnitCell(atomList, cartesianVectors, a, b, c)
+                    newXYZlist = translateUnitCell(xyzList, cartesianVectors, a, b, c)
                     #append the translated atom object to list
-                    for atm in newTransAtoms:
-                        transAtomList.append(copy.copy(atm))
+                    for n in xrange (len(newXYZlist)):
+                        atm = duplicate(ucAtomList[n])
+                        atm.xyzCoords = duplicate(newXYZlist[n])
+                        taAppend(atm)
     print ''
     if createAllUnitCellsPDB:
         aucPDBfilepath = '%sAllUnitCells.pdb' % PDBdirectory
@@ -189,7 +192,7 @@ def cambda(pathToPDB, PDT=14, binSize=10, createAllUnitCellsPDB=False, createTri
     #Discard atoms too far from the asymmetric unit
     print '****************************************************************'
     print '********** Trim Crystal Section ********************************\n'
-    #parse a new set of atomic coordinates from the provided asymmetric unit file    
+    #parse a new set of atomic coordinates from the provided asymmetric unit file
     bof1, auAtomList, eof1 = parsePDB(pathToPDB)
     bof1.remove
     eof1.remove
@@ -241,12 +244,13 @@ def cambda(pathToPDB, PDT=14, binSize=10, createAllUnitCellsPDB=False, createTri
     runtime = time.time() - start
     minutes = math.floor(runtime/60)
     seconds = math.fmod(runtime,60)
-    if seconds ==1:
-        print 'Total time taken for program to run was %02.3f second.\n\n' % seconds
-    elif minutes == 0:
-        print 'Total time taken for program to run was %02.3f seconds.\n\n' % seconds
+    if minutes == 0:
+        if seconds ==1:
+            print 'Total time taken for program to run was %02.3f second.\n\n' % seconds
+        else:
+            print 'Total time taken for program to run was %02.3f seconds.\n\n' % seconds            
     elif minutes == 1:
-        print 'Total time taken for program to run was %01.0f minute and %02.3f seconds.\n\n' % (minutes,seconds)   
+        print 'Total time taken for program to run was %01.0f minute and %02.3f seconds.\n\n' % (minutes,seconds)
     else:
         print 'Total time taken for program to run was %01.0f minutes and %02.3f seconds.\n\n' % (minutes,seconds)
 #end

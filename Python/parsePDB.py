@@ -6,12 +6,12 @@ class atom(object):
     #Initialise class for a PDB file
     def __init__(self,lineidentifier="",atomnum=0,residuenum=0,atomtype="",resitype="",
                  chainID="",xyz_coords=[],atomidentifier="",bfactor=0,occupancy=1,charge="",
-                 packingdensity=0,groupnumber=0,bdamage=0):   
+                 packingdensity=0,groupnumber=0,bdamage=0):
         self.lineID     = lineidentifier
         self.atomNum    = atomnum
         self.resiNum    = residuenum
         self.atomType   = atomtype
-        self.resiType   = resitype 
+        self.resiType   = resitype
         self.chainID    = chainID
         self.xyzCoords  = xyz_coords
         self.atomID     = atomidentifier
@@ -22,14 +22,14 @@ class atom(object):
         self.group      = groupnumber
         self.bd         = bdamage
     #end Initialise class
-        
-    #print a summary of atom info to command line 
+
+    #print a summary of atom info to command line
     def getAtomSummary(self):
         summaryString = 'Chain: {}\nResidue: {}{}\nAtom type: {}'.format(self.chainID,self.resiType,self.resiNum,self.atomType)
         print summaryString
     #end getAtomSummary
 #end atom class
-        
+
 #parse pdb file with name 'fileName' and return list of atoms from 'atom' class above
 def parsePDB(fileName):
     import os #for operating system usability
@@ -38,23 +38,19 @@ def parsePDB(fileName):
     #check that file exists
     if not os.path.exists(fileName):
         sys.exit('Error!!\nFile name %s not found' % fileName)
-    #create puppet lists to fill with atom objects
+    #create puppet lists to fill with lines of text or atom objects
     bof = []
-    atomList = [] 
+    atomList = []
     eof = []
     beforeAtoms = True
+    #add definitions for dot functions to speed up code?
+    bAppend = bof.append
+    alAppend = atomList.append
+    eAppend = eof.append
     #open correct file name for reading
-    fileOpen = open(fileName,'r') 
+    fileOpen = open(fileName,'r')
     #read 'ATOM' and 'HETATM' lines
     for line in fileOpen.readlines():
-        if (not ('ATOM  ' in str(line[0:6])) 
-            or not ('HETATM' in str(line[0:6])) 
-            or not ('ANISOU' in str(line[0:6])) 
-            or not ('TER   ' in str(line[0:6]))):
-            if beforeAtoms:
-                bof.append(line)
-            else:
-                eof.append(line)  
         #only select information from ATOM or HETATM lines
         if ('ATOM  ' in str(line[0:6])) or ('HETATM' in str(line[0:6])):
             beforeAtoms = False
@@ -63,18 +59,25 @@ def parsePDB(fileName):
             y.lineID    = str(line[0:6].strip())
             y.atomNum   = int(line[6:11].strip())
             y.atomType  = str(line[12:16].strip())
-            y.resiType  = str(line[17:20].strip())                       
-            y.chainID   = str(line[21:22].strip())                     
-            y.resiNum   = int(line[22:26].strip())  
+            y.resiType  = str(line[17:20].strip())
+            y.chainID   = str(line[21:22].strip())
+            y.resiNum   = int(line[22:26].strip())
             y.xyzCoords = [[float(line[30:38].strip())],
                            [float(line[38:46].strip())],
-                           [float(line[46:54].strip())]]    
-            y.occupancy = float(line[54:60].strip())                                                    
+                           [float(line[46:54].strip())]]
+            y.occupancy = float(line[54:60].strip())
             y.bFactor   = float(line[60:66].strip())
             y.atomID    = str(line[77:79].strip())
             y.charge    = str(line[79:81].strip())
             #append new 'atom' object to list
-            atomList.append(y)
+            alAppend(y)
+        elif ('TER   ' in str(line[0:6])) or ('ANISOU' in str(line[0:6])):
+            continue
+        else:
+            if beforeAtoms:
+                bAppend(line)
+            else:
+                eAppend(line)
     fileOpen.close() #close .pdb file after reading
     #provide feedback to user
     print 'Finished reading in atoms --> %d atoms found in' % int(len(atomList))
@@ -82,17 +85,17 @@ def parsePDB(fileName):
     #return list of atoms as output of function
     return bof, atomList, eof
 #end parsePDB
-    
+
 #obtain unit cell parameters from PDB file
 def getUnitCellParams(fileName):
-    import os #for operating system usability   
+    import os #for operating system usability
     import math #for converting degrees to radians
     #check that file exists
     if not os.path.exists(fileName):
         print 'Error!!\nFile name {} not found'.format(fileName)
         return
     #open correct file name for reading
-    fileOpen = open(fileName,'r') 
+    fileOpen = open(fileName,'r')
     #find and read the CRYST1 line
     for line in fileOpen.readlines():
         #only select infoprmation from CRYST1 line
@@ -111,7 +114,7 @@ def getUnitCellParams(fileName):
     fileOpen.close() #close .pdb file
     return (a, b, c, alpha, beta, gamma)
 #end getUnitCellParams
-    
+
 #get minimum and maximum xyz coordinates of the asymmetric unit
 def getAUparams(atomList):
     from parsePDB import atom as a #for utilising the 'atom' class
@@ -128,7 +131,7 @@ def getAUparams(atomList):
         x = float(atm.xyzCoords[0][0])
         y = float(atm.xyzCoords[1][0])
         z = float(atm.xyzCoords[2][0])
-        #if the newly considered atoms coordinates lie outside of the previous 
+        #if the newly considered atoms coordinates lie outside of the previous
         #max/minima, replace the relevant parameter(s)
         if x < xMin:
             xMin = x
@@ -146,19 +149,18 @@ def getAUparams(atomList):
     auParams = [xMin, xMax, yMin, yMax, zMin, zMax]
     return auParams
 #end getAUparams
-    
+
 def trimAtoms(atomList, params):
-    import copy #for making shallow copies of variables/lists/objects etc.    
     from parsePDB import atom as a #for utilising the 'atom' class
     from atomCheck import isInXYZparams
     print 'Excluding the atoms that lie outside of the box'
     trimAtomList = []
+    trimAppend = trimAtomList.append
     for atom in atomList:
         atomXYZ = atom.xyzCoords
         if isInXYZparams(atomXYZ, params):
-            trimAtomList.append(copy.copy(atom))
+            trimAppend(atom)
     print '%.0f atoms have been retained\n' % int(len(trimAtomList))
     #output a list of retained atom objects
     return trimAtomList
-#end trimAtoms2
-            
+#end trimAtoms

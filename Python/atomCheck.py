@@ -1,14 +1,15 @@
 # Copyright Thomas Dixon 2015
 
 def convertParams(params, margin):
-    params[0] = float(params[0]) - margin
-    params[1] = float(params[1]) + margin
-    params[2] = float(params[2]) - margin
-    params[3] = float(params[3]) + margin
-    params[4] = float(params[4]) - margin
-    params[5] = float(params[5]) + margin
-    return params    
-#end convertParams
+    convParams = [0,0,0,0,0,0]
+    convParams[0] = float(params[0]) - margin
+    convParams[1] = float(params[1]) + margin
+    convParams[2] = float(params[2]) - margin
+    convParams[3] = float(params[3]) + margin
+    convParams[4] = float(params[4]) - margin
+    convParams[5] = float(params[5]) + margin
+    return convParams
+# end convertParams
 
 def isInXYZparams(atomXYZ, params):
     x = float(atomXYZ[0][0])
@@ -19,4 +20,4 @@ def isInXYZparams(atomXYZ, params):
             if float(params[4]) < z < float(params[5]):
                 return True
     return False
-#end isInParams
+# end isInParams

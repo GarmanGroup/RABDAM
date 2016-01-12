@@ -39,12 +39,27 @@ def convertToCartesian(unitCell):
     return cartesianVectors    
 #end convertToCartesian
     
-def translateUnitCell(atomList, cartesianVectors, aTrans, bTrans, cTrans):
-    import numpy as np #facilitates matrix manipulation
+#obtain an array of XYZcoordinates from input list of atom objects
+def getXYZlist(atomList):
+    from parsePDB import atom as a #for utilising the 'atom' class
+    #initialise list with the right number of fields
+    noAtoms = len(atomList)
+    xyzList = [0]*noAtoms
+    #strip atomic xyz coordinares or all of the input atoms
+    for n in xrange (noAtoms):
+        #append the xyzCoords of atom to the list
+        xyzList[n] = atomList[n].xyzCoords
+    return xyzList
+#end getXYZlist
+        
+    
+def translateUnitCell(atomXYZlist, cartesianVectors, aTrans, bTrans, cTrans):
     import copy #for making shallow copies of variables/lists/objects etc.
+    duplicate = copy.copy
+    import numpy as np #facilitates matrix manipulation
     from parsePDB import atom as a #for utilising the 'atom' class
     #create puppet list to fill with atom objects
-    newTransAtoms = []
+    newXYZlist = [0]*len(atomXYZlist)
     #convert a/b/cTrans into matrices
     aTransMat = np.array([[aTrans],[aTrans],[aTrans]])
     bTransMat = np.array([[bTrans],[bTrans],[bTrans]])
@@ -56,16 +71,9 @@ def translateUnitCell(atomList, cartesianVectors, aTrans, bTrans, cTrans):
     #add the three vectors together to give a single translation vector
     transVector = np.add(aVec, bVec)
     transVector = np.add(transVector, cVec)
-    for atom in atomList:
-        #create a shallow copy of the atom
-        atm = copy.copy(atom)
-        #turn the xyzCoords of atom 'atm' into a matrix
-        cartCoords = np.array(atm.xyzCoords)
-        #apply this transformation to the atoms xyzCoords and write back to 'atom'
-        newCoords = np.add(cartCoords, transVector)
-        atm.xyzCoords = newCoords.tolist()
-        #append the translated atom object to list
-        newTransAtoms.append(atm)
+    for n in xrange (len(atomXYZlist)):
+        #apply this transformation to the atoms xyzCoords and write back to list
+        newXYZlist[n] = np.add(np.array(duplicate(atomXYZlist[n])), transVector).tolist()
     print 'Successfully translated by (%2sa,%2sb,%2sc) unit cells' % (aTrans, bTrans, cTrans)
-    return newTransAtoms   
+    return newXYZlist   
 #end translateUnitCell
