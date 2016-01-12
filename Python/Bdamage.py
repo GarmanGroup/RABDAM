@@ -28,8 +28,8 @@ def countInRadius(atm, atomList, r):
         if calcDist(atm, atom) < r:
             #if the distance is less than the PDT, increment the counter
             PD = int(PD + 1)
+        atm.pd = PD
     #return packing density of the atom once all comparisons have been made
-    atm.pd = PD
     return
         
 #Calculate packing density for all atoms in the original PDB file
@@ -40,13 +40,13 @@ def calcPDT(auAtomList, atomList, PDT):
     minPD = len(atomList)
     maxPD = 0
     #for every atom in the asymmetric unit
-    for atm in auAtomList:
-        countInRadius(atm, atomList, PDT)
+    for atom in auAtomList:
+        countInRadius(atom, atomList, PDT)
         #update min/maxPD if necessary
-        if atm.pd < minPD:
-            minPD = atm.pd
-        elif atm.pd > maxPD:
-            maxPD = atm.pd
+        if atom.pd < minPD:
+            minPD = atom.pd
+        elif atom.pd > maxPD:
+            maxPD = atom.pd
     print 'Packing Density (PD) values successfully calculated'
     return int(minPD), int(maxPD)
 #end calcPackingDensity

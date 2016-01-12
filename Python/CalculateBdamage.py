@@ -12,7 +12,8 @@ def cambda(pathToPDB, PDT=14, binSize=10, createAllUnitCellsPDB=True, createTrim
     import urllib2 #for dealing with URL stuff
     import os #for operating system usability
     import math #for using more intricate mathematics
-    import copy.copy #for making shallow copies of variables/lists/objects etc.
+    import copy #for making shallow copies of variables/lists/objects etc.
+    duplicate = copy.copy
     from PDBCUR import genPDBCURinputs,runPDBCUR #facilitates PDBCUR functionality
     from parsePDB import parsePDB, getUnitCellParams, getAUparams, trimAtoms #for taking information from PDB file to a usable format
     from translateUnitCell import convertToCartesian, getXYZlist, translateUnitCell #translates unit cell
@@ -163,7 +164,8 @@ def cambda(pathToPDB, PDT=14, binSize=10, createAllUnitCellsPDB=True, createTrim
     #obtain an array of XYZcoordinates from input list of atom objects
     xyzList = getXYZlist(ucAtomList)
     #create shallow copy of the list of atoms to which all translated atomic positions will be added
-    transAtomList = copy.copy(ucAtomList)
+    transAtomList = duplicate(ucAtomList)
+    taAppend = transAtomList.append
     #loop through running the translation subroutine for all combinations of 
     #translations +/- 1 unit cell in a, b and c directions
     for a in xrange (-1, 2):
@@ -177,9 +179,9 @@ def cambda(pathToPDB, PDT=14, binSize=10, createAllUnitCellsPDB=True, createTrim
                     newXYZlist = translateUnitCell(xyzList, cartesianVectors, a, b, c)
                     #append the translated atom object to list
                     for n in xrange (len(newXYZlist)):
-                        atm = copy.copy(ucAtomList[n])
-                        atm.xyzCoords = copy.copy(newXYZlist[n])
-                        transAtomList.append(atm)
+                        atm = duplicate(ucAtomList[n])
+                        atm.xyzCoords = duplicate(newXYZlist[n])
+                        taAppend(atm)
     print ''
     if createAllUnitCellsPDB:
         aucPDBfilepath = '%sAllUnitCells.pdb' % PDBdirectory

@@ -43,6 +43,10 @@ def parsePDB(fileName):
     atomList = []
     eof = []
     beforeAtoms = True
+    #add definitions for dot functions to speed up code?
+    bAppend = bof.append
+    alAppend = atomList.append
+    eAppend = eof.append
     #open correct file name for reading
     fileOpen = open(fileName,'r')
     #read 'ATOM' and 'HETATM' lines
@@ -66,14 +70,14 @@ def parsePDB(fileName):
             y.atomID    = str(line[77:79].strip())
             y.charge    = str(line[79:81].strip())
             #append new 'atom' object to list
-            atomList.append(y)
+            alAppend(y)
         elif ('TER   ' in str(line[0:6])) or ('ANISOU' in str(line[0:6])):
             continue
         else:
             if beforeAtoms:
-                bof.append(line)
+                bAppend(line)
             else:
-                eof.append(line)
+                eAppend(line)
     fileOpen.close() #close .pdb file after reading
     #provide feedback to user
     print 'Finished reading in atoms --> %d atoms found in' % int(len(atomList))
@@ -151,10 +155,11 @@ def trimAtoms(atomList, params):
     from atomCheck import isInXYZparams
     print 'Excluding the atoms that lie outside of the box'
     trimAtomList = []
+    trimAppend = trimAtomList.append
     for atom in atomList:
         atomXYZ = atom.xyzCoords
         if isInXYZparams(atomXYZ, params):
-            trimAtomList.append(atom)
+            trimAppend(atom)
     print '%.0f atoms have been retained\n' % int(len(trimAtomList))
     #output a list of retained atom objects
     return trimAtomList

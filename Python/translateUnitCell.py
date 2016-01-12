@@ -55,6 +55,7 @@ def getXYZlist(atomList):
     
 def translateUnitCell(atomXYZlist, cartesianVectors, aTrans, bTrans, cTrans):
     import copy #for making shallow copies of variables/lists/objects etc.
+    duplicate = copy.copy
     import numpy as np #facilitates matrix manipulation
     from parsePDB import atom as a #for utilising the 'atom' class
     #create puppet list to fill with atom objects
@@ -72,7 +73,7 @@ def translateUnitCell(atomXYZlist, cartesianVectors, aTrans, bTrans, cTrans):
     transVector = np.add(transVector, cVec)
     for n in xrange (len(atomXYZlist)):
         #apply this transformation to the atoms xyzCoords and write back to list
-        newXYZlist[n] = np.add(np.array(copy.copy(atomXYZlist[n])), transVector).tolist()
+        newXYZlist[n] = np.add(np.array(duplicate(atomXYZlist[n])), transVector).tolist()
     print 'Successfully translated by (%2sa,%2sb,%2sc) unit cells' % (aTrans, bTrans, cTrans)
     return newXYZlist   
 #end translateUnitCell
