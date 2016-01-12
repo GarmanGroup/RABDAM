@@ -2,7 +2,7 @@
 # With thanks to Jonathan Brooks-Bartlett, Charles Bury, Markus Gerstel and Elspeth Garman
 
 #Script to calculate B-damage for protein atoms
-def cambda(pathToPDB, PDT=14, binSize=10, createAllUnitCellsPDB=True, createTrimmedAtomsPDB=True):
+def cambda(pathToPDB, PDT=14, binSize=10, createAllUnitCellsPDB=False, createTrimmedAtomsPDB=False):
     print('\n')
     print('Copyright 2015 Thomas Dixon\n')
     print('With thanks to Jonathan Brooks-Bartlett, Charles Bury, Markus\nGerstel and Elspeth Garman')
@@ -250,4 +250,4 @@ def cambda(pathToPDB, PDT=14, binSize=10, createAllUnitCellsPDB=True, createTrim
     else:
         print 'Total time taken for program to run was %01.0f minutes and %02.3f seconds.\n\n' % (minutes,seconds)
 #end
-cambda('2BN3')
+cambda('2BN3', createAllUnitCellsPDB=True, createTrimmedAtomsPDB=True)
