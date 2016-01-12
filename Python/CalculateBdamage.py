@@ -2,8 +2,9 @@
 # With thanks to Jonathan Brooks-Bartlett, Charles Bury, Markus Gerstel and Elspeth Garman
 
 #Script to calculate B-damage for protein atoms
-def cambda(pathToPDB, PDT=14, binSize=10, createAllUnitCellsPDB=False, createTrimmedAtomsPDB=False):
+def cambda(pathToPDB, PDT=14, binSize=10, createAUCpdb=False, createTApdb=False):
     print('\n')
+    print('Please cite: M. Gerstel, C. M. Deane and E.F. Garman. (2015).\nJ. Synchrotron Radiation. 22, 201-212\nhttp://dx.doi.org/doi:10.1107/S1600577515002131\n')
     print('Copyright 2015 Thomas Dixon\n')
     print('With thanks to Jonathan Brooks-Bartlett, Charles Bury, Markus\nGerstel and Elspeth Garman')
     #import packages required for running the program
@@ -183,7 +184,7 @@ def cambda(pathToPDB, PDT=14, binSize=10, createAllUnitCellsPDB=False, createTri
                         atm.xyzCoords = duplicate(newXYZlist[n])
                         taAppend(atm)
     print ''
-    if createAllUnitCellsPDB:
+    if createAUCpdb:
         aucPDBfilepath = '%sAllUnitCells.pdb' % PDBdirectory
         makePDB(bof, transAtomList, eof, aucPDBfilepath)
     print '\n********** End of Translate Unit Cell Section ******************'
@@ -212,7 +213,7 @@ def cambda(pathToPDB, PDT=14, binSize=10, createAllUnitCellsPDB=False, createTri
     #discard all atoms not in cube defined above
     trimmedAtomList = trimAtoms(transAtomList, keepParams)
     #create PDB file of retained atoms
-    if createTrimmedAtomsPDB:
+    if createTApdb:
         taPDBfilepath = '%sTrimmedAtoms.pdb' % PDBdirectory
         makePDB(bof, trimmedAtomList, eof, taPDBfilepath)
     print '\n********** End of Trim Crystal Section *************************'
@@ -254,4 +255,3 @@ def cambda(pathToPDB, PDT=14, binSize=10, createAllUnitCellsPDB=False, createTri
     else:
         print 'Total time taken for program to run was %01.0f minutes and %02.3f seconds.\n\n' % (minutes,seconds)
 #end
-cambda('2BN3', createAllUnitCellsPDB=True, createTrimmedAtomsPDB=True)
