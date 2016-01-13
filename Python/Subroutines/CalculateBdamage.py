@@ -3,6 +3,7 @@
 
 #Script to calculate B-damage for protein atoms
 def cambda(pathToPDB, PDT=14, binSize=10, createAUCpdb=False, createTApdb=False):
+    print('\nCaMBDa\n')
     print('\n')
     print('Please cite: M. Gerstel, C. M. Deane and E.F. Garman. (2015).\nJ. Synchrotron Radiation. 22, 201-212\nhttp://dx.doi.org/doi:10.1107/S1600577515002131\n')
     print('Copyright 2015 Thomas Dixon\n')
@@ -10,13 +11,13 @@ def cambda(pathToPDB, PDT=14, binSize=10, createAUCpdb=False, createTApdb=False)
     #import packages required for running the program
     import time #for recording how long the script takes to run
     import sys #for terminating script when encountering errors
-    import urllib2 #for dealing with URL stuff
+    prompt = '> '
     import os #for operating system usability
     import math #for using more intricate mathematics
     import copy #for making shallow copies of variables/lists/objects etc.
     duplicate = copy.copy
     from PDBCUR import genPDBCURinputs,runPDBCUR #facilitates PDBCUR functionality
-    from parsePDB import parsePDB, getUnitCellParams, getAUparams, trimAtoms #for taking information from PDB file to a usable format
+    from parsePDB import parsePDB, getUnitCellParams, getAUparams, trimAtoms, downloadPDB #for taking information from PDB file to a usable format
     from translateUnitCell import convertToCartesian, getXYZlist, translateUnitCell #translates unit cell
     from makePDB import makePDB, writeBdam #allows new output files to be written from a list of atom objects
     from atomCheck import convertParams #adds the PDT to the Cartesian limits of the unit cell
@@ -72,28 +73,31 @@ def cambda(pathToPDB, PDT=14, binSize=10, createAUCpdb=False, createTApdb=False)
         if os.path.isfile(pathToPDB):
             #inform user that file already exists
             print 'PDB file already exists locally at %s' % pathToPDB
-        else:
-            #create URL from which to download .pdb file
-            urlText = 'http://www.rcsb.org/pdb/files/%s.pdb' % PDBcode
-            #downlaod PDB file and save local copy
-            if os.path.exists(PDBdirectory):
-                print 'Directory %s already exists' % PDBdirectory
+            print 'Do you want to overwrite the existing file?\n'
+            print '--USER INPUT-- type your choice and press RETURN\n'
+            print 'yes = overwrite this file (DEFAULT)'
+            print 'all = overwrite all files in this run of CaMBDa'
+            print 'no = do not overwrite this file'
+            print 'none = overwrite no files in this run of CaMBDa'
+            choice = raw_input(prompt)
+            if choice == 'all':
+                os.remove(pathToPDB)
+                downloadPDB(PDBcode, PDBdirectory, pathToPDB)
+            elif choice == 'none':
+                pass
+            elif choice == 'yes':
+                os.remove(pathToPDB)
+                downloadPDB(PDBcode, PDBdirectory, pathToPDB)
+            elif choice == 'no':
+                pass
             else:
-                os.makedirs(PDBdirectory)
-                print 'Directory %s created' % PDBdirectory
-            origPDB = urllib2.urlopen(urlText)
-            #inform user of the URL used to download PDB file
-            print 'Downloaded PDB file from %s' % urlText
-            #write local file containing the downloaded content
-            localFile = open(pathToPDB, 'w')
-            localFile.write(origPDB.read())
-            #inform user of file loaction of newly downloaded content
-            print 'PDB file saved to %s' % pathToPDB
-            #close local file to free up memory
-            localFile.close()
-            #chack that file has downloaded and saved correctly
-            if not os.path.exists(pathToPDB):
-                sys.exit ('Error 03: Failed to download and save PDB - cause unknown')
+                os.remove(pathToPDB)
+                downloadPDB(PDBcode, PDBdirectory, pathToPDB)
+        else:
+            downloadPDB(PDBcode, PDBdirectory, pathToPDB)
+            #check that file has downloaded and saved correctly
+        if not os.path.exists(pathToPDB):
+            sys.exit ('Error 03: Failed to download and save PDB - cause unknown')
     else:
         #check supplied filepath is a pdb file, returning error message if not
         if pathToPDB[-4:] == '.pdb' or pathToPDB[-4:] == '.txt' :
