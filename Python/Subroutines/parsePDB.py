@@ -53,6 +53,21 @@ def downloadPDB(PDBcode, PDBdirectory, pathToPDB):
     #close local file to free up memory
     localFile.close()
 #end downloadPDB
+    
+#copy .pdb file to another location
+def copyPDB(pathToPDB, newPathToPDB, PDBdirectory):
+    import os #for operating system usability
+    if not os.path.exists(PDBdirectory):
+        os.makedirs(PDBdirectory)
+    origPDB = open(pathToPDB, 'r')
+    #write file containing copied content
+    localFile = open(newPathToPDB, 'w')
+    localFile.write(origPDB.read())
+    #inform user of file location of new copy of PDB file
+    print 'PDB file copied to %s' % newPathToPDB
+    #close local file to free up memory
+    localFile.close()
+#end copyPDB
 
 #parse pdb file with name 'fileName' and return list of atoms from 'atom' class above
 def parsePDB(fileName):
