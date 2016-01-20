@@ -166,7 +166,7 @@ def cambda(pathToPDB, PDT=14, binSize=10, createAUCpdb=False, createTApdb=False)
     fileName = splitFilePath[len(splitFilePath)-2]
     PDBCURoutputPDB = '%sUnitCell.pdb' % fileName
     #runPDBCUR using generated input file
-    runPDBCUR(pathToPDB, PDBCURoutputPDB, PDBCURinputFile, PDBCURlog)
+    runPDBCUR(pathToPDB, PDBCURoutputPDB, PDBCURinputFile, PDBCURlog, owChoice)
     os.remove(PDBCURinputFile)
     if not os.path.exists(PDBCURoutputPDB):
         sys.exit('Error 05: Failed to generate Unit Cell PDB file')
@@ -211,7 +211,7 @@ def cambda(pathToPDB, PDT=14, binSize=10, createAUCpdb=False, createTApdb=False)
     print ''
     if createAUCpdb:
         aucPDBfilepath = '%sAllUnitCells.pdb' % PDBdirectory
-        makePDB(bof, transAtomList, eof, aucPDBfilepath)
+        makePDB(bof, transAtomList, eof, aucPDBfilepath, owChoice)
     print '\n********** End of Translate Unit Cell Section ******************'
     print '****************************************************************'
     print '\n'
@@ -240,7 +240,7 @@ def cambda(pathToPDB, PDT=14, binSize=10, createAUCpdb=False, createTApdb=False)
     #create PDB file of retained atoms
     if createTApdb:
         taPDBfilepath = '%sTrimmedAtoms.pdb' % PDBdirectory
-        makePDB(bof, trimmedAtomList, eof, taPDBfilepath)
+        makePDB(bof, trimmedAtomList, eof, taPDBfilepath, owChoice)
     print '\n********** End of Trim Crystal Section *************************'
     print '****************************************************************'
     print '\n'
