@@ -100,6 +100,7 @@ def cambda(pathToPDB, PDT=14, binSize=10, createAUCpdb=False, createTApdb=False)
                 downloadPDB(PDBcode, PDBdirectory, pathToPDB)
         else:
             downloadPDB(PDBcode, PDBdirectory, pathToPDB)
+            owChoice = 'null'
             #check that file has downloaded and saved correctly
         if not os.path.exists(pathToPDB):
             sys.exit ('Error 03: Failed to download and save PDB - cause unknown')
@@ -146,6 +147,7 @@ def cambda(pathToPDB, PDT=14, binSize=10, createAUCpdb=False, createTApdb=False)
             else:
                 #make local copy in Logfiles
                 copyPDB(pathToPDB, newPathToPDB, PDBdirectory)
+                owChoice = 'null'
             #chack that file has downloaded and saved correctly
             if not os.path.exists(newPathToPDB):
                 sys.exit ('Error 04: Failed to copy PDB to a local version.\nCheck that supplied PDB is not in use by another program')
