@@ -1,0 +1,1 @@
+2BN3, PDT=14, binSize=10, createAUCpdb=False, createTApdb=False

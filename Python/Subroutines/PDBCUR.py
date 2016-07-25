@@ -26,14 +26,36 @@ def genPDBCURinputs(PDBCURinputFile):
         f.close
 #end genPDBCURinputs
         
-def runPDBCUR(pathToPDB, PDBCURoutputPDB, PDBCURinputFile, PDBCURlog):
+def runPDBCUR(pathToPDB, PDBCURoutputPDB, PDBCURinputFile, PDBCURlog, owChoice):
     import os #for operating system usability
+    prompt = '> '
     #check if output file has already been created
     if os.path.exists(PDBCURoutputPDB):
         #inform user file already exists
         print 'Output file from PDBCUR already exists at %s\n' % PDBCURoutputPDB
+        if owChoice == 'all':
+            print 'Overwriting existing file'
+            #delete the exisiting file and continue with method
+            os.remove(PDBCURoutputPDB)
         #exit method if file exists
-        return
+        elif owChoice == 'none':
+            return
+        else:
+            print 'Do you want to overwrite the existing file?\n'
+            print '--USER INPUT-- type your choice and press RETURN\n'
+            print 'yes = overwrite this file (DEFAULT)'
+            print 'no = do not overwrite this file'
+            owChoice = raw_input(prompt)
+            if owChoice == 'yes':
+                print 'Overwriting existing file'
+                #delete the exisiting file and continue with method
+                os.remove(PDBCURoutputPDB)
+            elif owChoice == 'no':
+                return
+            else:
+                print 'Overwriting existing file'
+                #delete the exisiting file and continue with method
+                os.remove(PDBCURoutputPDB)
     #create a string for command line input to run PDBCUR
     runPDBCURcommand = 'pdbcur xyzin %s xyzout %s < %s > %s' % (pathToPDB, PDBCURoutputPDB, PDBCURinputFile, PDBCURlog)
     #run PDBCUR to specifications

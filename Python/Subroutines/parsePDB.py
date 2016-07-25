@@ -30,6 +30,45 @@ class atom(object):
     #end getAtomSummary
 #end atom class
 
+#download and save PDB file from the web
+def downloadPDB(PDBcode, PDBdirectory, pathToPDB):
+    import os #for operating system usability
+    import urllib2 #for dealing with URL stuff
+    #create URL from which to download .pdb file
+    urlText = 'http://www.rcsb.org/pdb/files/%s.pdb' % PDBcode
+    #downlaod PDB file and save local copy
+    if os.path.exists(PDBdirectory):
+        print 'Directory %s already exists' % PDBdirectory
+    else:
+        os.makedirs(PDBdirectory)
+        print 'Directory %s created' % PDBdirectory
+    origPDB = urllib2.urlopen(urlText)
+    #inform user of the URL used to download PDB file
+    print 'Downloaded PDB file from %s' % urlText
+    #write local file containing the downloaded content
+    localFile = open(pathToPDB, 'w')
+    localFile.write(origPDB.read())
+    #inform user of file loaction of newly downloaded content
+    print 'PDB file saved to %s' % pathToPDB
+    #close local file to free up memory
+    localFile.close()
+#end downloadPDB
+    
+#copy .pdb file to another location
+def copyPDB(pathToPDB, newPathToPDB, PDBdirectory):
+    import os #for operating system usability
+    if not os.path.exists(PDBdirectory):
+        os.makedirs(PDBdirectory)
+    origPDB = open(pathToPDB, 'r')
+    #write file containing copied content
+    localFile = open(newPathToPDB, 'w')
+    localFile.write(origPDB.read())
+    #inform user of file location of new copy of PDB file
+    print 'PDB file copied to %s' % newPathToPDB
+    #close local file to free up memory
+    localFile.close()
+#end copyPDB
+
 #parse pdb file with name 'fileName' and return list of atoms from 'atom' class above
 def parsePDB(fileName):
     import os #for operating system usability

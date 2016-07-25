@@ -3,6 +3,7 @@
 
 #Script to calculate B-damage for protein atoms
 def cambda(pathToPDB, PDT=14, binSize=10, createAUCpdb=False, createTApdb=False):
+    print('\nCaMBDa\n')
     print('\n')
     print('Please cite: M. Gerstel, C. M. Deane and E.F. Garman. (2015).\nJ. Synchrotron Radiation. 22, 201-212\nhttp://dx.doi.org/doi:10.1107/S1600577515002131\n')
     print('Copyright 2015 Thomas Dixon\n')
@@ -10,13 +11,13 @@ def cambda(pathToPDB, PDT=14, binSize=10, createAUCpdb=False, createTApdb=False)
     #import packages required for running the program
     import time #for recording how long the script takes to run
     import sys #for terminating script when encountering errors
-    import urllib2 #for dealing with URL stuff
+    prompt = '> '
     import os #for operating system usability
     import math #for using more intricate mathematics
     import copy #for making shallow copies of variables/lists/objects etc.
     duplicate = copy.copy
     from PDBCUR import genPDBCURinputs,runPDBCUR #facilitates PDBCUR functionality
-    from parsePDB import parsePDB, getUnitCellParams, getAUparams, trimAtoms #for taking information from PDB file to a usable format
+    from parsePDB import parsePDB, downloadPDB, copyPDB, getUnitCellParams, getAUparams, trimAtoms #for taking information from PDB file to a usable format
     from translateUnitCell import convertToCartesian, getXYZlist, translateUnitCell #translates unit cell
     from makePDB import makePDB, writeBdam #allows new output files to be written from a list of atom objects
     from atomCheck import convertParams #adds the PDT to the Cartesian limits of the unit cell
@@ -72,28 +73,37 @@ def cambda(pathToPDB, PDT=14, binSize=10, createAUCpdb=False, createTApdb=False)
         if os.path.isfile(pathToPDB):
             #inform user that file already exists
             print 'PDB file already exists locally at %s' % pathToPDB
-        else:
-            #create URL from which to download .pdb file
-            urlText = 'http://www.rcsb.org/pdb/files/%s.pdb' % PDBcode
-            #downlaod PDB file and save local copy
-            if os.path.exists(PDBdirectory):
-                print 'Directory %s already exists' % PDBdirectory
+            print 'Do you want to overwrite the existing file?\n'
+            print '--USER INPUT-- type your choice and press RETURN\n'
+            print 'yes = overwrite this file (DEFAULT)'
+            print 'all = overwrite all files in this run of CaMBDa'
+            print 'no = do not overwrite this file'
+            print 'none = overwrite no files in this run of CaMBDa'
+            owChoice = raw_input(prompt)
+            if owChoice == 'all':
+                print 'overwriting existing file'
+                os.remove(pathToPDB)
+                print 'default behaviour set to overwrite files in this run of CaMBDa'
+                downloadPDB(PDBcode, PDBdirectory, pathToPDB)
+            elif owChoice == 'none':
+                print 'keeping original file'
+                print 'default behaviour set to overwrite no files in this run of CaMBDa'
+            elif owChoice == 'yes':
+                print 'overwriting existing file'
+                os.remove(pathToPDB)
+                downloadPDB(PDBcode, PDBdirectory, pathToPDB)
+            elif owChoice == 'no':
+                print 'keeping original file'
             else:
-                os.makedirs(PDBdirectory)
-                print 'Directory %s created' % PDBdirectory
-            origPDB = urllib2.urlopen(urlText)
-            #inform user of the URL used to download PDB file
-            print 'Downloaded PDB file from %s' % urlText
-            #write local file containing the downloaded content
-            localFile = open(pathToPDB, 'w')
-            localFile.write(origPDB.read())
-            #inform user of file loaction of newly downloaded content
-            print 'PDB file saved to %s' % pathToPDB
-            #close local file to free up memory
-            localFile.close()
-            #chack that file has downloaded and saved correctly
-            if not os.path.exists(pathToPDB):
-                sys.exit ('Error 03: Failed to download and save PDB - cause unknown')
+                print 'unrecognised input - overwriting existing file'
+                os.remove(pathToPDB)
+                downloadPDB(PDBcode, PDBdirectory, pathToPDB)
+        else:
+            downloadPDB(PDBcode, PDBdirectory, pathToPDB)
+            owChoice = 'null'
+            #check that file has downloaded and saved correctly
+        if not os.path.exists(pathToPDB):
+            sys.exit ('Error 03: Failed to download and save PDB - cause unknown')
     else:
         #check supplied filepath is a pdb file, returning error message if not
         if pathToPDB[-4:] == '.pdb' or pathToPDB[-4:] == '.txt' :
@@ -109,18 +119,35 @@ def cambda(pathToPDB, PDT=14, binSize=10, createAUCpdb=False, createTApdb=False)
             if os.path.isfile(newPathToPDB):
                 #inform the user that file already exists
                 print 'PDB file already exists locally at %s' % newPathToPDB
+                print 'Do you want to overwrite the existing file?\n'
+                print '--USER INPUT-- type your choice and press RETURN\n'
+                print 'yes = overwrite this file (DEFAULT)'
+                print 'all = overwrite all files in this run of CaMBDa'
+                print 'no = do not overwrite this file'
+                print 'none = overwrite no files in this run of CaMBDa'
+                owChoice = raw_input(prompt)
+                print ''
+                if owChoice == 'all':
+                    print 'overwriting existing file'
+                    os.remove(pathToPDB)
+                    copyPDB(pathToPDB, newPathToPDB, PDBdirectory)
+                elif owChoice == 'none':
+                    print 'keeping original file'
+                    print 'default behaviour set to overwrite no files in this run of CaMBDa'
+                elif owChoice == 'yes':
+                    print 'overwriting existing file'
+                    os.remove(pathToPDB)
+                    copyPDB(pathToPDB, newPathToPDB, PDBdirectory)
+                elif owChoice == 'no':
+                    print 'keeping original file'
+                else:
+                    print 'unrecognised input - overwriting existing file'
+                    os.remove(pathToPDB)
+                    copyPDB(pathToPDB, newPathToPDB, PDBdirectory)
             else:
                 #make local copy in Logfiles
-                if not os.path.exists(PDBdirectory):
-                    os.makedirs(PDBdirectory)
-                origPDB = open(pathToPDB, 'r')
-                #write file containing copied content
-                localFile = open(newPathToPDB, 'w')
-                localFile.write(origPDB.read())
-                #inform user of file location of new copy of PDB file
-                print 'PDB file copied to %s' % newPathToPDB
-                #close local file to free up memory
-                localFile.close()
+                copyPDB(pathToPDB, newPathToPDB, PDBdirectory)
+                owChoice = 'null'
             #chack that file has downloaded and saved correctly
             if not os.path.exists(newPathToPDB):
                 sys.exit ('Error 04: Failed to copy PDB to a local version.\nCheck that supplied PDB is not in use by another program')
@@ -141,7 +168,7 @@ def cambda(pathToPDB, PDT=14, binSize=10, createAUCpdb=False, createTApdb=False)
     fileName = splitFilePath[len(splitFilePath)-2]
     PDBCURoutputPDB = '%sUnitCell.pdb' % fileName
     #runPDBCUR using generated input file
-    runPDBCUR(pathToPDB, PDBCURoutputPDB, PDBCURinputFile, PDBCURlog)
+    runPDBCUR(pathToPDB, PDBCURoutputPDB, PDBCURinputFile, PDBCURlog, owChoice)
     os.remove(PDBCURinputFile)
     if not os.path.exists(PDBCURoutputPDB):
         sys.exit('Error 05: Failed to generate Unit Cell PDB file')
@@ -186,7 +213,7 @@ def cambda(pathToPDB, PDT=14, binSize=10, createAUCpdb=False, createTApdb=False)
     print ''
     if createAUCpdb:
         aucPDBfilepath = '%sAllUnitCells.pdb' % PDBdirectory
-        makePDB(bof, transAtomList, eof, aucPDBfilepath)
+        makePDB(bof, transAtomList, eof, aucPDBfilepath, owChoice)
     print '\n********** End of Translate Unit Cell Section ******************'
     print '****************************************************************'
     print '\n'
@@ -215,7 +242,7 @@ def cambda(pathToPDB, PDT=14, binSize=10, createAUCpdb=False, createTApdb=False)
     #create PDB file of retained atoms
     if createTApdb:
         taPDBfilepath = '%sTrimmedAtoms.pdb' % PDBdirectory
-        makePDB(bof, trimmedAtomList, eof, taPDBfilepath)
+        makePDB(bof, trimmedAtomList, eof, taPDBfilepath, owChoice)
     print '\n********** End of Trim Crystal Section *************************'
     print '****************************************************************'
     print '\n'
