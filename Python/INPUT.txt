@@ -1,1 +1,1 @@
-2BN3, PDT=14, binSize=10, createAUCpdb=False, createTApdb=False
+4INS, PDT=14, binSize=10, addAtoms=, removeAtoms=, threshold=0.05, createAUCpdb=False, createTApdb=False
