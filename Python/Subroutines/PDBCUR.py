@@ -1,4 +1,4 @@
-# Copyright Thomas Dixon 2015
+
 
 def genPDBCURinputs(PDBCURinputFile):
     import os #for operating system usability
@@ -7,7 +7,7 @@ def genPDBCURinputs(PDBCURinputFile):
         #inform user file already exists
         print 'Input file for PDBCUR already exists at %s' % PDBCURinputFile
         #exit method if file exists
-        return    
+        return
     #open a text file for writing
     print 'Creating input file for PDBCUR at %s' % PDBCURinputFile
     #write input keywords to file for use with PDBCUR
@@ -25,7 +25,7 @@ def genPDBCURinputs(PDBCURinputFile):
         f.write('genunit\n')
         f.close
 #end genPDBCURinputs
-        
+
 def runPDBCUR(pathToPDB, PDBCURoutputPDB, PDBCURinputFile, PDBCURlog, owChoice):
     import os #for operating system usability
     prompt = '> '
@@ -70,4 +70,4 @@ def runPDBCUR(pathToPDB, PDBCURoutputPDB, PDBCURinputFile, PDBCURlog, owChoice):
     PDBCURlogText.close()
     #delete separate PDBCUR log file and input file
     os.remove(PDBCURlog)
-#end runPDBCUR 
+#end runPDBCUR

@@ -1,13 +1,10 @@
-# Copyright 2015 Thomas Dixon
-# With thanks to Jonathan Brooks-Bartlett, Charles Bury, Markus Gerstel and Elspeth Garman
 
-#Script to calculate B-damage for protein atoms
-def cambda(pathToPDB, PDT=14, binSize=10, createAUCpdb=False, createTApdb=False):
+
+# Script to calculate B-damage for protein atoms
+def cambda(pathToPDB, PDT=14, binSize=10, addAtoms=[], removeAtoms=[], threshold=0.05, createAUCpdb=False, createTApdb=False):
     print('\nCaMBDa\n')
     print('\n')
     print('Please cite: M. Gerstel, C. M. Deane and E.F. Garman. (2015).\nJ. Synchrotron Radiation. 22, 201-212\nhttp://dx.doi.org/doi:10.1107/S1600577515002131\n')
-    print('Copyright 2015 Thomas Dixon\n')
-    print('With thanks to Jonathan Brooks-Bartlett, Charles Bury, Markus\nGerstel and Elspeth Garman')
     #import packages required for running the program
     import time #for recording how long the script takes to run
     import sys #for terminating script when encountering errors
@@ -22,6 +19,7 @@ def cambda(pathToPDB, PDT=14, binSize=10, createAUCpdb=False, createTApdb=False)
     from makePDB import makePDB, writeBdam #allows new output files to be written from a list of atom objects
     from atomCheck import convertParams #adds the PDT to the Cartesian limits of the unit cell
     from Bdamage import calcPDT, binAtoms, calcBdam #calculates the PDT of each atom in the proivided structure
+    from output import make_csv, make_histogram, make_colourbyBdam_pdb
     #Input: the file path to the pdb for which you want to calculate B-damage factors, the 'Packing Density Threshold' (Angstroms) and bin size
     start = time.time()
     startIndex = time.gmtime()
@@ -38,18 +36,33 @@ def cambda(pathToPDB, PDT=14, binSize=10, createAUCpdb=False, createTApdb=False)
     print '########## Program to calculate B Damage #######################'
     print '################################################################'
     print '\n'
+
     #inform the user of the inputs used in the program
     print '****************************************************************'
     print '********** Input Section ***************************************\n'
     print 'Calculating B Damage for %s' % pathToPDB
     if PDT == 14:
-        print 'No packing density threshold supplied, using default value of\n14 Angstroms'
+        print 'No packing density threshold supplied, using default value of\n14 Angstroms\n'
     else:
         print 'Packing density threshold defined by user at %s Angstroms\n' % PDT
     if binSize == 10:
         print 'No bin size supplied, using default value of 10\n'
     else:
         print 'Bin size defined by user as %s\n' % binSize
+    if len(addAtoms) == 0:
+        print 'No atoms to be added\n'
+    else:
+        for index, value in enumerate(addAtoms):
+            print 'Atoms to be added: %s\n' % addAtoms[index]
+    if len(removeAtoms) == 0:
+        print 'No atoms to be removed\n'
+    else:
+        for index, value in enumerate(removeAtoms):
+            print 'Atoms to be removed: %s\n' % removeAtoms[index]
+    if threshold == 0.05:
+        print 'No threshold value supplied, using default value of 0.05'
+    else:
+        print 'Threshold value defined by user as %s\n' % threshold
     print '********** End of Input Section ********************************'
     print '****************************************************************'
     print '\n'
@@ -179,7 +192,7 @@ def cambda(pathToPDB, PDT=14, binSize=10, createAUCpdb=False, createTApdb=False)
     print '****************************************************************'
     print '********** Parsing PDB Section *********************************\n'
     #return a list of atoms and attributes
-    bof, ucAtomList, eof = parsePDB(PDBCURoutputPDB)
+    bof, ucAtomList, bdamAtomList, eof = parsePDB(PDBCURoutputPDB, addAtoms, removeAtoms)
     unitCell = getUnitCellParams(pathToPDB)
     print '\n********** End of Parsing PDB Section **************************'
     print '****************************************************************'
@@ -187,14 +200,14 @@ def cambda(pathToPDB, PDT=14, binSize=10, createAUCpdb=False, createTApdb=False)
     #Translate the Unit Cell and append the new atom locations to the ucAtomList
     print '****************************************************************'
     print '********** Translate Unit Cell Section *************************\n'
-    #convert the unit cell paramenters to Cartesian coordinates     
+    #convert the unit cell paramenters to Cartesian coordinates
     cartesianVectors = convertToCartesian(unitCell)
     #obtain an array of XYZcoordinates from input list of atom objects
     xyzList = getXYZlist(ucAtomList)
     #create shallow copy of the list of atoms to which all translated atomic positions will be added
     transAtomList = duplicate(ucAtomList)
     taAppend = transAtomList.append
-    #loop through running the translation subroutine for all combinations of 
+    #loop through running the translation subroutine for all combinations of
     #translations +/- 1 unit cell in a, b and c directions
     for a in xrange (-1, 2):
         for b in xrange (-1, 2):
@@ -212,7 +225,7 @@ def cambda(pathToPDB, PDT=14, binSize=10, createAUCpdb=False, createTApdb=False)
                         taAppend(atm)
     print ''
     if createAUCpdb:
-        aucPDBfilepath = '%sAllUnitCells.pdb' % PDBdirectory
+        aucPDBfilepath = '%sAllUnitCells.pdb' % fileName
         makePDB(bof, transAtomList, eof, aucPDBfilepath, owChoice)
     print '\n********** End of Translate Unit Cell Section ******************'
     print '****************************************************************'
@@ -221,7 +234,7 @@ def cambda(pathToPDB, PDT=14, binSize=10, createAUCpdb=False, createTApdb=False)
     print '****************************************************************'
     print '********** Trim Crystal Section ********************************\n'
     #parse a new set of atomic coordinates from the provided asymmetric unit file
-    bof1, auAtomList, eof1 = parsePDB(pathToPDB)
+    bof1, auAtomList, bdamAtomList, eof1 = parsePDB(pathToPDB, addAtoms, removeAtoms)
     bof1.remove
     eof1.remove
     auParams = getAUparams(auAtomList)
@@ -241,42 +254,49 @@ def cambda(pathToPDB, PDT=14, binSize=10, createAUCpdb=False, createTApdb=False)
     trimmedAtomList = trimAtoms(transAtomList, keepParams)
     #create PDB file of retained atoms
     if createTApdb:
-        taPDBfilepath = '%sTrimmedAtoms.pdb' % PDBdirectory
+        taPDBfilepath = '%sTrimmedAtoms.pdb' % fileName
         makePDB(bof, trimmedAtomList, eof, taPDBfilepath, owChoice)
     print '\n********** End of Trim Crystal Section *************************'
     print '****************************************************************'
     print '\n'
-    #Calculate the packing density of each atom
+    # Calculate the packing density of each atom
     print '****************************************************************'
     print '********** Calculate Packing Density Section *******************\n'
-    minPD, maxPD = calcPDT(auAtomList, trimmedAtomList, PDT)
-    noOfGroups, adjtNo = binAtoms(auAtomList, binSize, minPD, maxPD)
+    minPD, maxPD = calcPDT(bdamAtomList, trimmedAtomList, PDT)
+    noOfGroups, adjtNo = binAtoms(bdamAtomList, binSize, minPD, maxPD)
     print 'Lowest calculated Packing Density was %s' % minPD
     print 'Highest calculated Packing Density was %s' % maxPD
     print 'Atoms separated into %s bins\n' % noOfGroups
     print '\n********** End of Calculate Packing Density Section ************'
     print '****************************************************************'
     print '\n'
-    #Calculate the Bdamage value of each atom
+    # Calculate the Bdamage value of each atom
     print '****************************************************************'
     print '********** Calculate Bdamage Section ***************************\n'
     print 'Calculating Bdamage values'
-    groupNoAtoms, groupAvBfacs = calcBdam(auAtomList, noOfGroups)
+    groupNoAtoms, groupAvBfacs = calcBdam(bdamAtomList, noOfGroups)
     print 'Writing Bdamage data to output file'
-    bDamFileName = '%sBdamage.txt' % fileName
-    writeBdam(auAtomList, bDamFileName, groupNoAtoms, groupAvBfacs, binSize, minPD, adjtNo)
+
+    df = writeBdam(bdamAtomList, groupNoAtoms, groupAvBfacs, binSize, minPD, adjtNo, bdamAtomList)
+    x_values_RHS = make_histogram(df, fileName, PDBcode, threshold)
+
+    bDamFileName = '%sBdamage.csv' % fileName
+    make_csv(bdamAtomList, bDamFileName, groupNoAtoms, groupAvBfacs, binSize, minPD, adjtNo)
+    make_colourbyBdam_pdb(df, bof, eof, fileName, bdamAtomList, x_values_RHS)
+
     print '\n********** End of Calculate Bdamage Section ********************'
     print '****************************************************************'
     print '\n'
-    #inform the user of the time elapsed while the program was run
+
+    # inform the user of the time elapsed while the program was run
     runtime = time.time() - start
     minutes = math.floor(runtime/60)
-    seconds = math.fmod(runtime,60)
+    seconds = math.fmod(runtime, 60)
     if minutes == 0:
-        if seconds ==1:
+        if seconds == 1:
             print 'Total time taken for program to run was %02.3f second.\n\n' % seconds
         else:
-            print 'Total time taken for program to run was %02.3f seconds.\n\n' % seconds            
+            print 'Total time taken for program to run was %02.3f seconds.\n\n' % seconds
     elif minutes == 1:
         print 'Total time taken for program to run was %01.0f minute and %02.3f seconds.\n\n' % (minutes,seconds)
     else:
