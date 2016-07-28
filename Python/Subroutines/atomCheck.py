@@ -11,6 +11,7 @@ def convertParams(params, margin):
     return convParams
 # end convertParams
 
+
 def isInXYZparams(atomXYZ, params):
     x = float(atomXYZ[0][0])
     y = float(atomXYZ[1][0])
