@@ -1,6 +1,6 @@
-#Copyright Thomas Dixon 2015
 
-#convert the unit cell paramenters to Cartesian coordinates
+
+# convert the unit cell paramenters to Cartesian coordinates
 def convertToCartesian(unitCell):
     import math #facilitates using more intricate maths operations
     import numpy as np #facilitates matrix manipulation
@@ -11,7 +11,7 @@ def convertToCartesian(unitCell):
     alpha = float(unitCell[3])
     beta = float(unitCell[4])
     gamma = float(unitCell[5])
-    #define parameter v, which is the volume of a unit parallelepiped with the 
+    #define parameter v, which is the volume of a unit parallelepiped with the
     #same angles as the unit cell
     v = math.sqrt(1 - math.pow((math.cos(alpha)),2) - math.pow((math.cos(beta)),2) - math.pow((math.cos(gamma)),2) + 2*(math.cos(alpha))*(math.cos(beta))*(math.cos(gamma)))
     #define the elements of the conversion matrix
@@ -20,7 +20,7 @@ def convertToCartesian(unitCell):
     a13 = c*math.cos(beta)
     a21 = 0
     a22 = b*math.sin(gamma)
-    a23 = c*(math.cos(alpha)-(math.cos(beta)*math.cos(gamma))/math.sin(gamma))
+    a23 = c*((math.cos(alpha)-(math.cos(beta)*math.cos(gamma)))/math.sin(gamma))
     a31 = 0
     a32 = 0
     a33 = c*(v/math.sin(gamma))
@@ -36,9 +36,9 @@ def convertToCartesian(unitCell):
     cCartesianVector = np.dot(conversionMatrix, cVector)
     cartesianVectors = (aCartesianVector,bCartesianVector,cCartesianVector)
     print 'Conversion complete\n'
-    return cartesianVectors    
+    return cartesianVectors
 #end convertToCartesian
-    
+
 #obtain an array of XYZcoordinates from input list of atom objects
 def getXYZlist(atomList):
     from parsePDB import atom as a #for utilising the 'atom' class
@@ -51,8 +51,8 @@ def getXYZlist(atomList):
         xyzList[n] = atomList[n].xyzCoords
     return xyzList
 #end getXYZlist
-        
-    
+
+
 def translateUnitCell(atomXYZlist, cartesianVectors, aTrans, bTrans, cTrans):
     import copy #for making shallow copies of variables/lists/objects etc.
     duplicate = copy.copy
@@ -75,5 +75,5 @@ def translateUnitCell(atomXYZlist, cartesianVectors, aTrans, bTrans, cTrans):
         #apply this transformation to the atoms xyzCoords and write back to list
         newXYZlist[n] = np.add(np.array(duplicate(atomXYZlist[n])), transVector).tolist()
     print 'Successfully translated by (%2sa,%2sb,%2sc) unit cells' % (aTrans, bTrans, cTrans)
-    return newXYZlist   
+    return newXYZlist
 #end translateUnitCell
