@@ -21,7 +21,7 @@ def cambda(pathToPDB, PDT=14, binSize=10, createAUCpdb=False, createTApdb=False)
     from translateUnitCell import convertToCartesian, getXYZlist, translateUnitCell #translates unit cell
     from makePDB import makePDB, writeBdam #allows new output files to be written from a list of atom objects
     from atomCheck import convertParams #adds the PDT to the Cartesian limits of the unit cell
-    from Bdamage import calcPDT, binAtoms, calcBdam #calculates the PDT of each atom in the proivided structure
+    from Bdamage import binAtoms, calcBdam, get_xyz_from_objects, calc_packing_density, write_pckg_dens_to_atoms #calculates the PDT of each atom in the proivided structure
     #Input: the file path to the pdb for which you want to calculate B-damage factors, the 'Packing Density Threshold' (Angstroms) and bin size
     start = time.time()
     startIndex = time.gmtime()
@@ -187,14 +187,14 @@ def cambda(pathToPDB, PDT=14, binSize=10, createAUCpdb=False, createTApdb=False)
     #Translate the Unit Cell and append the new atom locations to the ucAtomList
     print '****************************************************************'
     print '********** Translate Unit Cell Section *************************\n'
-    #convert the unit cell paramenters to Cartesian coordinates     
+    #convert the unit cell paramenters to Cartesian coordinates
     cartesianVectors = convertToCartesian(unitCell)
     #obtain an array of XYZcoordinates from input list of atom objects
     xyzList = getXYZlist(ucAtomList)
     #create shallow copy of the list of atoms to which all translated atomic positions will be added
     transAtomList = duplicate(ucAtomList)
     taAppend = transAtomList.append
-    #loop through running the translation subroutine for all combinations of 
+    #loop through running the translation subroutine for all combinations of
     #translations +/- 1 unit cell in a, b and c directions
     for a in xrange (-1, 2):
         for b in xrange (-1, 2):
@@ -249,7 +249,11 @@ def cambda(pathToPDB, PDT=14, binSize=10, createAUCpdb=False, createTApdb=False)
     #Calculate the packing density of each atom
     print '****************************************************************'
     print '********** Calculate Packing Density Section *******************\n'
-    minPD, maxPD = calcPDT(auAtomList, trimmedAtomList, PDT)
+    au_atom_xyz, trim_atom_xyz = get_xyz_from_objects(auAtomList, trimmedAtomList)
+    packing_density_array = calc_packing_density(au_atom_xyz, trim_atom_xyz, PDT)
+    minPD, maxPD = int(packing_density_array.min()), int(packing_density_array.max())
+    write_pckg_dens_to_atoms(auAtomList, packing_density_array)
+    # minPD, maxPD = calcPDT(auAtomList, trimmedAtomList, PDT)
     noOfGroups, adjtNo = binAtoms(auAtomList, binSize, minPD, maxPD)
     print 'Lowest calculated Packing Density was %s' % minPD
     print 'Highest calculated Packing Density was %s' % maxPD
@@ -276,7 +280,7 @@ def cambda(pathToPDB, PDT=14, binSize=10, createAUCpdb=False, createTApdb=False)
         if seconds ==1:
             print 'Total time taken for program to run was %02.3f second.\n\n' % seconds
         else:
-            print 'Total time taken for program to run was %02.3f seconds.\n\n' % seconds            
+            print 'Total time taken for program to run was %02.3f seconds.\n\n' % seconds
     elif minutes == 1:
         print 'Total time taken for program to run was %01.0f minute and %02.3f seconds.\n\n' % (minutes,seconds)
     else:
