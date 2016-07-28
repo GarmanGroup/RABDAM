@@ -1,4 +1,4 @@
-# Copyright Thomas Dixon 2015
+
 
 def genPDBCURinputs(PDBCURinputFile):
     import os #for operating system usability

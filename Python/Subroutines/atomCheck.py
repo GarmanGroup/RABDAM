@@ -1,4 +1,4 @@
-# Copyright Thomas Dixon 2015
+
 
 def convertParams(params, margin):
     convParams = [0,0,0,0,0,0]
