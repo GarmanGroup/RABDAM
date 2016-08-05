@@ -50,7 +50,7 @@ def calcPDT(auAtomList, atomList, PDT):
             maxPD = atom.pd
     print 'Packing Density (PD) values successfully calculated'
     return int(minPD), int(maxPD)
-#end calcPackingDensity
+# end calcPackingDensity
 
 
 def get_xyz_from_objects(auAtomList, atomList):
@@ -90,7 +90,7 @@ def write_pckg_dens_to_atoms(au_atoms, packing_density_array):
         atom.pd = int(packing_density_array[i])
 
 
-#Segregate atoms into bins based on PD
+# Segregate atoms into bins based on PD
 def binAtoms(atomList, binSize, minPD, maxPD):
     import math  # to utilise more intricate maths functions
     # create value for 'adjustment number' which is a factor to be taken off all

@@ -3,9 +3,9 @@
 # define class of atom objects
 class atom(object):
     # Initialise class for a PDB file
-    def __init__(self,lineidentifier="",atomnum=0,residuenum=0,atomtype="",resitype="",
-                 chainID="",xyz_coords=[],atomidentifier="",bfactor=0,occupancy=1,charge="",
-                 packingdensity=0,groupnumber=0,bdamage=0):
+    def __init__(self, lineidentifier="", atomnum=0, residuenum=0, atomtype="", resitype="",
+                 chainID="", xyz_coords=[], atomidentifier="", bfactor=0, occupancy=1, charge="",
+                 packingdensity=0, groupnumber=0, bdamage=0):
         self.lineID     = lineidentifier
         self.atomNum    = atomnum
         self.resiNum    = residuenum
@@ -24,7 +24,7 @@ class atom(object):
 
     # print a summary of atom info to command line
     def getAtomSummary(self):
-        summaryString = 'Chain: {}\nResidue: {}{}\nAtom type: {}'.format(self.chainID,self.resiType,self.resiNum,self.atomType)
+        summaryString = 'Chain: {}\nResidue: {}{}\nAtom type: {}'.format(self.chainID, self.resiType, self.resiNum, self.atomType)
         print summaryString
     # end getAtomSummary
 # end atom class

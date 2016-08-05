@@ -1,5 +1,6 @@
-# write graphs
 
+
+# write output graphs
 def make_csv(atomList, filename, noAtm, avB, binSize, minPD, adjNo):
     import os
     if os.path.exists(filename):
@@ -118,11 +119,12 @@ def make_histogram(df, fileName, PDBcode, threshold):
 
     x = df.sort_values(by='BDAM', ascending=0)
     y = x.head(len(RHS_Bdam_values))
-    y.to_html(str(fileName) + 'Bdamage.html', index=False)
+    y = y.round({'AVRG BF': 2, 'BDAM': 2})
+    y.to_html(str(fileName) + 'Bdamage.html', index=False, float_format='%11.3f')
 
     # draw a line on kernel density plot at 5% threshold
     plt.plot([x_values_RHS[0], x_values_RHS[0]], [0, max(y_values)], linewidth=2)
-    plt.annotate(' boundary = {:.2f}'.format(x_values_RHS[0]), xy=[x_values_RHS[0], (0.8*max(y_values))])
+    plt.annotate(' boundary = {:.2f}\n (threshold = {:})'.format(x_values_RHS[0], threshold), xy=[x_values_RHS[0], (0.8*max(y_values))])
     plt.xlabel('B Damage')
     plt.ylabel('Frequency')
     plt.title(str(PDBcode) + ' kernel density plot')
@@ -154,7 +156,7 @@ def make_colourbyBdam_pdb(df, bof, eof, fileName, atomList, x_values_RHS):
         l = float(np.log(atm.bd))
         m = str(atm.atomID)
         n = str(atm.charge)
-        newLine = '%-6s%5d  %-3s %3s %1s%4d    %8.3f%8.3f%8.3f%6.2f%6.2f          %2s%2s\n' % (a,b,c,d,e,f,g,h,j,k,l,m,n)
+        newLine = '%-6s%5d  %-3s %3s %1s%4d    %8.3f%8.3f%8.3f%6.2f%6.2f          %2s%2s\n' % (a, b, c, d, e, f, g, h, j, k, l, m, n)
         newPDBfile.write(newLine)
 
     for line in eof:
@@ -183,7 +185,7 @@ def make_colourbyBdam_pdb(df, bof, eof, fileName, atomList, x_values_RHS):
             l = float(atm.bd)
             m = str(atm.atomID)
             n = str(atm.charge)
-            newLine = '%-6s%5d  %-3s %3s %1s%4d    %8.3f%8.3f%8.3f%6.2f%6.2f          %2s%2s\n' % (a,b,c,d,e,f,g,h,j,k,l,m,n)
+            newLine = '%-6s%5d  %-3s %3s %1s%4d    %8.3f%8.3f%8.3f%6.2f%6.2f          %2s%2s\n' % (a, b, c, d, e, f, g, h, j, k, l, m, n)
             newPDBfile.write(newLine)
         else:
             a = str(atm.lineID)
@@ -199,7 +201,7 @@ def make_colourbyBdam_pdb(df, bof, eof, fileName, atomList, x_values_RHS):
             l = 0
             m = str(atm.atomID)
             n = str(atm.charge)
-            newLine = '%-6s%5d  %-3s %3s %1s%4d    %8.3f%8.3f%8.3f%6.2f%6.2f          %2s%2s\n' % (a,b,c,d,e,f,g,h,j,k,l,m,n)
+            newLine = '%-6s%5d  %-3s %3s %1s%4d    %8.3f%8.3f%8.3f%6.2f%6.2f          %2s%2s\n' % (a, b, c, d, e, f, g, h, j, k, l, m, n)
             newPDBfile.write(newLine)
 
     for line in eof:
