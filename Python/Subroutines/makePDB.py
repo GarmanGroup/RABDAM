@@ -1,42 +1,13 @@
 
 
 # method to make a pdb from complete set of atom information and pdb header/footer
-def makePDB(bof, atomList, eof, newPDBfilename, owChoice):
-    import os #for operating system usability
-    prompt = '> '
-    from parsePDB import atom #for utilising the 'atom' class
-    if os.path.exists(newPDBfilename):
-        print 'File %s already exists' % newPDBfilename
-        if owChoice == 'all':
-            print 'Overwriting existing file'
-            #delete the exisiting file and continue with method
-            os.remove(newPDBfilename)
-        #exit method if file exists
-        elif owChoice == 'none':
-            return
-        else:
-            print 'Do you want to overwrite the existing file?\n'
-            print '--USER INPUT-- type your choice and press RETURN\n'
-            print 'yes = overwrite this file (DEFAULT)'
-            print 'no = do not overwrite this file'
-            owChoice = raw_input(prompt)
-            if owChoice == 'yes':
-                print 'overwriting existing file'
-                #delete the exisiting file and continue with method
-                os.remove(newPDBfilename)
-            elif owChoice == 'no':
-                return
-            else:
-                print 'unrecognised input - overwriting existing file'
-                #delete the exisiting file and continue with method
-                os.remove(newPDBfilename)
-        return
-    newPDBfile = open(newPDBfilename,'a')
+def makePDB(bof, atomList, eof, newPDBfilename):
+    newPDBfile = open(newPDBfilename, 'a')
     for line in bof:
-        #write line to new PDB file
+        # write line to new PDB file
         newPDBfile.write(line)
     for atm in atomList:
-        #take object information to a set of temporary variables
+        # take object information to a set of temporary variables
         a = str(atm.lineID)
         b = int(atm.atomNum)
         c = str(atm.atomType)
