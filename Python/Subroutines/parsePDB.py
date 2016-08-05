@@ -57,13 +57,18 @@ def downloadPDB(PDBcode, PDBdirectory, pathToPDB):
 
 # copy .pdb file to another location
 def copyPDB(pathToPDB, newPathToPDB, PDBdirectory):
-    import os  # for operating system usability
-    if not os.path.exists(PDBdirectory):
-        os.makedirs(PDBdirectory)
+    import os
+    owd = os.getcwd()
+
+    os.chdir('c:\\')
     origPDB = open(pathToPDB, 'r')
+
     # write file containing copied content
+    os.chdir(owd)
+    os.makedirs(PDBdirectory)
     localFile = open(newPathToPDB, 'w')
     localFile.write(origPDB.read())
+
     # inform user of file location of new copy of PDB file
     print 'PDB file copied to %s' % newPathToPDB
     # close local file to free up memory
@@ -116,7 +121,7 @@ def parsePDB(fileName, addAtoms, removeAtoms):
             alAppend(y)
 
         if ('ATOM  ' in str(line[0:6])) or ('HETATM' in str(line[0:6])):
-            if str(line[17:20]) not in ['HOH', 'H2O', 'DOD', 'D2O', 'WAT']:
+            if str((line[17:20]).strip()) not in ['HOH', 'H2O', 'DOD', 'D2O', 'WAT']:
                 if str((line[6:11]).strip()) not in removeAtoms:
                     beforeAtoms = False
                     y = atom()  # make new 'atom' object here

@@ -9,14 +9,19 @@ from CalculateBdamage import rabdam
 fileCont = open(sys.argv[1], 'r')
 # write the string of the function arguments
 functionArgs = fileCont.read()
+splitArgs = functionArgs.split(',')
+pathToPDB = splitArgs[0]
+pathToPDB = pathToPDB.strip()
+
+# write the string of the function arguments
+functionArgs = fileCont.read()
 # remove all whitespace from the inputs
 functionArgs = functionArgs.replace(' ', '')
 functionArgs = functionArgs.replace('\n', '')
 functionArgs = functionArgs.replace('\r', '')
 # split the input file into its components
 splitArgs = functionArgs.split(',')
-# parse the argument string and assign values to RABDAM inputs
-pathToPDB = splitArgs[0]
+
 # initialise the argument defaults
 pdtVal = int(14)
 binVal = int(10)
@@ -26,6 +31,7 @@ thresholdVal = float(0.02)
 aucVal = False
 taVal = False
 
+# parse the argument string and assign values to RABDAM inputs
 for x in xrange(1, len(splitArgs)):
     if splitArgs[x][0:3] == 'PDT':
         pdtArg = splitArgs[x].split('=')
