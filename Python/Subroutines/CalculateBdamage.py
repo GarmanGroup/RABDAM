@@ -5,7 +5,7 @@ def rabdam(pathToPDB, PDT=14, binSize=10, addAtoms=[], removeAtoms=[], threshold
     print('\nRABDAM\n')
     print('\n')
     print('Please cite: M. Gerstel, C. M. Deane and E.F. Garman. (2015).\nJ. Synchrotron Radiation. 22, 201-212\nhttp://dx.doi.org/doi:10.1107/S1600577515002131\n')
-    #import packages required for running the program
+    # import packages required for running the program
     import time  # for recording how long the script takes to run
     import sys  # for terminating script when encountering errors
     prompt = '> '
@@ -89,21 +89,23 @@ def rabdam(pathToPDB, PDT=14, binSize=10, addAtoms=[], removeAtoms=[], threshold
             print 'Folder %s already exists locally at %s' % (PDBcode, pathToPDB)
             print 'Do you want to overwrite the existing file?\n'
             print '--USER INPUT-- type your choice and press RETURN\n'
-            print 'yes = overwrite this folder (DEFAULT)'
+            print 'yes = overwrite this folder'
             print 'no = do not overwrite this folder'
-            owChoice = raw_input(prompt)
-            if owChoice == 'yes':
-                print 'overwriting existing folder'
-                shutil.rmtree(str(PDBdirectory))
-                downloadPDB(PDBcode, PDBdirectory, pathToPDB)
-            elif owChoice == 'no':
-                print 'keeping original folder'
-                print 'exiting RABDAM'
-                sys.exit()
-            else:
-                print 'unrecognised input - overwriting existing file'
-                shutil.rmtree(str(PDBdirectory))
-                downloadPDB(PDBcode, PDBdirectory, pathToPDB)
+            owChoice = None
+            while owChoice not in ['yes', 'no']:
+                owChoice = raw_input(prompt)
+                if owChoice == 'yes':
+                    print 'overwriting existing folder'
+                    shutil.rmtree(str(PDBdirectory))
+                    downloadPDB(PDBcode, PDBdirectory, pathToPDB)
+                    break
+                elif owChoice == 'no':
+                    print 'keeping original folder'
+                    print 'exiting RABDAM'
+                    sys.exit()
+                    break
+                else:
+                    print 'unrecognised input - please answer yes or no'
         else:
             downloadPDB(PDBcode, PDBdirectory, pathToPDB)
             owChoice = 'null'
@@ -132,24 +134,25 @@ def rabdam(pathToPDB, PDT=14, binSize=10, addAtoms=[], removeAtoms=[], threshold
             if os.path.isfile(newPathToPDB):
                 # inform the user that file already exists
                 print 'Folder %s already exists locally at %s' % (PDBcode, newPathToPDB)
-                print 'Do you want to overwrite the existing file?\n'
+                print 'Do you want to overwrite the existing folder?\n'
                 print '--USER INPUT-- type your choice and press RETURN\n'
-                print 'yes = overwrite this folder (DEFAULT)'
+                print 'yes = overwrite this folder'
                 print 'no = do not overwrite this folder'
-                owChoice = raw_input(prompt)
-                print ''
-                if owChoice == 'yes':
-                    print 'overwriting existing folder'
-                    shutil.rmtree(str(PDBdirectory))
-                    copyPDB(pathToPDB, newPathToPDB, PDBdirectory)
-                elif owChoice == 'no':
-                    print 'keeping original folder'
-                    print 'exiting RABDAM'
-                    sys.exit()
-                else:
-                    print 'unrecognised input - overwriting existing file'
-                    shutil.rmtree(str(PDBdirectory))
-                    copyPDB(pathToPDB, newPathToPDB, PDBdirectory)
+                owChoice = None
+                while owChoice not in ['yes', 'no']:
+                    owChoice = raw_input(prompt)
+                    if owChoice == 'yes':
+                        print 'overwriting existing folder'
+                        shutil.rmtree(str(PDBdirectory))
+                        copyPDB(pathToPDB, newPathToPDB, PDBdirectory)
+                        break
+                    elif owChoice == 'no':
+                        print 'keeping original folder'
+                        print 'exiting RABDAM'
+                        sys.exit()
+                        break
+                    else:
+                        print 'unrecognised input - please answer yes or no'
             else:
                 # make local copy in Logfiles
                 copyPDB(pathToPDB, newPathToPDB, PDBdirectory)
@@ -157,7 +160,6 @@ def rabdam(pathToPDB, PDT=14, binSize=10, addAtoms=[], removeAtoms=[], threshold
             # chack that file has downloaded and saved correctly
             if not os.path.exists(newPathToPDB):
                 sys.exit('Error 04: Failed to copy PDB to a local version.\nCheck that supplied PDB is not in use by another program')
-
             # rename pathToPDB variable so that files generated by RABDAM are saved in the PDB code folder
             pathToPDB = newPathToPDB
         else:
@@ -295,7 +297,7 @@ def rabdam(pathToPDB, PDT=14, binSize=10, addAtoms=[], removeAtoms=[], threshold
         else:
             print 'Total time taken for program to run was %02.3f seconds.\n\n' % seconds
     elif minutes == 1:
-        print 'Total time taken for program to run was %01.0f minute and %02.3f seconds.\n\n' % (minutes,seconds)
+        print 'Total time taken for program to run was %01.0f minute and %02.3f seconds.\n\n' % (minutes, seconds)
     else:
-        print 'Total time taken for program to run was %01.0f minutes and %02.3f seconds.\n\n' % (minutes,seconds)
+        print 'Total time taken for program to run was %01.0f minutes and %02.3f seconds.\n\n' % (minutes, seconds)
 # end
