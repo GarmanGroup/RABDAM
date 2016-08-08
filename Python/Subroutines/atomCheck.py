@@ -1,7 +1,7 @@
 
 
 def convertParams(params, margin):
-    convParams = [0,0,0,0,0,0]
+    convParams = [0, 0, 0, 0, 0, 0]
     convParams[0] = float(params[0]) - margin
     convParams[1] = float(params[1]) + margin
     convParams[2] = float(params[2]) - margin

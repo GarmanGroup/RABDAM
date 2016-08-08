@@ -29,18 +29,19 @@ def genPDBCURinputs(PDBCURinputFile):
 
 def runPDBCUR(pathToPDB, PDBCURoutputPDB, PDBCURinputFile, PDBCURlog):
     import os
-    #create a string for command line input to run PDBCUR
+    # create a string for command line input to run PDBCUR
     runPDBCURcommand = 'pdbcur xyzin %s xyzout %s < %s > %s' % (pathToPDB, PDBCURoutputPDB, PDBCURinputFile, PDBCURlog)
-    #run PDBCUR to specifications
+    # run PDBCUR to specifications
     print 'Running PDBCUR (Winn et al. 2011) to process the PDB file'
     os.system(runPDBCURcommand)
-    #inform user of generated PDBCUR output file
+    # inform user of generated PDBCUR output file
     print 'PDBCUR log is printed below\n'
-    #print PDBCUR output to log file
+    # print PDBCUR output to log file
     PDBCURlogText = open(PDBCURlog,'r')
     for line in PDBCURlogText:
         print line
     PDBCURlogText.close()
-    #delete separate PDBCUR log file and input file
+    # delete separate PDBCUR log file and input file
     os.remove(PDBCURlog)
-#end runPDBCUR
+    os.remove(PDBCURinputFile)
+# end runPDBCUR

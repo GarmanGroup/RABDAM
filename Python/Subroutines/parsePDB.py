@@ -37,11 +37,9 @@ def downloadPDB(PDBcode, PDBdirectory, pathToPDB):
     # create URL from which to download .pdb file
     urlText = 'http://www.rcsb.org/pdb/files/%s.pdb' % PDBcode
     # downlaod PDB file and save local copy
-    if os.path.exists(PDBdirectory):
-        print 'Directory %s already exists' % PDBdirectory
-    else:
-        os.makedirs(PDBdirectory)
-        print 'Directory %s created' % PDBdirectory
+    os.makedirs(PDBdirectory)
+    print 'Directory %s created' % PDBdirectory
+
     origPDB = urllib2.urlopen(urlText)
     # inform user of the URL used to download PDB file
     print 'Downloaded PDB file from %s' % urlText

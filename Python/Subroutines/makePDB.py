@@ -21,9 +21,9 @@ def makePDB(bof, atomList, eof, newPDBfilename):
         l = float(atm.bFactor)
         m = str(atm.atomID)
         n = str(atm.charge)
-        #concatenate temporary variables into a single string with correct PDB formatting
-        newLine = '%-6s%5d  %-3s %3s %1s%4d    %8.3f%8.3f%8.3f%6.2f%6.2f          %2s%2s\n' % (a,b,c,d,e,f,g,h,j,k,l,m,n)
-        #write line to new PDB file
+        # concatenate temporary variables into a single string with correct PDB formatting
+        newLine = '%-6s%5d  %-3s %3s %1s%4d    %8.3f%8.3f%8.3f%6.2f%6.2f          %2s%2s\n' % (a, b, c, d, e, f, g, h, j, k, l, m, n)
+        # write line to new PDB file
         newPDBfile.write(newLine)
     for line in eof:
         # write line to new PDB file
