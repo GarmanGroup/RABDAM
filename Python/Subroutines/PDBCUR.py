@@ -1,14 +1,6 @@
 
 
 def genPDBCURinputs(PDBCURinputFile):
-    import os  # for operating system usability
-    # check if an input file has already been created
-    if os.path.exists(PDBCURinputFile):
-        # inform user file already exists
-        print 'Input file for PDBCUR already exists at %s' % PDBCURinputFile
-        # exit method if file exists
-        return
-    # open a text file for writing
     print 'Creating input file for PDBCUR at %s' % PDBCURinputFile
     # write input keywords to file for use with PDBCUR
     with open(PDBCURinputFile, 'w') as f:

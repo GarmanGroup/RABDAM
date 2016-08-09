@@ -1,57 +1,6 @@
+
+
 import numpy as np
-# Copyright Thomas Dixon 2015
-
-
-# calculate the distance between two atoms
-def calcDist(atomA, atomB):
-    import math  # for obtaining the square root
-    # obtain two sets of atom coordinates for the atoms
-    aCoords = atomA.xyzCoords
-    bCoords = atomB.xyzCoords
-    # find the linear displaements of the atoms from each other along the three Cartesian axes
-    x = aCoords[0][0] - bCoords[0][0]
-    y = aCoords[1][0] - bCoords[1][0]
-    z = aCoords[2][0] - bCoords[2][0]
-    # find the distance between the two atoms
-    d = math.sqrt(x**2 + y**2 + z**2)
-    return d
-# end calcDist
-
-
-# method to count the number of atoms within the given radius of an atom
-def countInRadius(atm, atomList, r):
-    from Bdamage import calcDist  # calcualtes the distance between two atoms in 3D space
-    # set packing density counter to -1
-    PD = int(-1)
-    # for every atom
-    for atom in atomList:
-        # calculate the distance between the two atoms
-        if calcDist(atm, atom) < r:
-            # if the distance is less than the PDT, increment the counter
-            PD = int(PD + 1)
-        atm.pd = PD
-    # return packing density of the atom once all comparisons have been made
-    return
-
-
-# Calculate packing density for all atoms in the original PDB file
-def calcPDT(auAtomList, atomList, PDT):
-    from Bdamage import countInRadius  # counts atoms within PDT
-    # set initial values for min/maxPD
-    minPD = len(atomList)
-    maxPD = 0
-    # for every atom in the asymmetric unit
-    for atom in auAtomList:
-        countInRadius(atom, atomList, PDT)
-        # update min/maxPD if necessary
-        if atom.pd < minPD:
-            minPD = atom.pd
-        elif atom.pd > maxPD:
-            maxPD = atom.pd
-    print 'Packing Density (PD) values successfully calculated'
-    return int(minPD), int(maxPD)
-# end calcPackingDensity
-
 
 def get_xyz_from_objects(auAtomList, atomList):
     """ Function to return numpy arrays of the x, y, z coordinates of the atoms

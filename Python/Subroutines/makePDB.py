@@ -33,80 +33,102 @@ def makePDB(bof, atomList, eof, newPDBfilename):
 # end makePDB
 
 
-def writeBdam(atomList, noAtm, avB, binSize, minPD, adjNo, bdamatomList):
+def writeBdam(noAtm, avB, binSize, minPD, adjNo, bdamatomList):
     # method to write an output file for the calculated Bdamage values
     import pandas as pd
     import numpy as np
-
     numberOfRows = len(bdamatomList)
-    df = pd.DataFrame(index=np.arange(0, numberOfRows),
-                      columns=['REC',
-                               'ATMNUM',
-                               'ATMNAME',
-                               'RESNAME',
-                               'CHAIN',
-                               'RESNUM',
-                               'XPOS',
-                               'YPOS',
-                               'ZPOS',
-                               'OCC',
-                               'BFAC',
-                               'ELEMENT',
-                               'CHARGE',
-                               'PD',
-                               'BIN',
-                               'GNUM',
-                               'ANUM',
-                               'AVRG BF',
-                               'BDAM'])
+    columns = ['REC',
+               'ATMNUM',
+               'ATMNAME',
+               'RESNAME',
+               'CHAIN',
+               'RESNUM',
+               'XPOS',
+               'YPOS',
+               'ZPOS',
+               'OCC',
+               'BFAC',
+               'ELEMENT',
+               'CHARGE',
+               'PD',
+               'BIN',
+               'GNUM',
+               'ANUM',
+               'AVRG BF',
+               'BDAM']
 
-    for atm in atomList:
-        # take object information to a set of temporary variables
+    REC = [None]*len(bdamatomList)
+    ATMNUM = [None]*len(bdamatomList)
+    ATMNAME = [None]*len(bdamatomList)
+    RESNAME = [None]*len(bdamatomList)
+    CHAIN = [None]*len(bdamatomList)
+    RESNUM = [None]*len(bdamatomList)
+    XPOS = [None]*len(bdamatomList)
+    YPOS = [None]*len(bdamatomList)
+    ZPOS = [None]*len(bdamatomList)
+    OCC = [None]*len(bdamatomList)
+    BFAC = [None]*len(bdamatomList)
+    ELEMENT = [None]*len(bdamatomList)
+    CHARGE = [None]*len(bdamatomList)
+    PD = [None]*len(bdamatomList)
+    BIN = [None]*len(bdamatomList)
+    GNUM = [None]*len(bdamatomList)
+    ANUM = [None]*len(bdamatomList)
+    AVRG_BF = [None]*len(bdamatomList)
+    BDAM = [None]*len(bdamatomList)
 
+    for index, atm in enumerate(bdamatomList):
         q = int(atm.gn)
         gNo = q - 1
         binMin = int(adjNo + gNo*binSize)
         binMax = int(adjNo + q*binSize)
 
-        dfatm = pd.DataFrame([[atm.lineID,
-                               atm.atomNum,
-                               atm.atomType,
-                               atm.resiType,
-                               atm.chainID,
-                               atm.resiNum,
-                               atm.xyzCoords[0][0],
-                               atm.xyzCoords[1][0],
-                               atm.xyzCoords[2][0],
-                               atm.occupancy,
-                               atm.bFactor,
-                               atm.atomID,
-                               atm.charge,
-                               atm.pd,
-                               ' %3d <= PD < %-3d' % (binMin, binMax),
-                               atm.gn,
-                               noAtm[gNo],
-                               avB[gNo],
-                               atm.bd]],
-                             columns=['REC',
-                                      'ATMNUM',
-                                      'ATMNAME',
-                                      'RESNAME',
-                                      'CHAIN',
-                                      'RESNUM',
-                                      'XPOS',
-                                      'YPOS',
-                                      'ZPOS',
-                                      'OCC',
-                                      'BFAC',
-                                      'ELEMENT',
-                                      'CHARGE',
-                                      'PD',
-                                      'BIN',
-                                      'GNUM',
-                                      'ANUM',
-                                      'AVRG BF',
-                                      'BDAM'])
+        REC[index] = atm.lineID
+        ATMNUM[index] = atm.atomNum
+        ATMNAME[index] = atm.atomType
+        RESNAME[index] = atm.resiType
+        CHAIN[index] = atm.chainID
+        RESNUM[index] = atm.resiNum
+        XPOS[index] = atm.xyzCoords[0][0]
+        YPOS[index] = atm.xyzCoords[1][0]
+        ZPOS[index] = atm.xyzCoords[2][0]
+        OCC[index] = atm.occupancy
+        BFAC[index] = atm.bFactor
+        ELEMENT[index] = atm.atomID
+        CHARGE[index] = atm.charge
+        PD[index] = atm.pd
+        BIN[index] = '%3d <= PD < %-3d' % (binMin, binMax)
+        GNUM[index] = atm.gn
+        ANUM[index] = noAtm[gNo]
+        AVRG_BF[index] = avB[gNo]
+        BDAM[index] = atm.bd
 
-        df = df.append(dfatm, ignore_index=True)
-
+    df = pd.DataFrame(index=np.arange(numberOfRows), columns=columns)
+    df = pd.DataFrame({'REC': REC,
+                       'ATMNUM': ATMNUM,
+                       'ATMNAME': ATMNAME,
+                       'RESNAME': RESNAME,
+                       'CHAIN': CHAIN,
+                       'RESNUM': RESNUM,
+                       'XPOS': XPOS,
+                       'YPOS': YPOS,
+                       'ZPOS': ZPOS,
+                       'OCC': OCC,
+                       'BFAC': BFAC,
+                       'ELEMENT': ELEMENT,
+                       'CHARGE': CHARGE,
+                       'PD': PD,
+                       'BIN': BIN,
+                       'GNUM': GNUM,
+                       'ANUM': ANUM,
+                       'AVRG BF': AVRG_BF,
+                       'BDAM': BDAM})
+    cols = df.columns.tolist()
+    cols_a = [cols[13]] + [cols[2]] + [cols[1]] + [cols[14]] + [cols[7]]
+    cols_b = [cols[15]] + [cols[16]] + [cols[17]] + [cols[18]] + [cols[11]]
+    cols_c = [cols[5]] + [cols[9]] + [cols[8]] + [cols[12]] + [cols[6]]
+    cols_d = [cols[10]] + [cols[0]] + [cols[3]] + [cols[4]]
+    cols = cols_a + cols_b + cols_c + cols_d
+    df = df[cols]
     return df

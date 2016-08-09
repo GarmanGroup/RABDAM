@@ -211,13 +211,8 @@ def rabdam(pathToPDB, PDT=14, binSize=10, addAtoms=[], removeAtoms=[], threshold
                 if a == 0 and b == 0 and c == 0:
                     pass
                 else:
-                    # Translate all atoms in the unit cell
-                    newXYZlist = translateUnitCell(xyzList, cartesianVectors, a, b, c)
-                    # append the translated atom object to list
-                    for n in xrange(len(newXYZlist)):
-                        atm = duplicate(ucAtomList[n])
-                        atm.xyzCoords = duplicate(newXYZlist[n])
-                        taAppend(atm)
+                    transAtomList = translateUnitCell(xyzList, ucAtomList, transAtomList, cartesianVectors, a, b, c)
+
     print ''
     if createAUCpdb is True:
         aucPDBfilepath = '%sAllUnitCells.pdb' % fileName
@@ -275,7 +270,7 @@ def rabdam(pathToPDB, PDT=14, binSize=10, addAtoms=[], removeAtoms=[], threshold
     groupNoAtoms, groupAvBfacs = calcBdam(bdamAtomList, noOfGroups)
     print 'Writing Bdamage data to output file'
 
-    df = writeBdam(bdamAtomList, groupNoAtoms, groupAvBfacs, binSize, minPD, adjtNo, bdamAtomList)
+    df = writeBdam(groupNoAtoms, groupAvBfacs, binSize, minPD, adjtNo, bdamAtomList)
     x_values_RHS = make_histogram(df, fileName, PDBcode, threshold)
 
     bDamFileName = '%sBdamage.csv' % fileName

@@ -82,6 +82,7 @@ def make_histogram(df, fileName, PDBcode, threshold):
     import matplotlib.pyplot as plt
     import numpy as np
     import seaborn as sns
+    import pandas as pd
 
     # generate B_damage kernel density plot
     line1 = sns.distplot(df.BDAM.values, hist=False, rug=True)
@@ -117,10 +118,11 @@ def make_histogram(df, fileName, PDBcode, threshold):
         if value > x_values_RHS[0]:
             RHS_Bdam_values.append(value)
 
-    x = df.sort_values(by='BDAM', ascending=0)
-    y = x.head(len(RHS_Bdam_values))
-    y = y.round({'AVRG BF': 2, 'BDAM': 2})
-    y.to_html(str(fileName) + 'Bdamage.html', index=False, float_format='%11.3f')
+    df = df.sort_values(by='BDAM', ascending=0)
+    df = df.head(len(RHS_Bdam_values))
+    decimals = pd.Series([2, 2], index=['AVRG BF', 'BDAM'])
+    df = df.round(decimals)
+    df.to_html(str(fileName) + 'Bdamage.html', index=False, float_format='%11.3f')
 
     # draw a line on kernel density plot at 5% threshold
     plt.plot([x_values_RHS[0], x_values_RHS[0]], [0, max(y_values)], linewidth=2)

@@ -13,7 +13,7 @@ def convertToCartesian(unitCell):
     gamma = float(unitCell[5])
     # define parameter v, which is the volume of a unit parallelepiped with the
     # same angles as the unit cell
-    v = math.sqrt(1 - math.pow((math.cos(alpha)), 2) - math.pow((math.cos(beta)), 2) - math.pow((math.cos(gamma)), 2) + 2*(math.cos(alpha))*(math.cos(beta))*(math.cos(gamma)))
+    v = math.sqrt(1 - math.pow((math.cos(alpha)), 2) - math.pow((math.cos(beta)), 2) - math.pow((math.cos(gamma)), 2) + (2*(math.cos(alpha))*(math.cos(beta))*(math.cos(gamma))))
     # define the elements of the conversion matrix
     a11 = a
     a12 = b*math.cos(gamma)
@@ -53,12 +53,13 @@ def getXYZlist(atomList):
 # end getXYZlist
 
 
-def translateUnitCell(atomXYZlist, cartesianVectors, aTrans, bTrans, cTrans):
+def translateUnitCell(atomXYZlist, ucAtomList, transAtomList, cartesianVectors, aTrans, bTrans, cTrans):
     import copy  # for making shallow copies of variables/lists/objects etc.
     duplicate = copy.copy
     import numpy as np  # facilitates matrix manipulation
     # create puppet list to fill with atom objects
     newXYZlist = [0]*len(atomXYZlist)
+    taAppend = transAtomList.append
     # convert a/b/cTrans into matrices
     aTransMat = np.array([[aTrans], [aTrans], [aTrans]])
     bTransMat = np.array([[bTrans], [bTrans], [bTrans]])
@@ -70,9 +71,16 @@ def translateUnitCell(atomXYZlist, cartesianVectors, aTrans, bTrans, cTrans):
     # add the three vectors together to give a single translation vector
     transVector = np.add(aVec, bVec)
     transVector = np.add(transVector, cVec)
+
     for n in xrange(len(atomXYZlist)):
-        # apply this transformation to the atoms xyzCoords and write back to list
+    # apply this transformation to the atoms xyzCoords and write back to list
         newXYZlist[n] = np.add(np.array(duplicate(atomXYZlist[n])), transVector).tolist()
+
+        atm = duplicate(ucAtomList[n])
+        atm.xyzCoords = duplicate(newXYZlist[n])
+        taAppend(atm)
+
+
     print 'Successfully translated by (%2sa,%2sb,%2sc) unit cells' % (aTrans, bTrans, cTrans)
-    return newXYZlist
+    return transAtomList
 # end translateUnitCell
