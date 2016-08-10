@@ -123,16 +123,16 @@ def make_histogram(df, fileName, PDBcode, threshold, highlightAtoms):
     # draw a line on kernel density plot at 5% threshold
     plt.plot([x_values_RHS[0], x_values_RHS[0]], [0, max(y_values)], linewidth=2, color='black')
     plt.annotate(' boundary = {:.2f}\n (threshold = {:})'.format(x_values_RHS[0], threshold), xy=[x_values_RHS[0], (0.8*max(y_values))])
-    lines = []
+    lines = [None]
     for atm in highlightAtoms:
         for index, value in enumerate(df.ATMNUM.values):
             if float(atm) == value:
-                lines.append(index)
-    for line in lines:
-        for index, value in enumerate(df.BDAM.values):
-            if float(line) == index:
-                plt.plot([value, value], [0, max(y_values)], linewidth=2)
-                plt.annotate(' atom' + str(atm) + '\n B_damage = {:.2f}'.format(value), xy=[value, 0.6*max(y_values)])
+                lines[0] = index
+        for line in lines:
+            for index, value in enumerate(df.BDAM.values):
+                if float(line) == index:
+                    plt.plot([value, value], [0, max(y_values)], linewidth=2)
+                    plt.annotate(' atom' + str(atm) + '\n B_damage = {:.2f}'.format(value), xy=[value, 0.6*max(y_values)])
 
     plt.xlabel('B Damage')
     plt.ylabel('Frequency')
