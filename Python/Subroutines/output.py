@@ -1,81 +1,76 @@
 
 
 # write output graphs
-def make_csv(atomList, filename, noAtm, avB, binSize, minPD, adjNo):
-    import os
-    if os.path.exists(filename):
-        return
-    else:
-        newFile = open(filename, 'w')
+def make_csv(bdamatomList, filename, noAtm, avB, binSize, adjNo):
+    newFile = open(filename, 'w')
 
-        newFile.write('REC      = RECORD NAME\n'
-                      'ATMNUM   = ATOM SERIAL NUMBER\n'
-                      'ATMNAME  = ATOM NAME\n'
-                      'RESNAME  = RESIDUE NAME\n'
-                      'CHAIN    = CHAIN IDENTIFIER\n'
-                      'RESNUM   = RESIDUE SEQUENCE NUMBER\n'
-                      'XPOS     = ORTHOGONAL COORDINATES FOR X IN ANGSTROMS\n'
-                      'YPOS     = ORTHOGONAL COORDINATES FOR Y IN ANGSTROMS\n'
-                      'ZPOS     = ORTHOGONAL COORDINATES FOR Z IN ANGSTROMS\n'
-                      'OCC      = OCCUPANCY\n'
-                      'BFAC     = B FACTOR (TEMPERATURE FACTOR)\n'
-                      'ELEMENT  = ELEMENT SYMBOL\n'
-                      'CHARGE   = CHARGE ON ATOM\n'
-                      'PD       = PACKING DENSITY (ATOMIC CONTACT NUMBER)\n'
-                      'BIN      = SIMILAR PACKING DENSITY BIN\n'
-                      'GNUM     = SIMILAR PACKING DENSITY ENVIRONMENT GROUP NUMBER\n'
-                      'ANUM     = NUMBER OF ATOMS IN SIMILAR PACKING DENSITY GROUP\n'
-                      'AVRG BF  = AVERAGE B FACTOR FOR ATOMS IN SIMILAR PACKING DENSITY ENVIRONMENT\n'
-                      'BDAM     = BDAMAGE VALUE\n'
-                      '\n')
+    newFile.write('REC      = RECORD NAME\n'
+                  'ATMNUM   = ATOM SERIAL NUMBER\n'
+                  'ATMNAME  = ATOM NAME\n'
+                  'RESNAME  = RESIDUE NAME\n'
+                  'CHAIN    = CHAIN IDENTIFIER\n'
+                  'RESNUM   = RESIDUE SEQUENCE NUMBER\n'
+                  'XPOS     = ORTHOGONAL COORDINATES FOR X IN ANGSTROMS\n'
+                  'YPOS     = ORTHOGONAL COORDINATES FOR Y IN ANGSTROMS\n'
+                  'ZPOS     = ORTHOGONAL COORDINATES FOR Z IN ANGSTROMS\n'
+                  'OCC      = OCCUPANCY\n'
+                  'BFAC     = B FACTOR (TEMPERATURE FACTOR)\n'
+                  'ELEMENT  = ELEMENT SYMBOL\n'
+                  'CHARGE   = CHARGE ON ATOM\n'
+                  'PD       = PACKING DENSITY (ATOMIC CONTACT NUMBER)\n'
+                  'BIN      = SIMILAR PACKING DENSITY BIN\n'
+                  'GNUM     = SIMILAR PACKING DENSITY ENVIRONMENT GROUP NUMBER\n'
+                  'ANUM     = NUMBER OF ATOMS IN SIMILAR PACKING DENSITY GROUP\n'
+                  'AVRG BF  = AVERAGE B FACTOR FOR ATOMS IN SIMILAR PACKING DENSITY ENVIRONMENT\n'
+                  'BDAM     = BDAMAGE VALUE\n'
+                  '\n')
 
-        newFile.write('REC' + ','
-                      'ATMNUM' + ','
-                      'ATMNAME' + ','
-                      'RESNAME' + ','
-                      'CHAIN' + ','
-                      'RESNUM' + ','
-                      'XPOS' + ','
-                      'YPOS' + ','
-                      'ZPOS' + ','
-                      'OCC' + ','
-                      'BFAC' + ','
-                      'ELEMENT' + ','
-                      'CHARGE' + ','
-                      'PD' + ','
-                      'BIN' + ','
-                      'GNUM' + ','
-                      'ANUM' + ','
-                      'AVRG BF' + ','
-                      'BDAM' + '\n')
-        for atm in atomList:
-            q = int(atm.gn)
-            gNo = q - 1
-            binMin = int(adjNo + gNo*binSize)
-            binMax = int(adjNo + q*binSize)
+    newFile.write('REC' + ','
+                  'ATMNUM' + ','
+                  'ATMNAME' + ','
+                  'RESNAME' + ','
+                  'CHAIN' + ','
+                  'RESNUM' + ','
+                  'XPOS' + ','
+                  'YPOS' + ','
+                  'ZPOS' + ','
+                  'OCC' + ','
+                  'BFAC' + ','
+                  'ELEMENT' + ','
+                  'CHARGE' + ','
+                  'PD' + ','
+                  'BIN' + ','
+                  'GNUM' + ','
+                  'ANUM' + ','
+                  'AVRG BF' + ','
+                  'BDAM' + '\n')
+    for atm in bdamatomList:
+        group_no = int(atm.gn)
+        adj_group_no = group_no - 1
+        binMin = int(adjNo + adj_group_no*binSize)
+        binMax = int(adjNo + group_no*binSize)
 
-            newFile.write(str(atm.lineID) + ',')
-            newFile.write(str(atm.atomNum) + ',')
-            newFile.write(str(atm.atomType) + ',')
-            newFile.write(str(atm.resiType) + ',')
-            newFile.write(str(atm.chainID) + ',')
-            newFile.write(str(atm.resiNum) + ',')
-            newFile.write(str(atm.xyzCoords[0][0]) + ',')
-            newFile.write(str(atm.xyzCoords[1][0]) + ',')
-            newFile.write(str(atm.xyzCoords[2][0]) + ',')
-            newFile.write(str(atm.occupancy) + ',')
-            newFile.write(str(atm.bFactor) + ',')
-            newFile.write(str(atm.atomID) + ',')
-            newFile.write(str(atm.charge) + ',')
-            newFile.write(str(atm.pd) + ',')
-            newFile.write(str(' %3d <= PD < %-3d' % (binMin, binMax)) + ',')
-            newFile.write(str(atm.gn) + ',')
-            newFile.write(str(noAtm[gNo]) + ',')
-            newFile.write(str(avB[gNo]) + ',')
-            newFile.write(str(atm.bd) + '\n')
+        newFile.write(str(atm.lineID) + ',')
+        newFile.write(str(atm.atomNum) + ',')
+        newFile.write(str(atm.atomType) + ',')
+        newFile.write(str(atm.resiType) + ',')
+        newFile.write(str(atm.chainID) + ',')
+        newFile.write(str(atm.resiNum) + ',')
+        newFile.write(str(atm.xyzCoords[0][0]) + ',')
+        newFile.write(str(atm.xyzCoords[1][0]) + ',')
+        newFile.write(str(atm.xyzCoords[2][0]) + ',')
+        newFile.write(str(atm.occupancy) + ',')
+        newFile.write(str(atm.bFactor) + ',')
+        newFile.write(str(atm.atomID) + ',')
+        newFile.write(str(atm.charge) + ',')
+        newFile.write(str(atm.pd) + ',')
+        newFile.write(str(' %3d <= PD < %-3d' % (binMin, binMax)) + ',')
+        newFile.write(str(atm.gn) + ',')
+        newFile.write(str(noAtm[adj_group_no]) + ',')
+        newFile.write(str(avB[adj_group_no]) + ',')
+        newFile.write(str(atm.bd) + '\n')
 
-        print 'New PDB file saved to %s' % filename
-        newFile.close()
+    newFile.close()
 
 
 def make_histogram(df, fileName, PDBcode, threshold):
@@ -115,14 +110,14 @@ def make_histogram(df, fileName, PDBcode, threshold):
     # write dataframe to html, highlighting atoms with B_damage values which lie above the 5% threshold
     RHS_Bdam_values = []
     for index, value in enumerate(df.BDAM.values):
-        if value > x_values_RHS[0]:
+        if value >= x_values_RHS[0]:
             RHS_Bdam_values.append(value)
 
     df = df.sort_values(by='BDAM', ascending=0)
-    df = df.head(len(RHS_Bdam_values))
-    decimals = pd.Series([2, 2], index=['AVRG BF', 'BDAM'])
-    df = df.round(decimals)
-    df.to_html(str(fileName) + 'Bdamage.html', index=False, float_format='%11.3f')
+    df_trunc = df.head(len(RHS_Bdam_values))
+    decimals = pd.Series([2, 2, 2], index=['BFAC', 'AVRG BF', 'BDAM'])
+    df_trunc = df_trunc.round(decimals)
+    df_trunc.to_html(str(fileName) + 'Bdamage.html', index=False, float_format='%11.3f')
 
     # draw a line on kernel density plot at 5% threshold
     plt.plot([x_values_RHS[0], x_values_RHS[0]], [0, max(y_values)], linewidth=2)
@@ -173,7 +168,7 @@ def make_colourbyBdam_pdb(df, bof, eof, fileName, atomList, x_values_RHS):
         newPDBfile.write(line)
 
     for atm in atomList:
-        if float(atm.bd) > x_values_RHS[0]:
+        if float(atm.bd) >= x_values_RHS[0]:
             a = str(atm.lineID)
             b = int(atm.atomNum)
             c = str(atm.atomType)
@@ -184,7 +179,7 @@ def make_colourbyBdam_pdb(df, bof, eof, fileName, atomList, x_values_RHS):
             h = float(atm.xyzCoords[1][0])
             j = float(atm.xyzCoords[2][0])
             k = float(atm.occupancy)
-            l = float(atm.bd)
+            l = float(np.log(atm.bd))
             m = str(atm.atomID)
             n = str(atm.charge)
             newLine = '%-6s%5d  %-3s %3s %1s%4d    %8.3f%8.3f%8.3f%6.2f%6.2f          %2s%2s\n' % (a, b, c, d, e, f, g, h, j, k, l, m, n)
@@ -200,7 +195,7 @@ def make_colourbyBdam_pdb(df, bof, eof, fileName, atomList, x_values_RHS):
             h = float(atm.xyzCoords[1][0])
             j = float(atm.xyzCoords[2][0])
             k = float(atm.occupancy)
-            l = 0
+            l = np.log(x_values_RHS[0]) - 1
             m = str(atm.atomID)
             n = str(atm.charge)
             newLine = '%-6s%5d  %-3s %3s %1s%4d    %8.3f%8.3f%8.3f%6.2f%6.2f          %2s%2s\n' % (a, b, c, d, e, f, g, h, j, k, l, m, n)

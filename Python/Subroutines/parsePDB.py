@@ -6,27 +6,21 @@ class atom(object):
     def __init__(self, lineidentifier="", atomnum=0, residuenum=0, atomtype="", resitype="",
                  chainID="", xyz_coords=[], atomidentifier="", bfactor=0, occupancy=1, charge="",
                  packingdensity=0, groupnumber=0, bdamage=0):
-        self.lineID     = lineidentifier
-        self.atomNum    = atomnum
-        self.resiNum    = residuenum
-        self.atomType   = atomtype
-        self.resiType   = resitype
-        self.chainID    = chainID
-        self.xyzCoords  = xyz_coords
-        self.atomID     = atomidentifier
-        self.bFactor    = bfactor
-        self.occupancy  = occupancy
-        self.charge     = charge
-        self.pd         = packingdensity
-        self.group      = groupnumber
-        self.bd         = bdamage
+        self.lineID = lineidentifier
+        self.atomNum = atomnum
+        self.resiNum = residuenum
+        self.atomType = atomtype
+        self.resiType = resitype
+        self.chainID = chainID
+        self.xyzCoords = xyz_coords
+        self.atomID = atomidentifier
+        self.bFactor = bfactor
+        self.occupancy = occupancy
+        self.charge = charge
+        self.pd = packingdensity
+        self.group = groupnumber
+        self.bd = bdamage
     # end Initialise class
-
-    # print a summary of atom info to command line
-    def getAtomSummary(self):
-        summaryString = 'Chain: {}\nResidue: {}{}\nAtom type: {}'.format(self.chainID, self.resiType, self.resiNum, self.atomType)
-        print summaryString
-    # end getAtomSummary
 # end atom class
 
 
@@ -71,11 +65,12 @@ def copyPDB(pathToPDB, newPathToPDB, PDBdirectory):
     print 'PDB file copied to %s' % newPathToPDB
     # close local file to free up memory
     localFile.close()
+    origPDB.close()
 # end copyPDB
 
 
 # parse pdb file with name 'fileName' and return list of atoms from 'atom' class above
-def parsePDB(fileName, addAtoms, removeAtoms):
+def parsePDB(fileName, HETATM, addAtoms, removeAtoms):
     import os  # for operating system usability
     import sys  # for terminating script when encountering errors
     from parsePDB import atom  # for utilising the 'atom' class
@@ -88,7 +83,7 @@ def parsePDB(fileName, addAtoms, removeAtoms):
     bdamatomList = []
     eof = []
     beforeAtoms = True
-    # add definitions for dot functions to speed up code?
+    # add definitions for dot functions to speed up code
     bAppend = bof.append
     alAppend = atomList.append
     bdalAppend = bdamatomList.append
@@ -102,64 +97,104 @@ def parsePDB(fileName, addAtoms, removeAtoms):
             beforeAtoms = False
             y = atom()  # make new 'atom' object here
             # get atom properties here
-            y.lineID    = str(line[0:6].strip())
-            y.atomNum   = int(line[6:11].strip())
-            y.atomType  = str(line[12:16].strip())
-            y.resiType  = str(line[17:20].strip())
-            y.chainID   = str(line[21:22].strip())
-            y.resiNum   = int(line[22:26].strip())
+            y.lineID = str(line[0:6].strip())
+            y.atomNum = int(line[6:11].strip())
+            y.atomType = str(line[12:16].strip())
+            y.resiType = str(line[17:20].strip())
+            y.chainID = str(line[21:22].strip())
+            y.resiNum = int(line[22:26].strip())
             y.xyzCoords = [[float(line[30:38].strip())],
                            [float(line[38:46].strip())],
                            [float(line[46:54].strip())]]
             y.occupancy = float(line[54:60].strip())
-            y.bFactor   = float(line[60:66].strip())
-            y.atomID    = str(line[77:79].strip())
-            y.charge    = str(line[79:81].strip())
+            y.bFactor = float(line[60:66].strip())
+            y.atomID = str(line[77:79].strip())
+            y.charge = str(line[79:81].strip())
             # append new 'atom' object to list
             alAppend(y)
 
-        if ('ATOM  ' in str(line[0:6])) or ('HETATM' in str(line[0:6])):
-            if str((line[17:20]).strip()) not in ['HOH', 'H2O', 'DOD', 'D2O', 'WAT']:
-                if str((line[6:11]).strip()) not in removeAtoms:
-                    beforeAtoms = False
+        if HETATM is True:
+            if ('ATOM  ' in str(line[0:6])) or ('HETATM' in str(line[0:6])):
+                if str((line[17:20]).strip()) not in ['HOH', 'H2O', 'DOD', 'D2O', 'WAT']:
+                    if str((line[6:11]).strip()) not in removeAtoms:
+                        y = atom()  # make new 'atom' object here
+                        # get atom properties here
+                        y.lineID = str(line[0:6].strip())
+                        y.atomNum = int(line[6:11].strip())
+                        y.atomType = str(line[12:16].strip())
+                        y.resiType = str(line[17:20].strip())
+                        y.chainID = str(line[21:22].strip())
+                        y.resiNum = int(line[22:26].strip())
+                        y.xyzCoords = [[float(line[30:38].strip())],
+                                       [float(line[38:46].strip())],
+                                       [float(line[46:54].strip())]]
+                        y.occupancy = float(line[54:60].strip())
+                        y.bFactor = float(line[60:66].strip())
+                        y.atomID = str(line[77:79].strip())
+                        y.charge = str(line[79:81].strip())
+                        # append new 'atom' object to list
+                        bdalAppend(y)
+
+            if ('ATOM  ' in str(line[0:6])) or ('HETATM' in str(line[0:6])):
+                if str((line[6:11]).strip()) in addAtoms:
                     y = atom()  # make new 'atom' object here
                     # get atom properties here
-                    y.lineID    = str(line[0:6].strip())
-                    y.atomNum   = int(line[6:11].strip())
-                    y.atomType  = str(line[12:16].strip())
-                    y.resiType  = str(line[17:20].strip())
-                    y.chainID   = str(line[21:22].strip())
-                    y.resiNum   = int(line[22:26].strip())
+                    y.lineID = str(line[0:6].strip())
+                    y.atomNum = int(line[6:11].strip())
+                    y.atomType = str(line[12:16].strip())
+                    y.resiType = str(line[17:20].strip())
+                    y.chainID = str(line[21:22].strip())
+                    y.resiNum = int(line[22:26].strip())
                     y.xyzCoords = [[float(line[30:38].strip())],
                                    [float(line[38:46].strip())],
                                    [float(line[46:54].strip())]]
                     y.occupancy = float(line[54:60].strip())
-                    y.bFactor   = float(line[60:66].strip())
-                    y.atomID    = str(line[77:79].strip())
-                    y.charge    = str(line[79:81].strip())
+                    y.bFactor = float(line[60:66].strip())
+                    y.atomID = str(line[77:79].strip())
+                    y.charge = str(line[79:81].strip())
                     # append new 'atom' object to list
                     bdalAppend(y)
 
-        if ('ATOM  ' in str(line[0:6])) or ('HETATM' in str(line[0:6])):
-            if str((line[6:11]).strip()) in addAtoms:
-                beforeAtoms = False
-                y = atom()  # make new 'atom' object here
-                # get atom properties here
-                y.lineID    = str(line[0:6].strip())
-                y.atomNum   = int(line[6:11].strip())
-                y.atomType  = str(line[12:16].strip())
-                y.resiType  = str(line[17:20].strip())
-                y.chainID   = str(line[21:22].strip())
-                y.resiNum   = int(line[22:26].strip())
-                y.xyzCoords = [[float(line[30:38].strip())],
-                               [float(line[38:46].strip())],
-                               [float(line[46:54].strip())]]
-                y.occupancy = float(line[54:60].strip())
-                y.bFactor   = float(line[60:66].strip())
-                y.atomID    = str(line[77:79].strip())
-                y.charge    = str(line[79:81].strip())
-                # append new 'atom' object to list
-                bdalAppend(y)
+        elif HETATM is False:
+            if ('ATOM  ' in str(line[0:6])):
+                if str((line[6:11]).strip()) not in removeAtoms:
+                    y = atom()  # make new 'atom' object here
+                    # get atom properties here
+                    y.lineID = str(line[0:6].strip())
+                    y.atomNum = int(line[6:11].strip())
+                    y.atomType = str(line[12:16].strip())
+                    y.resiType = str(line[17:20].strip())
+                    y.chainID = str(line[21:22].strip())
+                    y.resiNum = int(line[22:26].strip())
+                    y.xyzCoords = [[float(line[30:38].strip())],
+                                   [float(line[38:46].strip())],
+                                   [float(line[46:54].strip())]]
+                    y.occupancy = float(line[54:60].strip())
+                    y.bFactor = float(line[60:66].strip())
+                    y.atomID = str(line[77:79].strip())
+                    y.charge = str(line[79:81].strip())
+                    # append new 'atom' object to list
+                    bdalAppend(y)
+
+            if ('ATOM  ' in str(line[0:6])) or ('HETATM' in str(line[0:6])):
+                if str((line[6:11]).strip()) in addAtoms:
+                    y = atom()  # make new 'atom' object here
+                    # get atom properties here
+                    y.lineID = str(line[0:6].strip())
+                    y.atomNum = int(line[6:11].strip())
+                    y.atomType = str(line[12:16].strip())
+                    y.resiType = str(line[17:20].strip())
+                    y.chainID = str(line[21:22].strip())
+                    y.resiNum = int(line[22:26].strip())
+                    y.xyzCoords = [[float(line[30:38].strip())],
+                                   [float(line[38:46].strip())],
+                                   [float(line[46:54].strip())]]
+                    y.occupancy = float(line[54:60].strip())
+                    y.bFactor = float(line[60:66].strip())
+                    y.atomID = str(line[77:79].strip())
+                    y.charge = str(line[79:81].strip())
+                    # append new 'atom' object to list
+                    bdalAppend(y)
 
         elif ('TER   ' in str(line[0:6])) or ('ANISOU' in str(line[0:6])):
             continue

@@ -1,7 +1,7 @@
 
 
 # Script to calculate B-damage for protein atoms
-def rabdam(pathToPDB, PDT=14, binSize=10, addAtoms=[], removeAtoms=[], threshold=0.02, createAUCpdb=False, createTApdb=False):
+def rabdam(pathToPDB, PDT=14, binSize=10, HETATM=False, addAtoms=[], removeAtoms=[], threshold=0.02, createAUCpdb=False, createTApdb=False):
     print('\nRABDAM\n')
     print('\n')
     print('Please cite: M. Gerstel, C. M. Deane and E.F. Garman. (2015).\nJ. Synchrotron Radiation. 22, 201-212\nhttp://dx.doi.org/doi:10.1107/S1600577515002131\n')
@@ -50,6 +50,10 @@ def rabdam(pathToPDB, PDT=14, binSize=10, addAtoms=[], removeAtoms=[], threshold
         print 'No bin size supplied, using default value of 10\n'
     else:
         print 'Bin size defined by user as %s\n' % binSize
+    if HETATM is True:
+        print 'Waters to be removed, other HETATM to be retained\n'
+    elif HETATM is False:
+        print 'All HETATM to be removed\n'
     if len(addAtoms) == 0:
         print 'No atoms to be added\n'
     else:
@@ -61,7 +65,7 @@ def rabdam(pathToPDB, PDT=14, binSize=10, addAtoms=[], removeAtoms=[], threshold
         for index, value in enumerate(removeAtoms):
             print 'Atoms to be removed: %s\n' % removeAtoms[index]
     if threshold == 0.02:
-        print 'No threshold value supplied, using default value of 0.02'
+        print 'No threshold value supplied, using default value of 0.02\n'
     else:
         print 'Threshold value defined by user as %s\n' % threshold
     print '********** End of Input Section ********************************'
@@ -187,7 +191,7 @@ def rabdam(pathToPDB, PDT=14, binSize=10, addAtoms=[], removeAtoms=[], threshold
     print '****************************************************************'
     print '********** Parsing PDB Section *********************************\n'
     # return a list of atoms and attributes
-    bof, ucAtomList, bdamAtomList, eof = parsePDB(PDBCURoutputPDB, addAtoms, removeAtoms)
+    bof, ucAtomList, bdamAtomList, eof = parsePDB(PDBCURoutputPDB, HETATM, addAtoms, removeAtoms)
     unitCell = getUnitCellParams(pathToPDB)
     print '\n********** End of Parsing PDB Section **************************'
     print '****************************************************************'
@@ -201,7 +205,6 @@ def rabdam(pathToPDB, PDT=14, binSize=10, addAtoms=[], removeAtoms=[], threshold
     xyzList = getXYZlist(ucAtomList)
     # create shallow copy of the list of atoms to which all translated atomic positions will be added
     transAtomList = duplicate(ucAtomList)
-    taAppend = transAtomList.append
     # loop through running the translation subroutine for all combinations of
     # translations +/- 1 unit cell in a, b and c directions
     for a in xrange(-1, 2):
@@ -224,7 +227,7 @@ def rabdam(pathToPDB, PDT=14, binSize=10, addAtoms=[], removeAtoms=[], threshold
     print '****************************************************************'
     print '********** Trim Crystal Section ********************************\n'
     # parse a new set of atomic coordinates from the provided asymmetric unit file
-    bof1, auAtomList, bdamAtomList, eof1 = parsePDB(pathToPDB, addAtoms, removeAtoms)
+    bof1, auAtomList, bdamAtomList, eof1 = parsePDB(pathToPDB, HETATM, addAtoms, removeAtoms)
     bof1.remove
     eof1.remove
     auParams = getAUparams(auAtomList)
@@ -274,7 +277,7 @@ def rabdam(pathToPDB, PDT=14, binSize=10, addAtoms=[], removeAtoms=[], threshold
     x_values_RHS = make_histogram(df, fileName, PDBcode, threshold)
 
     bDamFileName = '%sBdamage.csv' % fileName
-    make_csv(bdamAtomList, bDamFileName, groupNoAtoms, groupAvBfacs, binSize, minPD, adjtNo)
+    make_csv(bdamAtomList, bDamFileName, groupNoAtoms, groupAvBfacs, binSize, adjtNo)
     make_colourbyBdam_pdb(df, bof, eof, fileName, bdamAtomList, x_values_RHS)
 
     print '\n********** End of Calculate Bdamage Section ********************'

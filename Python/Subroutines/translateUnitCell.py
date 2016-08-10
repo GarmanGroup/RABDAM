@@ -57,8 +57,6 @@ def translateUnitCell(atomXYZlist, ucAtomList, transAtomList, cartesianVectors, 
     import copy  # for making shallow copies of variables/lists/objects etc.
     duplicate = copy.copy
     import numpy as np  # facilitates matrix manipulation
-    # create puppet list to fill with atom objects
-    newXYZlist = [0]*len(atomXYZlist)
     taAppend = transAtomList.append
     # convert a/b/cTrans into matrices
     aTransMat = np.array([[aTrans], [aTrans], [aTrans]])
@@ -73,13 +71,10 @@ def translateUnitCell(atomXYZlist, ucAtomList, transAtomList, cartesianVectors, 
     transVector = np.add(transVector, cVec)
 
     for n in xrange(len(atomXYZlist)):
-    # apply this transformation to the atoms xyzCoords and write back to list
-        newXYZlist[n] = np.add(np.array(duplicate(atomXYZlist[n])), transVector).tolist()
-
+        # apply this transformation to the atoms xyzCoords and write back to list
         atm = duplicate(ucAtomList[n])
-        atm.xyzCoords = duplicate(newXYZlist[n])
+        atm.xyzCoords = np.add(np.array(duplicate(atomXYZlist[n])), transVector)
         taAppend(atm)
-
 
     print 'Successfully translated by (%2sa,%2sb,%2sc) unit cells' % (aTrans, bTrans, cTrans)
     return transAtomList

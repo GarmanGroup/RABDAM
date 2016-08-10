@@ -34,29 +34,8 @@ def makePDB(bof, atomList, eof, newPDBfilename):
 
 
 def writeBdam(noAtm, avB, binSize, minPD, adjNo, bdamatomList):
-    # method to write an output file for the calculated Bdamage values
+    # method to write calculated Bdamage values to a dataframe
     import pandas as pd
-    import numpy as np
-    numberOfRows = len(bdamatomList)
-    columns = ['REC',
-               'ATMNUM',
-               'ATMNAME',
-               'RESNAME',
-               'CHAIN',
-               'RESNUM',
-               'XPOS',
-               'YPOS',
-               'ZPOS',
-               'OCC',
-               'BFAC',
-               'ELEMENT',
-               'CHARGE',
-               'PD',
-               'BIN',
-               'GNUM',
-               'ANUM',
-               'AVRG BF',
-               'BDAM']
 
     REC = [None]*len(bdamatomList)
     ATMNUM = [None]*len(bdamatomList)
@@ -104,7 +83,6 @@ def writeBdam(noAtm, avB, binSize, minPD, adjNo, bdamatomList):
         AVRG_BF[index] = avB[gNo]
         BDAM[index] = atm.bd
 
-    df = pd.DataFrame(index=np.arange(numberOfRows), columns=columns)
     df = pd.DataFrame({'REC': REC,
                        'ATMNUM': ATMNUM,
                        'ATMNAME': ATMNAME,

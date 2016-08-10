@@ -23,6 +23,7 @@ splitArgs = functionArgs.split(',')
 # initialise the argument defaults
 pdtVal = int(14)
 binVal = int(10)
+hetatmVal = False
 addAtomsList = []
 removeAtomsList = []
 thresholdVal = float(0.02)
@@ -41,6 +42,14 @@ for x in xrange(1, len(splitArgs)):
         binArg = splitArgs[x].split('=')
         binVal = int(binArg[len(binArg)-1])
 
+    elif splitArgs[x][0:6] == 'HETATM':
+        hetatmArg = splitArgs[x].split('=')
+        hetatmVal = hetatmArg[len(hetatmArg) - 1]
+        if hetatmVal == 'Keep':
+            hetatmVal = True
+        if hetatmVal == 'Remove':
+            hetatmVal = False
+
     elif splitArgs[x][0:8] == 'addAtoms':
         addAtomsArg = splitArgs[x].split('=')
         addAtomsStr = str(addAtomsArg[len(addAtomsArg) - 1])
@@ -57,7 +66,7 @@ for x in xrange(1, len(splitArgs)):
 
     elif splitArgs[x][0:12] == 'createAUCpdb':
         aucArg = splitArgs[x].split('=')
-        aucVal = aucArg[len(aucArg)-1]
+        aucVal = aucArg[len(aucArg) - 1]
         if aucVal == 'True':
             aucVal = True
         elif aucVal == 'False':
@@ -67,7 +76,7 @@ for x in xrange(1, len(splitArgs)):
 
     elif splitArgs[x][0:11] == 'createTApdb':
         taArg = splitArgs[x].split("=")
-        taVal = taArg[(len(taArg))-1]
+        taVal = taArg[len(taArg) - 1]
         if taVal == 'True':
             taVal = True
         elif taVal == 'False':
@@ -79,4 +88,4 @@ for x in xrange(1, len(splitArgs)):
         sys.exit('Error 00: Input file is formatted incorrectly\nRead the handbook and amend the input file')
 
 # run fucntion with arguments from input file
-rabdam(pathToPDB, PDT=pdtVal, binSize=binVal, addAtoms=addAtomsList, removeAtoms=removeAtomsList, threshold=thresholdVal, createAUCpdb=aucVal, createTApdb=taVal)
+rabdam(pathToPDB, PDT=pdtVal, binSize=binVal, HETATM=hetatmVal, addAtoms=addAtomsList, removeAtoms=removeAtomsList, threshold=thresholdVal, createAUCpdb=aucVal, createTApdb=taVal)
