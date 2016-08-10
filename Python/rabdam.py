@@ -3,15 +3,30 @@
 # Script to calculate B-damage for protein atoms
 import sys
 sys.path.insert(0, './Subroutines')
-from CalculateBdamage import rabdam
+import time
+import math
+from CalculateBdamage import rabdam_dataframe, rabdam_analysis
+
+start = time.time()
+startIndex = time.gmtime()
+year = startIndex.tm_year
+month = startIndex.tm_mon
+day = startIndex.tm_mday
+hour = startIndex.tm_hour
+minute = startIndex.tm_min
+second = startIndex.tm_sec
+# inform the user of the start time of the program
+print 'This program was run on %d/%d/%d at %02.0f:%02.0f:%02.0f\n\n' % (day, month, year, hour, minute, second)
 
 # read the filename from the CL input
 fileCont = open(sys.argv[1], 'r')
 # write the string of the function arguments
 functionArgs = fileCont.read()
 splitArgs = functionArgs.split(',')
-pathToPDB = splitArgs[0]
-pathToPDB = pathToPDB.strip()
+pathToPDBlist = []
+for item in splitArgs:
+    if '=' not in item:
+        pathToPDBlist.append(item.strip())
 
 # remove all whitespace from the inputs
 functionArgs = functionArgs.replace(' ', '')
@@ -26,7 +41,8 @@ binVal = int(10)
 hetatmVal = False
 addAtomsList = []
 removeAtomsList = []
-thresholdVal = float(0.02)
+thresholdVal = 0.02
+ucVal = False
 aucVal = False
 taVal = False
 
@@ -64,6 +80,16 @@ for x in xrange(1, len(splitArgs)):
         thresholdArg = splitArgs[x].split('=')
         thresholdVal = float(thresholdArg[len(thresholdArg) - 1])
 
+    elif splitArgs[x][0:11] == 'createUCpdb':
+        ucArg = splitArgs[x].split('=')
+        ucVal = ucArg[len(ucArg) - 1]
+        if ucVal == 'True':
+            ucVal = True
+        elif ucVal == 'False':
+            ucVal = False
+        else:
+            sys.exit('Error 00: Input file is formatted incorrectly\nRead the handbook and amend the input file\n(Try looking at the createUCpdb argument)')
+
     elif splitArgs[x][0:12] == 'createAUCpdb':
         aucArg = splitArgs[x].split('=')
         aucVal = aucArg[len(aucArg) - 1]
@@ -84,8 +110,20 @@ for x in xrange(1, len(splitArgs)):
         else:
             sys.exit('Error 00: Input file is formatted incorrectly\nRead the handbook and amend the input file\n(Try looking at the createTApdb argument)')
 
-    else:
-        sys.exit('Error 00: Input file is formatted incorrectly\nRead the handbook and amend the input file')
-
 # run fucntion with arguments from input file
-rabdam(pathToPDB, PDT=pdtVal, binSize=binVal, HETATM=hetatmVal, addAtoms=addAtomsList, removeAtoms=removeAtomsList, threshold=thresholdVal, createAUCpdb=aucVal, createTApdb=taVal)
+for item in pathToPDBlist:
+    rabdam_dataframe(item, PDT=pdtVal, binSize=binVal, HETATM=hetatmVal, addAtoms=addAtomsList, removeAtoms=removeAtomsList, createUCpdb=ucVal, createAUCpdb=aucVal, createTApdb=taVal)
+    rabdam_analysis(item, threshold=thresholdVal)
+
+runtime = time.time() - start
+minutes = math.floor(runtime/60)
+seconds = math.fmod(runtime, 60)
+if minutes == 0:
+    if seconds == 1:
+        print 'Total time taken for program to run was %02.3f second.\n\n' % seconds
+    else:
+        print 'Total time taken for program to run was %02.3f seconds.\n\n' % seconds
+elif minutes == 1:
+    print 'Total time taken for program to run was %01.0f minute and %02.3f seconds.\n\n' % (minutes, seconds)
+else:
+    print 'Total time taken for program to run was %01.0f minutes and %02.3f seconds.\n\n' % (minutes, seconds)

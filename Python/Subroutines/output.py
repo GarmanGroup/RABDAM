@@ -44,6 +44,7 @@ def make_csv(bdamatomList, filename, noAtm, avB, binSize, adjNo):
                   'ANUM' + ','
                   'AVRG BF' + ','
                   'BDAM' + '\n')
+
     for atm in bdamatomList:
         group_no = int(atm.gn)
         adj_group_no = group_no - 1
