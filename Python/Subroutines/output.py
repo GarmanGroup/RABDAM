@@ -74,7 +74,7 @@ def make_csv(bdamatomList, filename, noAtm, avB, binSize, adjNo):
     newFile.close()
 
 
-def make_histogram(df, fileName, PDBcode, threshold):
+def make_histogram(df, fileName, PDBcode, threshold, highlightAtoms):
     import matplotlib.pyplot as plt
     import numpy as np
     import seaborn as sns
@@ -110,19 +110,30 @@ def make_histogram(df, fileName, PDBcode, threshold):
 
     # write dataframe to html, highlighting atoms with B_damage values which lie above the 5% threshold
     RHS_Bdam_values = []
-    for index, value in enumerate(df.BDAM.values):
+    for value in df.BDAM.values:
         if value >= x_values_RHS[0]:
             RHS_Bdam_values.append(value)
 
-    df = df.sort_values(by='BDAM', ascending=0)
-    df_trunc = df.head(len(RHS_Bdam_values))
+    df_ordered = df.sort_values(by='BDAM', ascending=0)
+    df_trunc = df_ordered.head(len(RHS_Bdam_values))
     decimals = pd.Series([2, 2, 2], index=['BFAC', 'AVRG BF', 'BDAM'])
     df_trunc = df_trunc.round(decimals)
     df_trunc.to_html(str(fileName) + 'Bdamage.html', index=False, float_format='%11.3f')
 
     # draw a line on kernel density plot at 5% threshold
-    plt.plot([x_values_RHS[0], x_values_RHS[0]], [0, max(y_values)], linewidth=2)
+    plt.plot([x_values_RHS[0], x_values_RHS[0]], [0, max(y_values)], linewidth=2, color='black')
     plt.annotate(' boundary = {:.2f}\n (threshold = {:})'.format(x_values_RHS[0], threshold), xy=[x_values_RHS[0], (0.8*max(y_values))])
+    lines = []
+    for atm in highlightAtoms:
+        for index, value in enumerate(df.ATMNUM.values):
+            if float(atm) == value:
+                lines.append(index)
+    for line in lines:
+        for index, value in enumerate(df.BDAM.values):
+            if float(line) == index:
+                plt.plot([value, value], [0, max(y_values)], linewidth=2)
+                plt.annotate(' atom' + str(atm) + '\n B_damage = {:.2f}'.format(value), xy=[value, 0.6*max(y_values)])
+
     plt.xlabel('B Damage')
     plt.ylabel('Frequency')
     plt.title(str(PDBcode) + ' kernel density plot')

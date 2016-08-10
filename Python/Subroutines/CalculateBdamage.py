@@ -277,7 +277,7 @@ def rabdam_dataframe(pathToPDB, PDT=14, binSize=10, HETATM=False, addAtoms=[], r
     f.close()
 
 
-def rabdam_analysis(pathToPDB, threshold=0.02):
+def rabdam_analysis(pathToPDB, threshold=0.02, highlightAtoms=[]):
     print '****************************************************************\n'
     print '*********************** Analysis Section ***********************'
     print 'Processing DataFrame'
@@ -305,7 +305,7 @@ def rabdam_analysis(pathToPDB, threshold=0.02):
 
     df = pd.read_pickle(str(storage_fileName) + '_dataframe.pkl')
     print 'Writing histogram'
-    x_values_RHS = make_histogram(df, fileName, PDBcode, threshold)
+    x_values_RHS = make_histogram(df, fileName, PDBcode, threshold, highlightAtoms)
     print 'Writing csv file'
     bDamFileName = '%sBdamage.csv' % fileName
     make_csv(bdamAtomList, bDamFileName, groupNoAtoms, groupAvBfacs, binSize, adjtNo)

@@ -42,6 +42,7 @@ hetatmVal = False
 addAtomsList = []
 removeAtomsList = []
 thresholdVal = 0.02
+highlightAtomsList = []
 ucVal = False
 aucVal = False
 taVal = False
@@ -80,6 +81,11 @@ for x in xrange(1, len(splitArgs)):
         thresholdArg = splitArgs[x].split('=')
         thresholdVal = float(thresholdArg[len(thresholdArg) - 1])
 
+    elif splitArgs[x][0:14] == 'highlightAtoms':
+        highlightAtomsArg = splitArgs[x].split('=')
+        highlightAtomsStr = str(highlightAtomsArg[len(highlightAtomsArg) - 1])
+        highlightAtomsList = highlightAtomsStr.split(';')
+
     elif splitArgs[x][0:11] == 'createUCpdb':
         ucArg = splitArgs[x].split('=')
         ucVal = ucArg[len(ucArg) - 1]
@@ -113,7 +119,7 @@ for x in xrange(1, len(splitArgs)):
 # run fucntion with arguments from input file
 for item in pathToPDBlist:
     rabdam_dataframe(item, PDT=pdtVal, binSize=binVal, HETATM=hetatmVal, addAtoms=addAtomsList, removeAtoms=removeAtomsList, createUCpdb=ucVal, createAUCpdb=aucVal, createTApdb=taVal)
-    rabdam_analysis(item, threshold=thresholdVal)
+    rabdam_analysis(item, threshold=thresholdVal, highlightAtoms=highlightAtomsList)
 
 runtime = time.time() - start
 minutes = math.floor(runtime/60)
