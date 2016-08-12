@@ -1,6 +1,6 @@
 
 
-def genPDBCURinputs(PDBCURinputFile):
+def genPDBCURinputs(PDBCURinputFile, asymmetricUnit):
     print 'Creating input file for PDBCUR at %s' % PDBCURinputFile
     # write input keywords to file for use with PDBCUR
     with open(PDBCURinputFile, 'w') as f:
@@ -13,9 +13,14 @@ def genPDBCURinputs(PDBCURinputFile):
         f.write('mostprob\n')
         # noanisou keyword removes all ANISOU information from PDB
         f.write('noanisou\n')
-        # genunit keyword generates a unit cell
-        f.write('genunit\n')
-        f.close
+
+        if asymmetricUnit is False:
+            # genunit keyword generates a unit cell
+            f.write('genunit\n')
+            f.close
+
+        elif asymmetricUnit is True:
+            f.close
 # end genPDBCURinputs
 
 

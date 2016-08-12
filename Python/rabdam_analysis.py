@@ -46,9 +46,29 @@ for x in xrange(1, len(splitArgs)):
         thresholdVal = float(thresholdArg[len(thresholdArg) - 1])
 
     elif splitArgs[x][0:14] == 'highlightAtoms':
+        highlightAtomsList = []
         highlightAtomsArg = splitArgs[x].split('=')
         highlightAtomsStr = str(highlightAtomsArg[len(highlightAtomsArg) - 1])
-        highlightAtomsList = highlightAtomsStr.split(';')
+        if highlightAtomsStr == '':
+            highlightAtomsList = []
+        else:
+            highlightAtomsSubList = highlightAtomsStr.split(';')
+            for item in highlightAtomsSubList:
+                if '-' in item:
+                    highlightAtomsSubList.remove(item)
+                    highlightAtomsRange = item.split('-')
+                    if highlightAtomsRange[-1] != '' and highlightAtomsRange[0] != '':
+                        min_val = int(highlightAtomsRange[-2])
+                        max_val = int(highlightAtomsRange[-1])
+                        highlightAtomsRange = range(min_val, (max_val + 1))
+                        for number in highlightAtomsRange:
+                            highlightAtomsList.append(str(number))
+                    elif highlightAtomsRange[-1] == '':
+                        highlightAtomsList.append(highlightAtomsRange[-2])
+                    elif highlightAtomsRange[0] == '':
+                        highlightAtomsList.append(highlightAtomsRange[-1])
+                elif '-' not in item:
+                    highlightAtomsList.append(item)
 
 # run fucntion with arguments from input file
 for item in pathToPDBlist:

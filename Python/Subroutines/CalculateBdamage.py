@@ -1,7 +1,7 @@
 
 
 # Script to calculate B-damage for protein atoms
-def rabdam_dataframe(pathToPDB, PDT=14, binSize=10, HETATM=False, addAtoms=[], removeAtoms=[], createUCpdb=False, createAUCpdb=False, createTApdb=False):
+def rabdam_dataframe(pathToPDB, PDT=14, binSize=10, HETATM=False, addAtoms=[], removeAtoms=[], createAUpdb=False, createUCpdb=False, createAUCpdb=False, createTApdb=False):
     print('\nRABDAM\n')
     print('\n')
     print('Please cite: M. Gerstel, C. M. Deane and E.F. Garman. (2015).\nJ. Synchrotron Radiation. 22, 201-212\nhttp://dx.doi.org/doi:10.1107/S1600577515002131\n')
@@ -47,7 +47,7 @@ def rabdam_dataframe(pathToPDB, PDT=14, binSize=10, HETATM=False, addAtoms=[], r
         print 'No atoms to be added\n'
     else:
         for index, value in enumerate(addAtoms):
-            print 'Atoms to be added: %s\n' % addAtoms[index]
+            print 'Atoms to be added: %s\n' % value
     if len(removeAtoms) == 0:
         print 'No atoms to be removed\n'
     else:
@@ -159,17 +159,20 @@ def rabdam_dataframe(pathToPDB, PDT=14, binSize=10, HETATM=False, addAtoms=[], r
 
     splitFilePath = pathToPDB.split(".")
     fileName = splitFilePath[len(splitFilePath)-2]
+
+    asymmetricUnit = False
     # create path to PDBCUR input file
     PDBCURinputFile = '%sPDBCURinput.txt' % fileName
     # generate path to PDBCUR log file
     PDBCURlog = '%sPDBCURlog.txt' % fileName
     # generate input file for PDBCUR
-    genPDBCURinputs(PDBCURinputFile)
+    genPDBCURinputs(PDBCURinputFile, asymmetricUnit)
     # Create name for output PDBCUR file by appending 'UnitCell' to filename
-    PDBCURoutputPDB = '%sUnitCell.pdb' % fileName
+    PDBCURoutputPDBuc = '%sUnitCell.pdb' % fileName
     # runPDBCUR using generated input file
-    runPDBCUR(pathToPDB, PDBCURoutputPDB, PDBCURinputFile, PDBCURlog)
-    if not os.path.exists(PDBCURoutputPDB):
+    runPDBCUR(pathToPDB, PDBCURoutputPDBuc, PDBCURinputFile, PDBCURlog)
+
+    if not os.path.exists(PDBCURoutputPDBuc):
         sys.exit('Error 05: Failed to generate Unit Cell PDB file')
     print '\n********** End of Process PDB Section **************************'
     print '****************************************************************'
@@ -178,10 +181,12 @@ def rabdam_dataframe(pathToPDB, PDT=14, binSize=10, HETATM=False, addAtoms=[], r
     print '****************************************************************'
     print '********** Parsing PDB Section *********************************\n'
     # return a list of atoms and attributes
-    bof, ucAtomList, bdamAtomList, eof = parsePDB(PDBCURoutputPDB, HETATM, addAtoms, removeAtoms)
+    bof, ucAtomList, bdamAtomList, eof = parsePDB(PDBCURoutputPDBuc, HETATM, addAtoms, removeAtoms)
     bdamAtomList.remove
+
     if createUCpdb is False:
-        os.remove(PDBCURoutputPDB)
+        os.remove(PDBCURoutputPDBuc)
+
     unitCell = getUnitCellParams(pathToPDB)
     print '\n********** End of Parsing PDB Section **************************'
     print '****************************************************************'
@@ -216,10 +221,28 @@ def rabdam_dataframe(pathToPDB, PDT=14, binSize=10, HETATM=False, addAtoms=[], r
     # Discard atoms too far from the asymmetric unit
     print '****************************************************************'
     print '********** Trim Crystal Section ********************************\n'
+    asymmetricUnit = True
     # parse a new set of atomic coordinates from the provided asymmetric unit file
-    bof1, auAtomList, bdamAtomList, eof1 = parsePDB(pathToPDB, HETATM, addAtoms, removeAtoms)
+    PDBCURinputFile = '%sPDBCURinput.txt' % fileName
+    # generate path to PDBCUR log file
+    PDBCURlog = '%sPDBCURlog.txt' % fileName
+    # generate input file for PDBCUR
+    genPDBCURinputs(PDBCURinputFile, asymmetricUnit)
+    # Create name for output PDBCUR file by appending 'UnitCell' to filename
+    PDBCURoutputPDBau = '%sAsymmetricUnit.pdb' % fileName
+    # runPDBCUR using generated input file
+    runPDBCUR(pathToPDB, PDBCURoutputPDBau, PDBCURinputFile, PDBCURlog)
+
+    if not os.path.exists(PDBCURoutputPDBau):
+        sys.exit('Error 05: Failed to generate Asymmetric Unit PDB file')
+
+    bof1, auAtomList, bdamAtomList, eof1 = parsePDB(PDBCURoutputPDBau, HETATM, addAtoms, removeAtoms)
     bof1.remove
     eof1.remove
+
+    if createAUpdb is False:
+        os.remove(PDBCURoutputPDBau)
+
     auParams = getAUparams(auAtomList)
     print 'Obtained asymmetric unit parameters:'
     print 'xMin = %8.3f' % auParams[0]
@@ -271,10 +294,8 @@ def rabdam_dataframe(pathToPDB, PDT=14, binSize=10, HETATM=False, addAtoms=[], r
     storage_fileName = '%s/%s' % (storage, PDBcode)
     df.to_pickle(str(storage_fileName) + '_dataframe.pkl')
 
-    pickle_list = [fileName, PDBcode, bdamAtomList, groupNoAtoms, groupAvBfacs, binSize, adjtNo, bof, eof]
-    f = open(str(storage_fileName) + '_variables.pkl', 'wb')
-    pickle.dump(pickle_list, f)
-    f.close()
+    with open(str(storage_fileName) + '_variables.pkl', 'wb') as f:
+        pickle.dump((fileName, PDBcode, bdamAtomList, groupNoAtoms, groupAvBfacs, binSize, adjtNo, bof, eof), f)
 
 
 def rabdam_analysis(pathToPDB, threshold=0.02, highlightAtoms=[]):
@@ -291,17 +312,8 @@ def rabdam_analysis(pathToPDB, threshold=0.02, highlightAtoms=[]):
     PDBcode = PDBcode.upper()
     storage_fileName = 'Logfiles/' + str(PDBcode) + '/DataFrame/' + str(PDBcode)
 
-    f = open(str(storage_fileName) + '_variables.pkl', 'rb')
-    pickle_list = pickle.load(f)
-    fileName = pickle_list[0]
-    PDBcode = pickle_list[1]
-    bdamAtomList = pickle_list[2]
-    groupNoAtoms = pickle_list[3]
-    groupAvBfacs = pickle_list[4]
-    binSize = pickle_list[5]
-    adjtNo = pickle_list[6]
-    bof = pickle_list[7]
-    eof = pickle_list[8]
+    with open(str(storage_fileName) + '_variables.pkl', 'rb') as f:
+        fileName, PDBcode, bdamAtomList, groupNoAtoms, groupAvBfacs, binSize, adjtNo, bof, eof = pickle.load(f)
 
     df = pd.read_pickle(str(storage_fileName) + '_dataframe.pkl')
     print 'Writing histogram'
@@ -314,7 +326,3 @@ def rabdam_analysis(pathToPDB, threshold=0.02, highlightAtoms=[]):
     print '\n********** End of Calculate Bdamage Section ********************'
     print '****************************************************************'
     print '\n'
-
-    # inform the user of the time elapsed while the program was run
-
-# end

@@ -90,30 +90,30 @@ def parsePDB(fileName, HETATM, addAtoms, removeAtoms):
     eAppend = eof.append
     # open correct file name for reading
     fileOpen = open(fileName, 'r')
-    # read 'ATOM' and 'HETATM' lines
-    for line in fileOpen.readlines():
-        # only select information from ATOM or HETATM lines
-        if ('ATOM  ' in str(line[0:6])) or ('HETATM' in str(line[0:6])):
-            beforeAtoms = False
-            y = atom()  # make new 'atom' object here
-            # get atom properties here
-            y.lineID = str(line[0:6].strip())
-            y.atomNum = int(line[6:11].strip())
-            y.atomType = str(line[12:16].strip())
-            y.resiType = str(line[17:20].strip())
-            y.chainID = str(line[21:22].strip())
-            y.resiNum = int(line[22:26].strip())
-            y.xyzCoords = [[float(line[30:38].strip())],
-                           [float(line[38:46].strip())],
-                           [float(line[46:54].strip())]]
-            y.occupancy = float(line[54:60].strip())
-            y.bFactor = float(line[60:66].strip())
-            y.atomID = str(line[77:79].strip())
-            y.charge = str(line[79:81].strip())
-            # append new 'atom' object to list
-            alAppend(y)
 
-        if HETATM is True:
+    if HETATM is True:
+        for line in fileOpen.readlines():
+            # only select information from ATOM or HETATM lines
+            if ('ATOM  ' in str(line[0:6])) or ('HETATM' in str(line[0:6])):
+                beforeAtoms = False
+                y = atom()  # make new 'atom' object here
+                # get atom properties here
+                y.lineID = str(line[0:6].strip())
+                y.atomNum = int(line[6:11].strip())
+                y.atomType = str(line[12:16].strip())
+                y.resiType = str(line[17:20].strip())
+                y.chainID = str(line[21:22].strip())
+                y.resiNum = int(line[22:26].strip())
+                y.xyzCoords = [[float(line[30:38].strip())],
+                               [float(line[38:46].strip())],
+                               [float(line[46:54].strip())]]
+                y.occupancy = float(line[54:60].strip())
+                y.bFactor = float(line[60:66].strip())
+                y.atomID = str(line[77:79].strip())
+                y.charge = str(line[79:81].strip())
+                # append new 'atom' object to list
+                alAppend(y)
+
             if ('ATOM  ' in str(line[0:6])) or ('HETATM' in str(line[0:6])):
                 if str((line[17:20]).strip()) not in ['HOH', 'H2O', 'DOD', 'D2O', 'WAT']:
                     if str((line[6:11]).strip()) not in removeAtoms:
@@ -155,7 +155,38 @@ def parsePDB(fileName, HETATM, addAtoms, removeAtoms):
                     # append new 'atom' object to list
                     bdalAppend(y)
 
-        elif HETATM is False:
+            elif ('TER   ' in str(line[0:6])) or ('ANISOU' in str(line[0:6])):
+                continue
+
+            else:
+                if beforeAtoms is True:
+                    bAppend(line)
+                else:
+                    eAppend(line)
+
+    if HETATM is False:
+        for line in fileOpen.readlines():
+            # only select information from ATOM or HETATM lines
+            if ('ATOM  ' in str(line[0:6])) or ('HETATM' in str(line[0:6])):
+                beforeAtoms = False
+                y = atom()  # make new 'atom' object here
+                # get atom properties here
+                y.lineID = str(line[0:6].strip())
+                y.atomNum = int(line[6:11].strip())
+                y.atomType = str(line[12:16].strip())
+                y.resiType = str(line[17:20].strip())
+                y.chainID = str(line[21:22].strip())
+                y.resiNum = int(line[22:26].strip())
+                y.xyzCoords = [[float(line[30:38].strip())],
+                               [float(line[38:46].strip())],
+                               [float(line[46:54].strip())]]
+                y.occupancy = float(line[54:60].strip())
+                y.bFactor = float(line[60:66].strip())
+                y.atomID = str(line[77:79].strip())
+                y.charge = str(line[79:81].strip())
+                # append new 'atom' object to list
+                alAppend(y)
+
             if ('ATOM  ' in str(line[0:6])):
                 if str((line[6:11]).strip()) not in removeAtoms:
                     y = atom()  # make new 'atom' object here
@@ -196,21 +227,21 @@ def parsePDB(fileName, HETATM, addAtoms, removeAtoms):
                     # append new 'atom' object to list
                     bdalAppend(y)
 
-        elif ('TER   ' in str(line[0:6])) or ('ANISOU' in str(line[0:6])):
-            continue
+            elif ('TER   ' in str(line[0:6])) or ('ANISOU' in str(line[0:6])):
+                continue
 
-        else:
-            if beforeAtoms:
-                bAppend(line)
             else:
-                eAppend(line)
+                if beforeAtoms is True:
+                    bAppend(line)
+                else:
+                    eAppend(line)
+
     fileOpen.close()  # close .pdb file after reading
     # provide feedback to user
     print 'Finished reading in atoms --> %d atoms found in' % int(len(atomList))
     print '%s' % fileName
     # return list of atoms as output of function
     return bof, atomList, bdamatomList, eof
-# end parsePDB
 
 
 # obtain unit cell parameters from PDB file

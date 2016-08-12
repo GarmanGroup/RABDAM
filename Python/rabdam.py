@@ -43,6 +43,7 @@ addAtomsList = []
 removeAtomsList = []
 thresholdVal = 0.02
 highlightAtomsList = []
+auVal = False
 ucVal = False
 aucVal = False
 taVal = False
@@ -68,23 +69,93 @@ for x in xrange(1, len(splitArgs)):
             hetatmVal = False
 
     elif splitArgs[x][0:8] == 'addAtoms':
+        addAtomsList = []
         addAtomsArg = splitArgs[x].split('=')
         addAtomsStr = str(addAtomsArg[len(addAtomsArg) - 1])
-        addAtomsList = addAtomsStr.split(';')
+        if addAtomsStr == '':
+            addAtomsList = []
+        else:
+            addAtomsSubList = addAtomsStr.split(';')
+            for item in addAtomsSubList:
+                if '-' in item:
+                    addAtomsSubList.remove(item)
+                    addAtomsRange = item.split('-')
+                    if addAtomsRange[-1] != '' and addAtomsRange[0] != '':
+                        min_val = int(addAtomsRange[-2])
+                        max_val = int(addAtomsRange[-1])
+                        addAtomsRange = range(min_val, (max_val + 1))
+                        for number in addAtomsRange:
+                            addAtomsList.append(str(number))
+                    elif addAtomsRange[-1] == '':
+                        addAtomsList.append(addAtomsRange[-2])
+                    elif addAtomsRange[0] == '':
+                        addAtomsList.append(addAtomsRange[-1])
+                elif '-' not in item:
+                    addAtomsList.append(item)
 
     elif splitArgs[x][0:11] == 'removeAtoms':
+        removeAtomsList = []
         removeAtomsArg = splitArgs[x].split('=')
         removeAtomsStr = str(removeAtomsArg[len(removeAtomsArg) - 1])
-        removeAtomsList = removeAtomsStr.split(';')
+        if removeAtomsStr == '':
+            removeAtomsList = []
+        else:
+            removeAtomsSubList = removeAtomsStr.split(';')
+            for item in removeAtomsSubList:
+                if '-' in item:
+                    removeAtomsSubList.remove(item)
+                    removeAtomsRange = item.split('-')
+                    if removeAtomsRange[-1] != '' and removeAtomsRange[0] != '':
+                        min_val = int(removeAtomsRange[-2])
+                        max_val = int(removeAtomsRange[-1])
+                        removeAtomsRange = range(min_val, (max_val + 1))
+                        for number in removeAtomsRange:
+                            removeAtomsList.append(str(number))
+                    elif removeAtomsRange[-1] == '':
+                        removeAtomsList.append(removeAtomsRange[-2])
+                    elif removeAtomsRange[0] == '':
+                        removeAtomsList.append(removeAtomsRange[-1])
+                elif '-' not in item:
+                    removeAtomsList.append(item)
 
     elif splitArgs[x][0:9] == 'threshold':
         thresholdArg = splitArgs[x].split('=')
         thresholdVal = float(thresholdArg[len(thresholdArg) - 1])
 
     elif splitArgs[x][0:14] == 'highlightAtoms':
+        highlightAtomsList = []
         highlightAtomsArg = splitArgs[x].split('=')
         highlightAtomsStr = str(highlightAtomsArg[len(highlightAtomsArg) - 1])
-        highlightAtomsList = highlightAtomsStr.split(';')
+        if highlightAtomsStr == '':
+            highlightAtomsList = []
+        else:
+            highlightAtomsSubList = highlightAtomsStr.split(';')
+            for item in highlightAtomsSubList:
+                if '-' in item:
+                    highlightAtomsSubList.remove(item)
+                    highlightAtomsRange = item.split('-')
+                    if highlightAtomsRange[-1] != '' and highlightAtomsRange[0] != '':
+                        min_val = int(highlightAtomsRange[-2])
+                        max_val = int(highlightAtomsRange[-1])
+                        highlightAtomsRange = range(min_val, (max_val + 1))
+                        for number in highlightAtomsRange:
+                            highlightAtomsList.append(str(number))
+                    elif highlightAtomsRange[-1] == '':
+                        highlightAtomsList.append(highlightAtomsRange[-2])
+                    elif highlightAtomsRange[0] == '':
+                        highlightAtomsList.append(highlightAtomsRange[-1])
+                elif '-' not in item:
+                    highlightAtomsList.append(item)
+
+    elif splitArgs[x][0:11] == 'createAUpdb':
+        auArg = splitArgs[x].split('=')
+        auVal = auArg[len(auArg) - 1]
+        if auVal == 'True':
+            auVal = True
+        elif auVal == 'False':
+            auVal = False
+        else:
+            sys.exit('Error 00: Input file is formatted incorrectly\nRead the handbook and amend the input file\n(Try looking at the createAUpdb argument)')
 
     elif splitArgs[x][0:11] == 'createUCpdb':
         ucArg = splitArgs[x].split('=')
@@ -118,7 +189,7 @@ for x in xrange(1, len(splitArgs)):
 
 # run fucntion with arguments from input file
 for item in pathToPDBlist:
-    rabdam_dataframe(item, PDT=pdtVal, binSize=binVal, HETATM=hetatmVal, addAtoms=addAtomsList, removeAtoms=removeAtomsList, createUCpdb=ucVal, createAUCpdb=aucVal, createTApdb=taVal)
+    rabdam_dataframe(item, PDT=pdtVal, binSize=binVal, HETATM=hetatmVal, addAtoms=addAtomsList, removeAtoms=removeAtomsList, createAUpdb=auVal, createUCpdb=ucVal, createAUCpdb=aucVal, createTApdb=taVal)
     rabdam_analysis(item, threshold=thresholdVal, highlightAtoms=highlightAtomsList)
 
 runtime = time.time() - start
