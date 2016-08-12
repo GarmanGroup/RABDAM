@@ -70,7 +70,7 @@ for x in xrange(1, len(splitArgs)):
                 elif '-' not in item:
                     highlightAtomsList.append(item)
 
-# run fucntion with arguments from input file
+# run function with arguments from input file
 for item in pathToPDBlist:
     rabdam_analysis(item, threshold=thresholdVal, highlightAtoms=highlightAtomsList)
 

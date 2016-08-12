@@ -187,7 +187,7 @@ for x in xrange(1, len(splitArgs)):
         else:
             sys.exit('Error 00: Input file is formatted incorrectly\nRead the handbook and amend the input file\n(Try looking at the createTApdb argument)')
 
-# run fucntion with arguments from input file
+# run function with arguments from input file
 for item in pathToPDBlist:
     rabdam_dataframe(item, PDT=pdtVal, binSize=binVal, HETATM=hetatmVal, addAtoms=addAtomsList, removeAtoms=removeAtomsList, createAUpdb=auVal, createUCpdb=ucVal, createAUCpdb=aucVal, createTApdb=taVal)
     rabdam_analysis(item, threshold=thresholdVal, highlightAtoms=highlightAtomsList)

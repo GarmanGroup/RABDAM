@@ -120,12 +120,13 @@ def make_histogram(df, fileName, PDBcode, threshold, highlightAtoms):
     df_trunc = df_trunc.round(decimals)
     df_trunc.to_html(str(fileName) + 'Bdamage.html', index=False, float_format='%11.3f')
 
+    highlighted_atoms = [None]
     # draw a line on kernel density plot at 5% threshold
-    plt.plot([x_values_RHS[0], x_values_RHS[0]], [0, max(y_values)], linewidth=2, color='black')
-    plt.annotate(' boundary = {:.2f}\n (threshold = {:})'.format(x_values_RHS[0], threshold), xy=[x_values_RHS[0], (0.8*max(y_values))])
+    boundary_line = plt.plot([x_values_RHS[0], x_values_RHS[0]], [0, max(y_values)], linewidth=2, color='black', label=' boundary = {:.2f}\n (threshold = {:})'.format(x_values_RHS[0], threshold))
+    highlighted_atoms.append(boundary_line)
 
-    lines = [None]
     if len(highlightAtoms) != 0:
+        lines = [None]
         for atm in highlightAtoms:
             for index, value in enumerate(df.ATMNUM.values):
                 if float(atm) == value:
@@ -133,9 +134,10 @@ def make_histogram(df, fileName, PDBcode, threshold, highlightAtoms):
             for line in lines:
                 for index, value in enumerate(df.BDAM.values):
                     if float(line) == index:
-                        plt.plot([value, value], [0, max(y_values)], linewidth=2)
-                        plt.annotate(' atom' + str(atm) + '\n B_damage = {:.2f}'.format(value), xy=[value, 0.6*max(y_values)])
+                        m = plt.plot([value, value], [0, max(y_values)], linewidth=2, label=' atom ' + str(atm) + '\n B_damage = {:.2f}'.format(value))
+                        highlighted_atoms.append(m)
 
+    plt.legend(handles=highlighted_atoms[0])
     plt.xlabel('B Damage')
     plt.ylabel('Frequency')
     plt.title(str(PDBcode) + ' kernel density plot')

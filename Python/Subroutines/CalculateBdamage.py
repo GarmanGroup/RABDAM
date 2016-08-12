@@ -299,9 +299,9 @@ def rabdam_dataframe(pathToPDB, PDT=14, binSize=10, HETATM=False, addAtoms=[], r
 
 
 def rabdam_analysis(pathToPDB, threshold=0.02, highlightAtoms=[]):
-    print '****************************************************************\n'
-    print '*********************** Analysis Section ***********************'
-    print 'Processing DataFrame'
+    import os
+    import sys
+    prompt = '> '
     import pickle
     import pandas as pd
     from output import make_csv, make_histogram, make_colourbyBdam_pdb
@@ -310,8 +310,47 @@ def rabdam_analysis(pathToPDB, threshold=0.02, highlightAtoms=[]):
     pathToPDB = splitPath[len(splitPath) - 1]
     PDBcode = pathToPDB.replace('.pdb', '')
     PDBcode = PDBcode.upper()
+    PDBdirectory = 'Logfiles/' + str(PDBcode)
+    storage_directory = 'Logfiles/' + str(PDBcode) + '/DataFrame'
     storage_fileName = 'Logfiles/' + str(PDBcode) + '/DataFrame/' + str(PDBcode)
 
+    if not os.path.isdir(storage_directory):
+        print 'Folder %s does not exist' % (storage_directory)
+        print 'Exiting RABDAM analysis'
+        sys.exit()
+
+    potential_analysis_files = ['Bdamage.csv', 'Bdamage.html', 'Bdamage.pdb', 'Bdamage.png', '_above_boundary.pdb']
+    actual_analysis_files = []
+    for name in potential_analysis_files:
+        if os.path.isfile(str(PDBdirectory) + '/' + str(PDBcode) + str(name)):
+            actual_analysis_files.append(str(PDBdirectory) + '/' + str(PDBcode) + str(name))
+    if len(actual_analysis_files) > 0:
+        print 'There are one or more RABDAM analysis files already present'
+        print 'in folder %s' % PDBdirectory
+        print 'Do you want to overwrite the existing analysis files?\n'
+        print '--USER INPUT-- type your choice and press RETURN\n'
+        print 'yes = overwrite all analysis files'
+        print 'no = do not overwrite analysis files'
+        owChoice = None
+        while owChoice not in ['yes', 'no', 'Yes', 'No', 'YES', 'NO', 'y', 'n', 'Y', 'N']:
+            owChoice = raw_input(prompt)
+            if owChoice == 'yes' or owChoice == 'Yes' or owChoice == 'YES' or owChoice == 'y' or owChoice == 'Y':
+                print 'overwriting existing analysis files'
+                for name in actual_analysis_files:
+                    os.remove(name)
+                break
+            elif owChoice == 'no' or owChoice == 'No' or owChoice == 'NO' or owChoice == 'n' or owChoice == 'N':
+                print 'keeping original analysis files'
+                print 'exiting RABDAM'
+                sys.exit()
+                break
+            else:
+                print 'unrecognised input - please answer yes or no'
+
+
+    print '****************************************************************\n'
+    print '*********************** Analysis Section ***********************\n'
+    print 'Processing DataFrame'
     with open(str(storage_fileName) + '_variables.pkl', 'rb') as f:
         fileName, PDBcode, bdamAtomList, groupNoAtoms, groupAvBfacs, binSize, adjtNo, bof, eof = pickle.load(f)
 
