@@ -1,7 +1,7 @@
 
 
 # write output graphs
-def make_csv(bdamatomList, filename, noAtm, avB, binSize, adjNo):
+def make_csv(bdamatomList, filename, window):
     newFile = open(filename, 'w')
 
     newFile.write('REC      = RECORD NAME\n'
@@ -17,12 +17,9 @@ def make_csv(bdamatomList, filename, noAtm, avB, binSize, adjNo):
                   'BFAC     = B FACTOR (TEMPERATURE FACTOR)\n'
                   'ELEMENT  = ELEMENT SYMBOL\n'
                   'CHARGE   = CHARGE ON ATOM\n'
-                  'PD       = PACKING DENSITY (ATOMIC CONTACT NUMBER)\n'
-                  'BIN      = SIMILAR PACKING DENSITY BIN\n'
-                  'GNUM     = SIMILAR PACKING DENSITY ENVIRONMENT GROUP NUMBER\n'
-                  'ANUM     = NUMBER OF ATOMS IN SIMILAR PACKING DENSITY GROUP\n'
-                  'AVRG BF  = AVERAGE B FACTOR FOR ATOMS IN SIMILAR PACKING DENSITY ENVIRONMENT\n'
-                  'BDAM     = BDAMAGE VALUE\n'
+                  'PD       = PACKING DENSITY (ATOMIC CONTACT NUMBER)\n')
+    newFile.write('AVRG_BF  = AVERAGE B FACTOR FOR ATOMS IN A SIMILAR PACKING DENSITY ENVIRONMENT (SLIDING WINDOW SIZE = %s)\n' % window)
+    newFile.write('BDAM     = BDAMAGE VALUE\n'
                   '\n')
 
     newFile.write('REC' + ','
@@ -39,18 +36,10 @@ def make_csv(bdamatomList, filename, noAtm, avB, binSize, adjNo):
                   'ELEMENT' + ','
                   'CHARGE' + ','
                   'PD' + ','
-                  'BIN' + ','
-                  'GNUM' + ','
-                  'ANUM' + ','
-                  'AVRG BF' + ','
+                  'AVRG_BF' + ','
                   'BDAM' + '\n')
 
     for atm in bdamatomList:
-        group_no = int(atm.gn)
-        adj_group_no = group_no - 1
-        binMin = int(adjNo + adj_group_no*binSize)
-        binMax = int(adjNo + group_no*binSize)
-
         newFile.write(str(atm.lineID) + ',')
         newFile.write(str(atm.atomNum) + ',')
         newFile.write(str(atm.atomType) + ',')
@@ -65,10 +54,7 @@ def make_csv(bdamatomList, filename, noAtm, avB, binSize, adjNo):
         newFile.write(str(atm.atomID) + ',')
         newFile.write(str(atm.charge) + ',')
         newFile.write(str(atm.pd) + ',')
-        newFile.write(str(' %3d <= PD < %-3d' % (binMin, binMax)) + ',')
-        newFile.write(str(atm.gn) + ',')
-        newFile.write(str(noAtm[adj_group_no]) + ',')
-        newFile.write(str(avB[adj_group_no]) + ',')
+        newFile.write(str(atm.avrg_bf) + ',')
         newFile.write(str(atm.bd) + '\n')
 
     newFile.close()
@@ -76,7 +62,7 @@ def make_csv(bdamatomList, filename, noAtm, avB, binSize, adjNo):
 
 def make_histogram(df, fileName, PDBcode, threshold, highlightAtoms):
     import matplotlib.pyplot as plt
-    import numpy as np
+    import numpy
     import seaborn as sns
     import pandas as pd
 
@@ -114,7 +100,7 @@ def make_histogram(df, fileName, PDBcode, threshold, highlightAtoms):
         if value >= x_values_RHS[0]:
             RHS_Bdam_values.append(value)
 
-    df_ordered = df.sort_values(by='BDAM', ascending=0)
+    df_ordered = df.sort_values(by='BDAM', ascending=False)
     df_trunc = df_ordered.head(len(RHS_Bdam_values))
     decimals = pd.Series([2, 2, 2], index=['BFAC', 'AVRG BF', 'BDAM'])
     df_trunc = df_trunc.round(decimals)

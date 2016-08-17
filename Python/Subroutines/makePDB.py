@@ -33,7 +33,7 @@ def makePDB(bof, atomList, eof, newPDBfilename):
 # end makePDB
 
 
-def writeBdam(noAtm, avB, binSize, minPD, adjNo, bdamatomList):
+def writeBdam(bdamatomList):
     # method to write calculated Bdamage values to a dataframe
     import pandas as pd
 
@@ -51,18 +51,10 @@ def writeBdam(noAtm, avB, binSize, minPD, adjNo, bdamatomList):
     ELEMENT = [None]*len(bdamatomList)
     CHARGE = [None]*len(bdamatomList)
     PD = [None]*len(bdamatomList)
-    BIN = [None]*len(bdamatomList)
-    GNUM = [None]*len(bdamatomList)
-    ANUM = [None]*len(bdamatomList)
     AVRG_BF = [None]*len(bdamatomList)
     BDAM = [None]*len(bdamatomList)
 
     for index, atm in enumerate(bdamatomList):
-        q = int(atm.gn)
-        gNo = q - 1
-        binMin = int(adjNo + gNo*binSize)
-        binMax = int(adjNo + q*binSize)
-
         REC[index] = atm.lineID
         ATMNUM[index] = atm.atomNum
         ATMNAME[index] = atm.atomType
@@ -77,10 +69,7 @@ def writeBdam(noAtm, avB, binSize, minPD, adjNo, bdamatomList):
         ELEMENT[index] = atm.atomID
         CHARGE[index] = atm.charge
         PD[index] = atm.pd
-        BIN[index] = '%3d <= PD < %-3d' % (binMin, binMax)
-        GNUM[index] = atm.gn
-        ANUM[index] = noAtm[gNo]
-        AVRG_BF[index] = avB[gNo]
+        AVRG_BF[index] = atm.avrg_bf
         BDAM[index] = atm.bd
 
     df = pd.DataFrame({'REC': REC,
@@ -97,16 +86,13 @@ def writeBdam(noAtm, avB, binSize, minPD, adjNo, bdamatomList):
                        'ELEMENT': ELEMENT,
                        'CHARGE': CHARGE,
                        'PD': PD,
-                       'BIN': BIN,
-                       'GNUM': GNUM,
-                       'ANUM': ANUM,
                        'AVRG BF': AVRG_BF,
                        'BDAM': BDAM})
     cols = df.columns.tolist()
-    cols_a = [cols[13]] + [cols[2]] + [cols[1]] + [cols[14]] + [cols[7]]
-    cols_b = [cols[15]] + [cols[16]] + [cols[17]] + [cols[18]] + [cols[11]]
-    cols_c = [cols[5]] + [cols[9]] + [cols[8]] + [cols[12]] + [cols[6]]
-    cols_d = [cols[10]] + [cols[0]] + [cols[3]] + [cols[4]]
+    cols_a = [cols[10]] + [cols[1]] + [cols[0]] + [cols[11]] + [cols[5]]
+    cols_b = [cols[12]] + [cols[13]] + [cols[14]] + [cols[15]] + [cols[8]]
+    cols_c = [cols[4]] + [cols[7]] + [cols[6]] + [cols[9]]
+    cols_d = [cols[2]] + [cols[3]]
     cols = cols_a + cols_b + cols_c + cols_d
     df = df[cols]
     return df

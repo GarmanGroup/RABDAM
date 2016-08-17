@@ -18,7 +18,7 @@ def rabdam_dataframe(pathToPDB, PDT=14, binSize=10, HETATM=False, addAtoms=[], r
     from translateUnitCell import convertToCartesian, getXYZlist, translateUnitCell  # translates unit cell
     from makePDB import makePDB, writeBdam  # allows new output files to be written from a list of atom objects
     from atomCheck import convertParams  # adds the PDT to the Cartesian limits of the unit cell
-    from Bdamage import binAtoms, calcBdam, get_xyz_from_objects, calc_packing_density, write_pckg_dens_to_atoms  # calculates the PDT of each atom in the proivided structure
+    from Bdamage import calcBdam, get_xyz_from_objects, calc_packing_density, write_pckg_dens_to_atoms  # calculates the PDT of each atom in the proivided structure
     # Input: the file path to the pdb for which you want to calculate B-damage factors, the 'Packing Density Threshold' (Angstroms) and bin size
 
     print '################################################################'
@@ -270,12 +270,10 @@ def rabdam_dataframe(pathToPDB, PDT=14, binSize=10, HETATM=False, addAtoms=[], r
     print '********** Calculate Packing Density Section *******************\n'
     au_atom_xyz, trim_atom_xyz = get_xyz_from_objects(bdamAtomList, trimmedAtomList)
     packing_density_array = calc_packing_density(au_atom_xyz, trim_atom_xyz, PDT)
-    minPD, maxPD = int(packing_density_array.min()), int(packing_density_array.max())
     write_pckg_dens_to_atoms(bdamAtomList, packing_density_array)
-    noOfGroups, adjtNo = binAtoms(bdamAtomList, binSize, minPD, maxPD)
-    print 'Lowest calculated Packing Density was %s' % minPD
-    print 'Highest calculated Packing Density was %s' % maxPD
-    print 'Atoms separated into %s bins\n' % noOfGroups
+    window = 25
+    calcBdam(bdamAtomList, window)
+
     print '\n********** End of Calculate Packing Density Section ************'
     print '****************************************************************'
     print '\n'
@@ -283,19 +281,19 @@ def rabdam_dataframe(pathToPDB, PDT=14, binSize=10, HETATM=False, addAtoms=[], r
     print '****************************************************************'
     print '****************** Calculate B_damage Section ******************\n'
     print 'Calculating Bdamage values\n'
-    groupNoAtoms, groupAvBfacs = calcBdam(bdamAtomList, noOfGroups)
+    """groupNoAtoms, groupAvBfacs = calcBdam(bdamAtomList, noOfGroups)"""
     print '****************************************************************\n'
     print '****************** Writing DataFrame Section *******************\n'
     print 'Writing Bdamage data to output file\n'
 
-    df = writeBdam(groupNoAtoms, groupAvBfacs, binSize, minPD, adjtNo, bdamAtomList)
+    df = writeBdam(bdamAtomList)
     storage = '%s/DataFrame' % PDBdirectory
     os.makedirs(storage)
     storage_fileName = '%s/%s' % (storage, PDBcode)
     df.to_pickle(str(storage_fileName) + '_dataframe.pkl')
 
     with open(str(storage_fileName) + '_variables.pkl', 'wb') as f:
-        pickle.dump((fileName, PDBcode, bdamAtomList, groupNoAtoms, groupAvBfacs, binSize, adjtNo, bof, eof), f)
+        pickle.dump((fileName, PDBcode, bdamAtomList, bof, eof, window), f)
 
 
 def rabdam_analysis(pathToPDB, threshold=0.02, highlightAtoms=[]):
@@ -352,14 +350,14 @@ def rabdam_analysis(pathToPDB, threshold=0.02, highlightAtoms=[]):
     print '*********************** Analysis Section ***********************\n'
     print 'Processing DataFrame'
     with open(str(storage_fileName) + '_variables.pkl', 'rb') as f:
-        fileName, PDBcode, bdamAtomList, groupNoAtoms, groupAvBfacs, binSize, adjtNo, bof, eof = pickle.load(f)
+        fileName, PDBcode, bdamAtomList, bof, eof, window = pickle.load(f)
 
     df = pd.read_pickle(str(storage_fileName) + '_dataframe.pkl')
     print 'Writing histogram'
     x_values_RHS = make_histogram(df, fileName, PDBcode, threshold, highlightAtoms)
     print 'Writing csv file'
     bDamFileName = '%sBdamage.csv' % fileName
-    make_csv(bdamAtomList, bDamFileName, groupNoAtoms, groupAvBfacs, binSize, adjtNo)
+    make_csv(bdamAtomList, bDamFileName, window)
     print 'Writing pdb files'
     make_colourbyBdam_pdb(df, bof, eof, fileName, bdamAtomList, x_values_RHS)
     print '\n********** End of Calculate Bdamage Section ********************'
