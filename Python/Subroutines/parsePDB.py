@@ -1,10 +1,13 @@
 
 
-# define class of atom objects
 class atom(object):
-    # Initialise class for a PDB file
-    def __init__(self, lineidentifier="", atomnum=0, residuenum=0, atomtype="", resitype="",
-                 chainID="", xyz_coords=[], atomidentifier="", bfactor=0, occupancy=1, charge="",
+    # A class to assign properties to atoms (specifically all properties
+    # provided in the input PDB file, plus values relating to the B_damage
+    # calculation).
+
+    def __init__(self, lineidentifier='', atomnum=0, residuenum=0,
+                 atomtype='', resitype='', chainID='', xyz_coords=[],
+                 atomidentifier='', bfactor=0, occupancy=1, charge='',
                  packingdensity=0, avrg_bfactor=0, bdamage=0):
         self.lineID = lineidentifier
         self.atomNum = atomnum
@@ -20,246 +23,229 @@ class atom(object):
         self.pd = packingdensity
         self.avrg_bf = avrg_bfactor
         self.bd = bdamage
-    # end Initialise class
-# end atom class
 
 
-# download and save PDB file from the web
 def downloadPDB(PDBcode, PDBdirectory, pathToPDB):
-    import os  # for operating system usability
-    import urllib2  # for dealing with URL stuff
-    # create URL from which to download .pdb file
+    # Downloads and saves PDB file from the RSCB PDB website.
+
+    import os
+    import urllib2
+
     urlText = 'http://www.rcsb.org/pdb/files/%s.pdb' % PDBcode
-    # downlaod PDB file and save local copy
     os.makedirs(PDBdirectory)
     print 'Directory %s created' % PDBdirectory
-
     origPDB = urllib2.urlopen(urlText)
-    # inform user of the URL used to download PDB file
     print 'Downloaded PDB file from %s' % urlText
-    # write local file containing the downloaded content
     localFile = open(pathToPDB, 'w')
     localFile.write(origPDB.read())
-    # inform user of file loaction of newly downloaded content
     print 'PDB file saved to %s' % pathToPDB
-    # close local file to free up memory
     localFile.close()
-# end downloadPDB
 
 
-# copy .pdb file to another location
 def copyPDB(pathToPDB, newPathToPDB, PDBdirectory):
+    # Copies .pdb file from any path on local disk (C://) to Logfiles
+    # directory.
+
     import os
     owd = os.getcwd()
-
     os.chdir('c:\\')
     origPDB = open(pathToPDB, 'r')
-
-    # write file containing copied content
     os.chdir(owd)
     os.makedirs(PDBdirectory)
     localFile = open(newPathToPDB, 'w')
     localFile.write(origPDB.read())
-
-    # inform user of file location of new copy of PDB file
     print 'PDB file copied to %s' % newPathToPDB
-    # close local file to free up memory
     localFile.close()
     origPDB.close()
-# end copyPDB
 
 
-# parse pdb file with name 'fileName' and return list of atoms from 'atom' class above
-def parsePDB(fileName, HETATM, addAtoms, removeAtoms):
-    import os  # for operating system usability
-    import sys  # for terminating script when encountering errors
-    from parsePDB import atom  # for utilising the 'atom' class
-    # check that file exists
-    if not os.path.exists(fileName):
-        sys.exit('Error!!\nFile name %s not found' % fileName)
-    # create puppet lists to fill with lines of text or atom objects
+def full_atom_list(fileName):
+    # Parses in input PDB file (= PDBCUR output) and returns a list of all
+    # atoms in the file with their associated attributes as assigned in the
+    # 'atom' class. The lines above and below the 'ATOM'/'HETATM' information
+    # in the input PDB file are also stored in lists for use in writing new
+    # PDB files.
+
+    # Initialise lists for storage of subsections of input PDB file
     bof = []
-    atomList = []
-    bdamatomList = []
-    eof = []
-    beforeAtoms = True
-    # add definitions for dot functions to speed up code
     bAppend = bof.append
+    atomList = []
     alAppend = atomList.append
-    bdalAppend = bdamatomList.append
+    eof = []
     eAppend = eof.append
-    # open correct file name for reading
+
+    beforeAtoms = True  # Lines before the 'ATOM'/'HETATM' information are stored in 'bof' list
+
     fileOpen = open(fileName, 'r')
-
-    if HETATM is True:
-        for line in fileOpen.readlines():
-            # only select information from ATOM or HETATM lines
-            if ('ATOM  ' in str(line[0:6])) or ('HETATM' in str(line[0:6])):
-                beforeAtoms = False
-                y = atom()  # make new 'atom' object here
-                # get atom properties here
-                y.lineID = str(line[0:6].strip())
-                y.atomNum = int(line[6:11].strip())
-                y.atomType = str(line[12:16].strip())
-                y.resiType = str(line[17:20].strip())
-                y.chainID = str(line[21:22].strip())
-                y.resiNum = int(line[22:26].strip())
-                y.xyzCoords = [[float(line[30:38].strip())],
-                               [float(line[38:46].strip())],
-                               [float(line[46:54].strip())]]
-                y.occupancy = float(line[54:60].strip())
-                y.bFactor = float(line[60:66].strip())
-                y.atomID = str(line[77:79].strip())
-                y.charge = str(line[79:81].strip())
-                # append new 'atom' object to list
-                alAppend(y)
-
-            if ('ATOM  ' in str(line[0:6])) or ('HETATM' in str(line[0:6])):
-                if str((line[17:20]).strip()) not in ['HOH', 'H2O', 'DOD', 'D2O', 'WAT']:
-                    if str((line[6:11]).strip()) not in removeAtoms:
-                        y = atom()  # make new 'atom' object here
-                        # get atom properties here
-                        y.lineID = str(line[0:6].strip())
-                        y.atomNum = int(line[6:11].strip())
-                        y.atomType = str(line[12:16].strip())
-                        y.resiType = str(line[17:20].strip())
-                        y.chainID = str(line[21:22].strip())
-                        y.resiNum = int(line[22:26].strip())
-                        y.xyzCoords = [[float(line[30:38].strip())],
-                                       [float(line[38:46].strip())],
-                                       [float(line[46:54].strip())]]
-                        y.occupancy = float(line[54:60].strip())
-                        y.bFactor = float(line[60:66].strip())
-                        y.atomID = str(line[77:79].strip())
-                        y.charge = str(line[79:81].strip())
-                        # append new 'atom' object to list
-                        bdalAppend(y)
-
-            if ('ATOM  ' in str(line[0:6])) or ('HETATM' in str(line[0:6])):
-                if str((line[6:11]).strip()) in addAtoms:
-                    y = atom()  # make new 'atom' object here
-                    # get atom properties here
-                    y.lineID = str(line[0:6].strip())
-                    y.atomNum = int(line[6:11].strip())
-                    y.atomType = str(line[12:16].strip())
-                    y.resiType = str(line[17:20].strip())
-                    y.chainID = str(line[21:22].strip())
-                    y.resiNum = int(line[22:26].strip())
-                    y.xyzCoords = [[float(line[30:38].strip())],
-                                   [float(line[38:46].strip())],
-                                   [float(line[46:54].strip())]]
-                    y.occupancy = float(line[54:60].strip())
-                    y.bFactor = float(line[60:66].strip())
-                    y.atomID = str(line[77:79].strip())
-                    y.charge = str(line[79:81].strip())
-                    # append new 'atom' object to list
-                    bdalAppend(y)
-
-            elif ('TER   ' in str(line[0:6])) or ('ANISOU' in str(line[0:6])):
-                continue
-
-            else:
-                if beforeAtoms is True:
-                    bAppend(line)
-                else:
-                    eAppend(line)
-
-    if HETATM is False:
-        for line in fileOpen.readlines():
-            # only select information from ATOM or HETATM lines
-            if ('ATOM  ' in str(line[0:6])) or ('HETATM' in str(line[0:6])):
-                beforeAtoms = False
-                y = atom()  # make new 'atom' object here
-                # get atom properties here
-                y.lineID = str(line[0:6].strip())
-                y.atomNum = int(line[6:11].strip())
-                y.atomType = str(line[12:16].strip())
-                y.resiType = str(line[17:20].strip())
-                y.chainID = str(line[21:22].strip())
-                y.resiNum = int(line[22:26].strip())
-                y.xyzCoords = [[float(line[30:38].strip())],
-                               [float(line[38:46].strip())],
-                               [float(line[46:54].strip())]]
-                y.occupancy = float(line[54:60].strip())
-                y.bFactor = float(line[60:66].strip())
-                y.atomID = str(line[77:79].strip())
-                y.charge = str(line[79:81].strip())
-                # append new 'atom' object to list
-                alAppend(y)
-
-            if ('ATOM  ' in str(line[0:6])):
-                if str((line[6:11]).strip()) not in removeAtoms:
-                    y = atom()  # make new 'atom' object here
-                    # get atom properties here
-                    y.lineID = str(line[0:6].strip())
-                    y.atomNum = int(line[6:11].strip())
-                    y.atomType = str(line[12:16].strip())
-                    y.resiType = str(line[17:20].strip())
-                    y.chainID = str(line[21:22].strip())
-                    y.resiNum = int(line[22:26].strip())
-                    y.xyzCoords = [[float(line[30:38].strip())],
-                                   [float(line[38:46].strip())],
-                                   [float(line[46:54].strip())]]
-                    y.occupancy = float(line[54:60].strip())
-                    y.bFactor = float(line[60:66].strip())
-                    y.atomID = str(line[77:79].strip())
-                    y.charge = str(line[79:81].strip())
-                    # append new 'atom' object to list
-                    bdalAppend(y)
-
-            if ('ATOM  ' in str(line[0:6])) or ('HETATM' in str(line[0:6])):
-                if str((line[6:11]).strip()) in addAtoms:
-                    y = atom()  # make new 'atom' object here
-                    # get atom properties here
-                    y.lineID = str(line[0:6].strip())
-                    y.atomNum = int(line[6:11].strip())
-                    y.atomType = str(line[12:16].strip())
-                    y.resiType = str(line[17:20].strip())
-                    y.chainID = str(line[21:22].strip())
-                    y.resiNum = int(line[22:26].strip())
-                    y.xyzCoords = [[float(line[30:38].strip())],
-                                   [float(line[38:46].strip())],
-                                   [float(line[46:54].strip())]]
-                    y.occupancy = float(line[54:60].strip())
-                    y.bFactor = float(line[60:66].strip())
-                    y.atomID = str(line[77:79].strip())
-                    y.charge = str(line[79:81].strip())
-                    # append new 'atom' object to list
-                    bdalAppend(y)
-
-            elif ('TER   ' in str(line[0:6])) or ('ANISOU' in str(line[0:6])):
-                continue
-
-            else:
-                if beforeAtoms is True:
-                    bAppend(line)
-                else:
-                    eAppend(line)
-
-    fileOpen.close()  # close .pdb file after reading
-    # provide feedback to user
-    print 'Finished reading in atoms --> %d atoms found in' % int(len(atomList))
-    print '%s' % fileName
-    # return list of atoms as output of function
-    return bof, atomList, bdamatomList, eof
-
-
-# obtain unit cell parameters from PDB file
-def getUnitCellParams(fileName):
-    import os  # for operating system usability
-    import math  # for converting degrees to radians
-    # check that file exists
-    if not os.path.exists(fileName):
-        print 'Error!!\nFile name {} not found'.format(fileName)
-        return
-    # open correct file name for reading
-    fileOpen = open(fileName, 'r')
-    # find and read the CRYST1 line
     for line in fileOpen.readlines():
-        # only select infoprmation from CRYST1 line
-        if('CRYST1' in str(line[0:6])):
+        if str((line[0:6]).strip()) in ['ATOM', 'HETATM']:
+            beforeAtoms = False  # Lines after the 'ATOM' / 'HETATM' information are stored in 'eof' list
+            y = atom()
+            y.lineID = str(line[0:6].strip())
+            y.atomNum = int(line[6:11].strip())
+            y.atomType = str(line[12:16].strip())
+            y.resiType = str(line[17:20].strip())
+            y.chainID = str(line[21:22].strip())
+            y.resiNum = int(line[22:26].strip())
+            y.xyzCoords = [[float(line[30:38].strip())],
+                           [float(line[38:46].strip())],
+                           [float(line[46:54].strip())]]
+            y.occupancy = float(line[54:60].strip())
+            y.bFactor = float(line[60:66].strip())
+            y.atomID = str(line[77:79].strip())
+            y.charge = str(line[79:81].strip())
+            alAppend(y)
+
+        else:
+            if beforeAtoms is True:
+                bAppend(line)
+            else:
+                eAppend(line)
+
+    fileOpen.close()
+    print 'Finished reading in atoms --> %d atoms found' % int(len(atomList))
+    print 'in %s' % fileName
+
+    return bof, atomList, eof
+
+
+def b_damage_atom_list(fileName, atomList, HETATM, protOrNA, addAtoms,
+                       removeAtoms):
+    # Trims a copy of the atomList returned by the 'full_atom_list' function
+    # to the subset of atoms to be included in B_damage calculations. The
+    # subset of atoms retained is specified by the 'HETATM',
+    # 'proteinOrNucleicAcid', 'addAtoms'  and 'removeAtoms' argument values
+    # specified in INPUT.txt:
+
+    import copy
+    duplicate = copy.copy
+
+    bdamatomList_1 = atomList
+    bdamatomList_2 = duplicate(bdamatomList_1)
+
+    # Removes hetatm if HETATM set to 'Remove' in INPUT.txt.
+    for index, atm in enumerate(bdamatomList_1):
+        if atm.lineID == 'HETATM':
+            if HETATM is False:
+                bdamatomList_2[index] = None
+
+    for index, atm in enumerate(bdamatomList_1):
+        if atm.lineID == 'ATOM':
+            # Removes nucleic acid atoms if proteinOrNucleicAcid set to
+            # 'Protein' in INPUT.txt.
+            if protOrNA == 'PROTEIN':
+                if len(str(atm.resiType)) != 3:
+                    bdamatomList_2[index] = None
+
+            # Removes protein atoms if proteinOrNucleicAcid set to
+            # 'Nucleic Acid' in INPUT.txt.
+            elif protOrNA in ['NUCLEICACID', 'NA']:
+                if len(str(atm.resiType)) == 3:
+                    bdamatomList_2[index] = None
+
+    # Removes atoms whose number is in removeAtoms list.
+    for index, atm in enumerate(bdamatomList_1):
+        if str(atm.atomNum) in removeAtoms:
+            bdamatomList_2[index] = None
+
+    # Removes atoms whose atom type is in removeAtoms list.
+    for index, atm in enumerate(bdamatomList_1):
+        if str(atm.atomType) in removeAtoms:
+            bdamatomList_2[index] = None
+
+    # Removes atoms whose residue type is in removeAtoms list.
+    for index, atm in enumerate(bdamatomList_1):
+        if str(atm.resiType) in removeAtoms:
+            bdamatomList_2[index] = None
+
+    bdamatomList_2 = filter(None, bdamatomList_2)
+    bdal2Append = bdamatomList_2.append
+
+    fileOpen = open(fileName, 'r')
+    for line in fileOpen.readlines():
+        if str((line[0:6]).strip()) in ['ATOM', 'HETATM']:
+            # Adds atoms whose number is in addAtoms list.
+            if str((line[6:11]).strip()) in addAtoms:
+                y = atom()
+                y.lineID = str(line[0:6].strip())
+                y.atomNum = int(line[6:11].strip())
+                y.atomType = str(line[12:16].strip())
+                y.resiType = str(line[17:20].strip())
+                y.chainID = str(line[21:22].strip())
+                y.resiNum = int(line[22:26].strip())
+                y.xyzCoords = [[float(line[30:38].strip())],
+                               [float(line[38:46].strip())],
+                               [float(line[46:54].strip())]]
+                y.occupancy = float(line[54:60].strip())
+                y.bFactor = float(line[60:66].strip())
+                y.atomID = str(line[77:79].strip())
+                y.charge = str(line[79:81].strip())
+                bdal2Append(y)
+
+            # Adds atoms whose atom type is in addAtoms list.
+            elif str(((line[12:16]).strip()).upper()) in addAtoms:
+                y = atom()
+                y.lineID = str(line[0:6].strip())
+                y.atomNum = int(line[6:11].strip())
+                y.atomType = str(line[12:16].strip())
+                y.resiType = str(line[17:20].strip())
+                y.chainID = str(line[21:22].strip())
+                y.resiNum = int(line[22:26].strip())
+                y.xyzCoords = [[float(line[30:38].strip())],
+                               [float(line[38:46].strip())],
+                               [float(line[46:54].strip())]]
+                y.occupancy = float(line[54:60].strip())
+                y.bFactor = float(line[60:66].strip())
+                y.atomID = str(line[77:79].strip())
+                y.charge = str(line[79:81].strip())
+                bdal2Append(y)
+
+            # Adds atoms whose residue type is in addAtoms list.
+            elif str(((line[17:20]).strip()).upper()) in addAtoms:
+                y = atom()
+                y.lineID = str(line[0:6].strip())
+                y.atomNum = int(line[6:11].strip())
+                y.atomType = str(line[12:16].strip())
+                y.resiType = str(line[17:20].strip())
+                y.chainID = str(line[21:22].strip())
+                y.resiNum = int(line[22:26].strip())
+                y.xyzCoords = [[float(line[30:38].strip())],
+                               [float(line[38:46].strip())],
+                               [float(line[46:54].strip())]]
+                y.occupancy = float(line[54:60].strip())
+                y.bFactor = float(line[60:66].strip())
+                y.atomID = str(line[77:79].strip())
+                y.charge = str(line[79:81].strip())
+                bdal2Append(y)
+
+    fileOpen.close()
+
+    # Filters list of atoms for B_damage analysis to remove multiple copies
+    # of the same atom.
+    bdamatomSet = set()
+    bdamatomList = []
+    for atm in bdamatomList_2:
+        if atm.atomNum not in bdamatomSet:
+            bdamatomList.append(atm)
+            bdamatomSet.add(atm.atomNum)
+
+    print 'Finished reading in atoms --> %d atoms found' % int(len(atomList))
+    print 'in %s' % fileName
+
+    bdamatomList = sorted(bdamatomList, key=lambda x: x.atomNum)
+    return bdamatomList
+
+
+def getUnitCellParams(fileName):
+    # Parses in the unit cell parameters (the vectors a, b, c, and the angles
+    # alpha, beta and gamma) from the input PDB file.
+
+    import math
+
+    fileOpen = open(fileName, 'r')
+    for line in fileOpen.readlines():
+        if('CRYST1' in str(line[0:6])):  # Unit cell parameters are stored in this line
             params = line.split()
-            # create object 'y' with attributes for each of the Unit Cell Parameters
             a = float(params[1])
             b = float(params[2])
             c = float(params[3])
@@ -267,30 +253,32 @@ def getUnitCellParams(fileName):
             beta = math.radians(float(params[5]))
             gamma = math.radians(float(params[6]))
             break
-    # provide feedback to user
+
     print 'Unit cell parameters successfully extracted'
-    fileOpen.close()  # close .pdb file
+    fileOpen.close()
     return (a, b, c, alpha, beta, gamma)
-# end getUnitCellParams
 
 
-# get minimum and maximum xyz coordinates of the asymmetric unit
 def getAUparams(atomList):
-    # initialise xyz minima and maxima
+    # Determines the min. and max. values of the x, y and z coordinates in the
+    # asymmetric unit. (These are required later when calculating the size
+    # of the trimmed atoms box.)
+
+    # Initialises xyz minima and maxima using values from first atom in
+    # atomList.
     xMin = float(atomList[0].xyzCoords[0][0])
     xMax = float(atomList[0].xyzCoords[0][0])
     yMin = float(atomList[0].xyzCoords[1][0])
     yMax = float(atomList[0].xyzCoords[1][0])
     zMin = float(atomList[0].xyzCoords[2][0])
     zMax = float(atomList[0].xyzCoords[2][0])
-    # loop through all atoms in input list
+
+    # Updates xyz minima and maxima as loop through atomList.
     for atm in atomList:
-        # extract xyz coordinates from atom information
         x = float(atm.xyzCoords[0][0])
         y = float(atm.xyzCoords[1][0])
         z = float(atm.xyzCoords[2][0])
-        # if the newly considered atoms coordinates lie outside of the previous
-        # max/minima, replace the relevant parameter(s)
+
         if x < xMin:
             xMin = x
         elif x > xMax:
@@ -303,22 +291,26 @@ def getAUparams(atomList):
             zMin = z
         elif z > zMax:
             zMax = z
-    # combine all parameters into a single list
+
     auParams = [xMin, xMax, yMin, yMax, zMin, zMax]
     return auParams
-# end getAUparams
 
 
 def trimAtoms(atomList, params):
+    # Removes all atoms with coordinates which lie outside of the trimmed
+    # atoms box from the list of atoms in the 3x3 unit cell assembly.
+
     from atomCheck import isInXYZparams
+
     print 'Excluding the atoms that lie outside of the box'
+
     trimAtomList = []
     trimAppend = trimAtomList.append
+
     for atom in atomList:
         atomXYZ = atom.xyzCoords
         if isInXYZparams(atomXYZ, params):
             trimAppend(atom)
+
     print '%.0f atoms have been retained\n' % int(len(trimAtomList))
-    # output a list of retained atom objects
     return trimAtomList
-# end trimAtoms

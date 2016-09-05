@@ -1,13 +1,15 @@
 
 
-# method to make a pdb from complete set of atom information and pdb header/footer
 def makePDB(bof, atomList, eof, newPDBfilename):
+    # Writes a pdb file containing a complete set of atom information for all
+    # atoms in 'atomList', plus header and footer information.
+
     newPDBfile = open(newPDBfilename, 'a')
+
     for line in bof:
-        # write line to new PDB file
         newPDBfile.write(line)
+
     for atm in atomList:
-        # take object information to a set of temporary variables
         a = str(atm.lineID)
         b = int(atm.atomNum)
         c = str(atm.atomType)
@@ -21,22 +23,29 @@ def makePDB(bof, atomList, eof, newPDBfilename):
         l = float(atm.bFactor)
         m = str(atm.atomID)
         n = str(atm.charge)
-        # concatenate temporary variables into a single string with correct PDB formatting
-        newLine = '%-6s%5d  %-3s %3s %1s%4d    %8.3f%8.3f%8.3f%6.2f%6.2f          %2s%2s\n' % (a, b, c, d, e, f, g, h, j, k, l, m, n)
-        # write line to new PDB file
+        # Values are appropriately ordered and spaced, and reported to the
+        # expected number of significant figures, for the PDB file format.
+        newLine = '%-6s%5d  %-3s %3s %1s%4d    %8.3f%8.3f%8.3f%6.2f%6.2f          %2s%2s\n' % (
+            a, b, c, d, e, f, g, h, j, k, l, m, n
+            )
         newPDBfile.write(newLine)
+
     for line in eof:
-        # write line to new PDB file
         newPDBfile.write(line)
-    print 'New PDB file saved to %s' % newPDBfilename
+
+    print '\nNew PDB file saved to %s' % newPDBfilename
     newPDBfile.close()
-# end makePDB
 
 
 def writeBdam(bdamatomList):
-    # method to write calculated Bdamage values to a dataframe
+    # Returns a DataFrame containing a complete set of atom information
+    # (including both that provided in the input PDB file and also the
+    # B_damage values calculated by RABDAM) for all atoms considered for
+    # B_damage analysis.
+
     import pandas as pd
 
+    # Initialises a list for each atom property considered.
     REC = [None]*len(bdamatomList)
     ATMNUM = [None]*len(bdamatomList)
     ATMNAME = [None]*len(bdamatomList)
@@ -54,6 +63,8 @@ def writeBdam(bdamatomList):
     AVRG_BF = [None]*len(bdamatomList)
     BDAM = [None]*len(bdamatomList)
 
+    # Lists are filled with property values associated with each of the atoms
+    # considered for B_damage analysis.
     for index, atm in enumerate(bdamatomList):
         REC[index] = atm.lineID
         ATMNUM[index] = atm.atomNum
@@ -72,6 +83,7 @@ def writeBdam(bdamatomList):
         AVRG_BF[index] = atm.avrg_bf
         BDAM[index] = atm.bd
 
+    # Lists are concatenated into the colummns of a DataFrame.
     df = pd.DataFrame({'REC': REC,
                        'ATMNUM': ATMNUM,
                        'ATMNAME': ATMNAME,
@@ -88,6 +100,8 @@ def writeBdam(bdamatomList):
                        'PD': PD,
                        'AVRG BF': AVRG_BF,
                        'BDAM': BDAM})
+
+    # DataFrame columns are ordered.
     cols = df.columns.tolist()
     cols_a = [cols[10]] + [cols[1]] + [cols[0]] + [cols[11]] + [cols[5]]
     cols_b = [cols[12]] + [cols[13]] + [cols[14]] + [cols[15]] + [cols[8]]
@@ -95,4 +109,5 @@ def writeBdam(bdamatomList):
     cols_d = [cols[2]] + [cols[3]]
     cols = cols_a + cols_b + cols_c + cols_d
     df = df[cols]
+
     return df

@@ -1,11 +1,16 @@
 
 
-# Script to calculate B-damage for protein atoms
 import sys
-sys.path.insert(0, './Subroutines')
 import time
 import math
+
+sys.path.insert(0, './Subroutines')
 from CalculateBdamage import rabdam_analysis
+
+# An outer layer to the pipeline scripts. This allows the B_damage analysis
+# pipeline to be run from the command line by calling:
+#
+#          python rabdam_analysis.py INPUT.txt
 
 start = time.time()
 startIndex = time.gmtime()
@@ -15,12 +20,12 @@ day = startIndex.tm_mday
 hour = startIndex.tm_hour
 minute = startIndex.tm_min
 second = startIndex.tm_sec
-# inform the user of the start time of the program
-print 'This program was run on %d/%d/%d at %02.0f:%02.0f:%02.0f\n\n' % (day, month, year, hour, minute, second)
+print 'This program was run on %d/%d/%d at %02.0f:%02.0f:%02.0f\n\n' % (
+    day, month, year, hour, minute, second
+    )
 
-# read the filename from the CL input
+# Reads in the PDB file names listed in INPUT.txt.
 fileCont = open(sys.argv[1], 'r')
-# write the string of the function arguments
 functionArgs = fileCont.read()
 splitArgs = functionArgs.split(',')
 pathToPDBlist = []
@@ -28,61 +33,64 @@ for item in splitArgs:
     if '=' not in item:
         pathToPDBlist.append(item.strip())
 
-# remove all whitespace from the inputs
+# Reads in the remaining rabdam function arguments from INPUT.txt.
 functionArgs = functionArgs.replace(' ', '')
 functionArgs = functionArgs.replace('\n', '')
 functionArgs = functionArgs.replace('\r', '')
-# split the input file into its components
 splitArgs = functionArgs.split(',')
+for item in splitArgs:
+    if '=' not in item:
+        splitArgs.remove(item)
 
-# initialise the argument defaults
+# Initialises argument default values.
 thresholdVal = float(0.02)
 highlightAtomsList = []
+run = 'rabdam_analysis'
 
-# parse the argument string and assign values to RABDAM inputs
-for x in xrange(1, len(splitArgs)):
+# Assigns argument values as provided in INPUT.txt.
+for x in xrange(0, len(splitArgs)):
     if splitArgs[x][0:9] == 'threshold':
         thresholdArg = splitArgs[x].split('=')
-        thresholdVal = float(thresholdArg[len(thresholdArg) - 1])
+        thresholdVal = float(thresholdArg[len(thresholdArg)-1])
 
     elif splitArgs[x][0:14] == 'highlightAtoms':
         highlightAtomsList = []
         highlightAtomsArg = splitArgs[x].split('=')
-        highlightAtomsStr = str(highlightAtomsArg[len(highlightAtomsArg) - 1])
+        highlightAtomsStr = str(highlightAtomsArg[len(highlightAtomsArg)-1])
         if highlightAtomsStr == '':
             highlightAtomsList = []
         else:
             highlightAtomsSubList = highlightAtomsStr.split(';')
             for item in highlightAtomsSubList:
-                if '-' in item:
-                    highlightAtomsSubList.remove(item)
-                    highlightAtomsRange = item.split('-')
-                    if highlightAtomsRange[-1] != '' and highlightAtomsRange[0] != '':
-                        min_val = int(highlightAtomsRange[-2])
-                        max_val = int(highlightAtomsRange[-1])
-                        highlightAtomsRange = range(min_val, (max_val + 1))
-                        for number in highlightAtomsRange:
-                            highlightAtomsList.append(str(number))
-                    elif highlightAtomsRange[-1] == '':
-                        highlightAtomsList.append(highlightAtomsRange[-2])
-                    elif highlightAtomsRange[0] == '':
-                        highlightAtomsList.append(highlightAtomsRange[-1])
-                elif '-' not in item:
-                    highlightAtomsList.append(item)
+                highlightAtomsRange = str(item).split('-')
+                if len(highlightAtomsRange) == 2:
+                    min_val = int(highlightAtomsRange[-2])
+                    max_val = int(highlightAtomsRange[-1])
+                    highlightAtomsRange = range(min_val, (max_val+1))
+                    for number in highlightAtomsRange:
+                        highlightAtomsList.append(str(number))
+                elif len(highlightAtomsRange) == 1:
+                    highlightAtomsList.append(highlightAtomsRange[-1])
 
-# run function with arguments from input file
 for item in pathToPDBlist:
-    rabdam_analysis(item, threshold=thresholdVal, highlightAtoms=highlightAtomsList)
+    # Generates output analysis files from pre-calculated B_damage values.
+    rabdam_analysis(
+        item, threshold=thresholdVal, highlightAtoms=highlightAtomsList,
+        run=run
+        )
 
 runtime = time.time() - start
 minutes = math.floor(runtime/60)
 seconds = math.fmod(runtime, 60)
 if minutes == 0:
     if seconds == 1:
-        print 'Total time taken for program to run was %02.3f second.\n\n' % seconds
+        print 'Program run time = %02.3f second\n\n' % seconds
     else:
-        print 'Total time taken for program to run was %02.3f seconds.\n\n' % seconds
+        print 'Programe run time = %02.3f seconds\n\n' % seconds
 elif minutes == 1:
-    print 'Total time taken for program to run was %01.0f minute and %02.3f seconds.\n\n' % (minutes, seconds)
+    if seconds == 1:
+        print 'Program run time = %01.0f minute, %02.3f second\n\n' % (minutes, seconds)
+    else:
+        print 'Program run time = %01.0f minute, %02.3f seconds\n\n' % (minutes, seconds)
 else:
-    print 'Total time taken for program to run was %01.0f minutes and %02.3f seconds.\n\n' % (minutes, seconds)
+    print 'Program run time = %01.0f minutes, %02.3f seconds\n\n' % (minutes, seconds)
