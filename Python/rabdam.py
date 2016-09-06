@@ -33,6 +33,7 @@ pathToPDBlist = []
 for item in splitArgs:
     if '=' not in item:
         pathToPDBlist.append(item.strip())
+pathToPDBlist = filter(None, pathToPDBlist)
 
 # Reads in the remaining rabdam function arguments from INPUT.txt.
 functionArgs = functionArgs.replace(' ', '')
@@ -59,14 +60,18 @@ taVal = False
 run = 'rabdam'
 
 # Assigns argument values as provided in INPUT.txt.
-for x in xrange(0, (len(splitArgs)-1)):
+for x in xrange(0, len(splitArgs)):
     if splitArgs[x][0:3] == 'PDT':
         pdtArg = splitArgs[x].split('=')
         pdtVal = float(pdtArg[len(pdtArg)-1])
 
     elif splitArgs[x][0:10] == 'windowSize':
         windowArg = splitArgs[x].split('=')
-        windowVal = float(windowArg[len(windowArg)-1])
+        windowVal = windowArg[len(windowArg)-1]
+        if '%' in windowVal:
+            windowVal = windowVal.replace('%', '')
+            windowVal = float(windowVal) / 100
+        windowVal = float(windowVal)
 
     elif splitArgs[x][0:20] == 'proteinOrNucleicAcid':
         protOrNAArg = splitArgs[x].split('=')
@@ -74,7 +79,7 @@ for x in xrange(0, (len(splitArgs)-1)):
 
     elif splitArgs[x][0:6] == 'HETATM':
         hetatmArg = splitArgs[x].split('=')
-        hetatmVal = (hetatmArg[len(hetatmArg)-1]).upper()
+        hetatmVal = str((hetatmArg[len(hetatmArg)-1]).upper())
         if hetatmVal == 'KEEP':
             hetatmVal = True
         elif hetatmVal == 'REMOVE':
@@ -120,7 +125,11 @@ for x in xrange(0, (len(splitArgs)-1)):
 
     elif splitArgs[x][0:9] == 'threshold':
         thresholdArg = splitArgs[x].split('=')
-        thresholdVal = float(thresholdArg[len(thresholdArg)-1])
+        thresholdVal = thresholdArg[len(thresholdArg)-1]
+        if '%' in thresholdVal:
+            thresholdVal = thresholdVal.replace('%', '')
+            thresholdVal = float(thresholdVal) / 100
+        thresholdVal = float(thresholdVal)
 
     elif splitArgs[x][0:14] == 'highlightAtoms':
         highlightAtomsList = []
@@ -188,17 +197,20 @@ for item in pathToPDBlist:
         )
 
 runtime = time.time() - start
-minutes = math.floor(runtime/60)
-seconds = math.fmod(runtime, 60)
-if minutes == 0:
-    if seconds == 1:
-        print 'Program run time = %02.3f second\n\n' % seconds
+mins = math.floor(runtime/60)
+secs = math.fmod(runtime, 60)
+if mins == 0:
+    if secs == 1:
+        print 'Program run time = %02.3f second\n\n' % secs
     else:
-        print 'Program run time = %02.3f seconds\n\n' % seconds
-elif minutes == 1:
-    if seconds == 1:
-        print 'Program run time = %01.0f minute, %02.3f second\n\n' % (minutes, seconds)
+        print 'Program run time = %02.3f seconds\n\n' % secs
+elif mins == 1:
+    if secs == 1:
+        print 'Program run time = %01.0f minute, %02.3f second\n\n' % (mins,
+                                                                       secs)
     else:
-        print 'Program run time = %01.0f minute, %02.3f seconds\n\n' % (minutes, seconds)
+        print 'Program run time = %01.0f minute, %02.3f seconds\n\n' % (mins,
+                                                                        secs)
 else:
-    print 'Program run time = %01.0f minutes, %02.3f seconds\n\n' % (minutes, seconds)
+    print 'Program run time = %01.0f minutes, %02.3f seconds\n\n' % (mins,
+                                                                     secs)

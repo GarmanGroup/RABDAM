@@ -42,7 +42,7 @@ def rabdam_dataframe(pathToPDB, PDT=14, windowSize=0.02,
 
     print('****************************************************************\n'
           '************************* Input Section ************************\n')
-    # Prints the input values read into the programme from INPUT.txt.
+    # Prints the input values read into the program from INPUT.txt.
 
     print 'Calculating B_damage for %s\n' % pathToPDB
     if PDT == 14:
@@ -64,12 +64,12 @@ def rabdam_dataframe(pathToPDB, PDT=14, windowSize=0.02,
     if len(addAtoms) == 0:
         print 'No atoms to be added\n'
     else:
-        for index, value in enumerate(addAtoms):
+        for value in addAtoms:
             print 'Atoms to be added: %s\n' % value
     if len(removeAtoms) == 0:
         print 'No atoms to be removed\n'
     else:
-        for index, value in enumerate(removeAtoms):
+        for value in removeAtoms:
             print 'Atoms to be removed: %s\n' % value
 
     print('********************* End of Input Section *********************\n'
@@ -98,7 +98,8 @@ def rabdam_dataframe(pathToPDB, PDT=14, windowSize=0.02,
         # the PDB file is downloaded from the RSCB PDB website and saved to
         # the new directory.
         if os.path.isdir(PDBdirectory):
-            print 'Folder %s already exists locally at %s' % (PDBcode, PDBdirectory)
+            print 'Folder %s already exists locally at %s' % (PDBcode,
+                                                              PDBdirectory)
             print('Do you want to overwrite the existing file?\n'
                   '--USER INPUT-- type your choice and press RETURN\n'
                   'yes = overwrite this folder\n'
@@ -117,7 +118,7 @@ def rabdam_dataframe(pathToPDB, PDT=14, windowSize=0.02,
                     sys.exit()
                     break
                 else:
-                    print 'Unrecognised input - please answer yes or no'
+                    print 'Unrecognised input - please answer "yes" or "no"'
         else:
             downloadPDB(PDBcode, PDBdirectory, pathToPDB)
             owChoice = 'null'
@@ -144,7 +145,6 @@ def rabdam_dataframe(pathToPDB, PDT=14, windowSize=0.02,
 
         if pathToPDB[-4:] == '.pdb' or pathToPDB[-4:] == '.txt':
             print 'Filepath to .pdb or .txt file supplied\n'
-            splitPath = pathToPDB.replace('\\', '/')
             splitPath = pathToPDB.split('/')
             splitPath = filter(None, splitPath)
             fileName = splitPath[len(splitPath)-1]
@@ -156,7 +156,8 @@ def rabdam_dataframe(pathToPDB, PDT=14, windowSize=0.02,
 
             os.chdir(owd)
             if os.path.isdir(PDBdirectory):
-                print 'Folder %s already exists locally at %s' % (PDBcode, PDBdirectory)
+                print 'Folder %s already exists locally at %s' % (PDBcode,
+                                                                  PDBdirectory)
                 print('Do you want to overwrite the existing folder?\n'
                       '--USER INPUT-- type your choice and press RETURN\n'
                       'yes = overwrite this folder\n'
@@ -175,7 +176,7 @@ def rabdam_dataframe(pathToPDB, PDT=14, windowSize=0.02,
                         sys.exit()
                         break
                     else:
-                        print 'Unrecognised input - please answer yes or no'
+                        print 'Unrecognised input - please answer "yes" or "no"'
             else:
                 copyPDB(pathToPDB, newPathToPDB, PDBdirectory)
                 owChoice = 'null'
@@ -237,7 +238,7 @@ def rabdam_dataframe(pathToPDB, PDT=14, windowSize=0.02,
           '****************** Translate Unit Cell Section *****************\n')
     # The unit cell parameters are converted into Cartesian vectors. These
     # vectors are then used to translate the unit cell -/+ 1 units in all
-    # 3 dimensions to generate a 3x3 parallelepiped. A PDB file of this 3x3
+    # (3) dimensions to generate a 3x3 parallelepiped. A PDB file of this 3x3
     # parallelepiped is output if createAUCpdb is set equal to True in
     # INPUT.txt.
 
@@ -248,7 +249,7 @@ def rabdam_dataframe(pathToPDB, PDT=14, windowSize=0.02,
         for b in xrange(-1, 2):
             for c in xrange(-1, 2):
                 if a == 0 and b == 0 and c == 0:
-                    pass
+                    pass  # No identity translation
                 else:
                     transAtomList = translateUnitCell(
                         xyzList, ucAtomList, transAtomList, cartesianVectors,
@@ -266,11 +267,13 @@ def rabdam_dataframe(pathToPDB, PDT=14, windowSize=0.02,
           '********************* Trim Crystal Section *********************\n')
     # PDBCUR is run to process the asymmetric unit to remove hydrogen atoms,
     # atoms with zero occupancy and anisotropic B factor records, and to
-    # retain only the most probable alternate conformations. Atoms in the
-    # 3x3 parallelepiped which are a distance greater than the packing
-    # density threshold from the boundaries of the asymmetric unit are then
-    # discarded. The PDB file created of the processed PDB file is deleted
-    # unless createdAUpdb is set equal to True in INPUT.txt.
+    # retain only the most probable alternate conformations and set their
+    # occupancies to 1. Atoms in the 3x3 parallelepiped which are a distance
+    # greater than the packing density threshold from the boundaries of the
+    # asymmetric unit are then discarded. The PDB files of the processed
+    # asymmetric unit and the trimmed parallelepiped are subsequently deleted
+    # unless createAUpdb and createTApdb are respectively set equal to True in
+    # INPUT.txt.
 
     asymmetricUnit = True  # Instructs PDBCUR not to generate unit cell from asymmetric unit.
     PDBCURinputFile = '%sPDBCURinput.txt' % fileName
@@ -292,7 +295,7 @@ def rabdam_dataframe(pathToPDB, PDT=14, windowSize=0.02,
     if createAUpdb is False:
         os.remove(PDBCURoutputPDBau)
 
-    auParams = getAUparams(auAtomList)
+    auParams = getAUparams(bdamAtomList)
     print '\nObtained asymmetric unit parameters:'
     print 'xMin = %8.3f' % auParams[0]
     print 'xMax = %8.3f' % auParams[1]
@@ -395,22 +398,22 @@ def rabdam_analysis(pathToPDB, threshold=0.02, highlightAtoms=[],
     # yes = all old analysis files are removed and replaced by new analysis
     #       files
     # no = old analysis files are retained, exit program
+    #
     # Note there is no option to replace only a subset of the output analysis
-    # files, so make sure to move all old analysis files to be retained out
-    # of the Logfiles/PDBcode directory before returning 'yes'!
+    # files.
 
-    splitPath = pathToPDB.replace('\\', '/')
     splitPath = pathToPDB.split('/')
     splitPath = filter(None, splitPath)
     pathToPDB = splitPath[len(splitPath)-1]
     PDBcode = pathToPDB.replace('.pdb', '')
+    PDBcode = PDBcode.replace('.txt', '')
     PDBcode = PDBcode.upper()
     PDBdirectory = 'Logfiles/' + str(PDBcode)
     storage_directory = 'Logfiles/' + str(PDBcode) + '/DataFrame'
-    storage_fileName = 'Logfiles/' + str(PDBcode) + '/DataFrame/' + str(PDBcode)
+    storage_fileName = '%s' + str(PDBcode) % storage_directory
 
     if not os.path.isdir(storage_directory):
-        print 'Folder %s does not exist' % (storage_directory)
+        print 'Folder %s not found' % (storage_directory)
         print 'Exiting RABDAM analysis'
         sys.exit()
 
@@ -443,7 +446,7 @@ def rabdam_analysis(pathToPDB, threshold=0.02, highlightAtoms=[],
                 sys.exit()
                 break
             else:
-                print 'Unrecognised input - please answer yes or no'
+                print 'Unrecognised input - please answer "yes" or "no"'
 
     # Pkl files unpickled
     with open(str(storage_fileName) + '_variables.pkl', 'rb') as f:
@@ -457,7 +460,7 @@ def rabdam_analysis(pathToPDB, threshold=0.02, highlightAtoms=[],
           '***************** Writing Output Files Section *****************\n')
     # Uses values in DataFrame created by 'rabdam_dataframe' function to:
     # - draw a kernel density plot of distribution of B_damage values of
-    #   all atoms in asymmetric unit
+    #   all analysed atoms in asymmetric unit
     # - write an html file listing all atoms whose B_damage values lie above
     #   threshold specified in INPUT.txt
     # - calculate global B_damage metric, plus draw a kernel density plot
@@ -466,7 +469,7 @@ def rabdam_analysis(pathToPDB, threshold=0.02, highlightAtoms=[],
     # - write pdb files with B factor values replaced by B_damage values to
     #   allow structure when viewed with molecular graphics software to be
     #   coloured by B_damage
-    # - write DataFrame to csv file to allow user to easily further
+    # - write DataFrame values to csv file, to allow user to easily further
     #   manipulate data as required
 
     print 'Writing histogram and html files\n'
