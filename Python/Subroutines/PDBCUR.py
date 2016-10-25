@@ -4,9 +4,10 @@ def genPDBCURinputs(PDBCURinputFile, asymmetricUnit):
     # Creates input file for PDBCUR program specifying the operations to be
     # performed, namely:
     # - delete hydrogen atoms
-    # - remove all atoms with occupancy of 0
+    # - remove all zero occupancy atoms
     # - retain only highest occupancy conformations (if equal occupancies then
-    #   only one is selected), and set their occupancies equal to 1
+    #   only one (the first listed) is selected), and set occupancy values of
+    #   retained atoms to 1
     # - remove anisotropic B factors
     # - if specified create a unit cell from the asymmetric unit plus its
     #   associated symmetry operations
