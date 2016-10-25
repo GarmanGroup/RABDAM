@@ -80,24 +80,23 @@ def full_atom_list(fileName):
     fileOpen = open(fileName, 'r')
     for line in fileOpen.readlines():
         if str((line[0:6]).strip()) in ['ATOM', 'HETATM']:
-            # if str(line[76:78].strip()) == 'C':
-                beforeAtoms = False  # Lines after the 'ATOM' / 'HETATM'
-                # information are stored in 'eof' list
-                y = atom()
-                y.lineID = str(line[0:6].strip())
-                y.atomNum = int(line[6:11].strip())
-                y.atomType = str(line[12:16].strip())
-                y.resiType = str(line[17:20].strip())
-                y.chainID = str(line[21:22].strip())
-                y.resiNum = int(line[22:26].strip())
-                y.xyzCoords = [[float(line[30:38].strip())],
-                               [float(line[38:46].strip())],
-                               [float(line[46:54].strip())]]
-                y.occupancy = float(line[54:60].strip())
-                y.bFactor = float(line[60:66].strip())
-                y.atomID = str(line[76:78].strip())
-                y.charge = str(line[78:80].strip())
-                alAppend(y)
+            beforeAtoms = False  # Lines after the 'ATOM' / 'HETATM'
+            # information are stored in 'eof' list
+            y = atom()
+            y.lineID = str(line[0:6].strip())
+            y.atomNum = int(line[6:11].strip())
+            y.atomType = str(line[12:16].strip())
+            y.resiType = str(line[17:20].strip())
+            y.chainID = str(line[21:22].strip())
+            y.resiNum = int(line[22:26].strip())
+            y.xyzCoords = [[float(line[30:38].strip())],
+                           [float(line[38:46].strip())],
+                           [float(line[46:54].strip())]]
+            y.occupancy = float(line[54:60].strip())
+            y.bFactor = float(line[60:66].strip())
+            y.atomID = str(line[76:78].strip())
+            y.charge = str(line[78:80].strip())
+            alAppend(y)
 
         else:
             if beforeAtoms is True:
@@ -118,7 +117,7 @@ def b_damage_atom_list(fileName, atomList, HETATM, protOrNA, addAtoms,
     # to the subset of atoms to be included in B_damage calculations. The
     # subset of atoms retained is specified by the 'HETATM',
     # 'proteinOrNucleicAcid', 'addAtoms'  and 'removeAtoms' argument values
-    # specified in INPUT.txt:
+    # specified in INPUT.txt.
 
     import copy
     duplicate = copy.copy
