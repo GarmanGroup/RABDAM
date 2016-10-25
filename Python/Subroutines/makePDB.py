@@ -23,8 +23,9 @@ def makePDB(bof, atomList, eof, newPDBfilename):
         l = float(atm.bFactor)
         m = str(atm.atomID)
         n = str(atm.charge)
-        # Values are appropriately ordered and spaced, and reported to the
-        # expected number of significant figures, for the PDB file format.
+        # Atom properties are appropriately ordered and spaced, and reported
+        # to the expected number of significant figures, for the PDB file
+        # format.
         newLine = '%-6s%5d  %-3s %3s %1s%4d    %8.3f%8.3f%8.3f%6.2f%6.2f          %2s%2s\n' % (
             a, b, c, d, e, f, g, h, j, k, l, m, n
             )
@@ -63,8 +64,8 @@ def writeBdam(bdamatomList):
     AVRG_BF = [None]*len(bdamatomList)
     BDAM = [None]*len(bdamatomList)
 
-    # Lists are filled with property values associated with each of the atoms
-    # considered for B_damage analysis.
+    # Lists are filled with the relevant values of the properties associated
+    # with each of the atoms considered for B_damage analysis.
     for index, atm in enumerate(bdamatomList):
         REC[index] = atm.lineID
         ATMNUM[index] = atm.atomNum

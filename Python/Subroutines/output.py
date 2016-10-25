@@ -68,7 +68,7 @@ def make_csv(bdamatomList, filename, window):
     newFile.close()
 
 
-def make_histogram(df, fileName, PDBcode, threshold, highlightAtoms):
+def make_histogram(df, fileName, PDBcode, threshold, highlightAtoms):  # Need to increase speed
     # Returns a kernel density plot of the B_damage values of every atom
     # considered for B_damage analysis. The area under the kernel density
     # plot (which is equal to 1) is then calculated, and a boundary is drawn
@@ -260,7 +260,7 @@ def make_colourbyBdam_pdb(df, bof, eof, fileName, atomList, x_values_RHS):
 
     newPDBfile.close()
 
-
+"""
 def calculate_global_BDam(df, PDBcode, fileName):
     # Plots a kernel density estimate of Cys S, Glu O and Asp O atoms from
     # the subset of atoms considered for B_damage analysis. The global
@@ -341,5 +341,6 @@ def calculate_global_BDam(df, PDBcode, fileName):
 
         plt.annotate('globalBdamage = {:.2f}'.format(ratio),
                      xy=((max((plot.get_lines()[0].get_data())[0])*0.65),
-                     (max(y_values)*0.9)))
+                     (max(y_values)*0.9)))  # Need to fix annotation position
         plt.savefig(str(fileName)+"globalBdamage.png")
+"""

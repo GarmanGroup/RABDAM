@@ -25,7 +25,7 @@ def calc_packing_density(xyz_au_atom, xyz_surr_atom, pack_dens_thresh):
     num_au_atoms = xyz_au_atom.shape[0]
     packing_density_array = np.zeros([num_au_atoms])
 
-    for i in xrange(0, num_au_atoms):
+    for i in xrange(num_au_atoms):
         distances = np.sqrt(np.square(xyz_surr_atom - xyz_au_atom[i, :]).sum(axis=1))
         packing_density_array[i] = np.sum(distances < pack_dens_thresh) - 1  # Subtract 1 to exclude the atom counting itself.
 
@@ -39,7 +39,7 @@ def write_pckg_dens_to_atoms(au_atoms, packing_density_array):
         atom.pd = int(packing_density_array[i])
 
 
-def calcBdam(bdamatomList, window):
+def calcBdam(bdamatomList, window):  # Need to increase speed
     # All atoms to be considered for B_damage analysis are ordered via their
     # packing density values; the B_damage value of each atom is then
     # calculated as the ratio of its B factor as compared to the average of

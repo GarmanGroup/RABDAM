@@ -27,4 +27,5 @@ def isInXYZparams(atomXYZ, params):
         if float(params[2]) < y < float(params[3]):
             if float(params[4]) < z < float(params[5]):
                 return True
-    return False
+    else:
+        return False

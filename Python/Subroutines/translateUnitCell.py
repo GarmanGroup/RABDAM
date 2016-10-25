@@ -8,7 +8,6 @@ def convertToCartesian(unitCell):
 
     print 'Converting the unit cell parameters to Cartesian vectors'
 
-    # Assigns unit cell parameters to variables.
     a = float(unitCell[0])
     b = float(unitCell[1])
     c = float(unitCell[2])
@@ -55,8 +54,9 @@ def convertToCartesian(unitCell):
 
 
 def getXYZlist(atomList):
-    # Returns a list of the xyz coordinates of all atoms in the unit cell.
-    # ('xyzList' is thus a 'slimmer' version of 'atomList')
+    # Returns a list of the xyz coordinates of all atoms in 'atomList' (= a
+    # list of all atoms in the unit cell). ('xyzList' is thus a 'slimmer'
+    # version of 'atomList')
 
     noAtoms = len(atomList)
     xyzList = [0]*noAtoms
@@ -66,7 +66,7 @@ def getXYZlist(atomList):
 
 
 def translateUnitCell(atomXYZlist, ucAtomList, transAtomList,
-                      cartesianVectors, aTrans, bTrans, cTrans):
+                      cartesianVectors, aTrans, bTrans, cTrans):  # Need to increase speed
     # Translates the unit cell +/- 1 units in all dimensions to generate
     # a 3x3 assembly.
 
@@ -79,10 +79,10 @@ def translateUnitCell(atomXYZlist, ucAtomList, transAtomList,
     bTransMat = np.array([[bTrans], [bTrans], [bTrans]])
     cTransMat = np.array([[cTrans], [cTrans], [cTrans]])
 
-    # Multiplies the input unit vectors by the unit cell Cartesian vectors to
-    # determine the distances in x, y and z by which every atom in the unit
-    # cell is to be translated. The resultant vectors are then combined into a
-    # single translation vector.
+    # Multiplies the input unit vector matrices by the unit cell Cartesian
+    # vectors to determine the distances in x, y and z by which every atom
+    # in the unit cell is to be translated. The resultant vectors are then
+    # combined into a single translation vector.
     aVec = np.multiply(aTransMat, cartesianVectors[0])
     bVec = np.multiply(bTransMat, cartesianVectors[1])
     cVec = np.multiply(cTransMat, cartesianVectors[2])
@@ -98,5 +98,7 @@ def translateUnitCell(atomXYZlist, ucAtomList, transAtomList,
         atm.xyzCoords = np.add(np.array(duplicate(atomXYZlist[n])), transVector)
         taAppend(atm)
 
-    print 'Successfully translated by (%2sa,%2sb,%2sc) unit cells' % (aTrans, bTrans, cTrans)
+    print 'Successfully translated by (%2sa,%2sb,%2sc) unit cells' % (
+        aTrans, bTrans, cTrans
+        )
     return transAtomList
