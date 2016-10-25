@@ -3,8 +3,11 @@
 import sys
 import time
 import math
+import copy
 
 sys.path.insert(0, './Subroutines')
+duplicate = copy.copy
+
 from CalculateBdamage import rabdam_dataframe
 
 # An outer layer to the pipeline scripts. This allows the B_damage calculation
@@ -35,12 +38,13 @@ for item in splitArgs:
         pathToPDBlist.append(item.strip())
 pathToPDBlist = filter(None, pathToPDBlist)
 
-# Reads in the remaining rabdam function arguments from INPUT.txt.
+# Reads in the remaining rabdam_dataframe function arguments from INPUT.txt.
 functionArgs = functionArgs.replace(' ', '')
 functionArgs = functionArgs.replace('\n', '')
 functionArgs = functionArgs.replace('\r', '')
 splitArgs = functionArgs.split(',')
-for item in splitArgs:
+splitArgsDuplicate = duplicate(splitArgs)
+for item in splitArgsDuplicate:
     if '=' not in item:
         splitArgs.remove(item)
 
