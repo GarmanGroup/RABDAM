@@ -344,7 +344,7 @@ def rabdam_dataframe(pathToPDB, PDT=14, windowSize=0.02,
     print 'Calculating B_damage values\n'
     window = int(round((len(bdamAtomList)*windowSize), 0))
     if window % 2 == 0:
-        window = window + 1  # Window dize must be an odd number.
+        window = window + 1  # Window size must be an odd number.
     if window < 15:
         window == 15  # Minimum window size is 15.
     calcBdam(bdamAtomList, window)
