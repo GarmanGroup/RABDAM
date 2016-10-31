@@ -74,14 +74,12 @@ def full_atom_list(fileName):
     eof = []
     eAppend = eof.append
 
-    beforeAtoms = True  # Lines before the 'ATOM'/'HETATM' information are
-    # stored in 'bof' list
+    beforeAtoms = True  # Lines before the 'ATOM'/'HETATM' information are stored in 'bof' list
 
     fileOpen = open(fileName, 'r')
     for line in fileOpen.readlines():
         if str((line[0:6]).strip()) in ['ATOM', 'HETATM']:
-            beforeAtoms = False  # Lines after the 'ATOM' / 'HETATM'
-            # information are stored in 'eof' list
+            beforeAtoms = False  # Lines after the 'ATOM' / 'HETATM' information are stored in 'eof' list
             y = atom()
             y.lineID = str(line[0:6].strip())
             y.atomNum = int(line[6:11].strip())
@@ -94,8 +92,8 @@ def full_atom_list(fileName):
                            [float(line[46:54].strip())]]
             y.occupancy = float(line[54:60].strip())
             y.bFactor = float(line[60:66].strip())
-            y.atomID = str(line[76:78].strip())
-            y.charge = str(line[78:80].strip())
+            y.atomID = str(line[77:79].strip())
+            y.charge = str(line[79:81].strip())
             alAppend(y)
 
         else:
@@ -117,7 +115,7 @@ def b_damage_atom_list(fileName, atomList, HETATM, protOrNA, addAtoms,
     # to the subset of atoms to be included in B_damage calculations. The
     # subset of atoms retained is specified by the 'HETATM',
     # 'proteinOrNucleicAcid', 'addAtoms'  and 'removeAtoms' argument values
-    # specified in INPUT.txt.
+    # specified in INPUT.txt:
 
     import copy
     duplicate = copy.copy
@@ -180,8 +178,8 @@ def b_damage_atom_list(fileName, atomList, HETATM, protOrNA, addAtoms,
                                [float(line[46:54].strip())]]
                 y.occupancy = float(line[54:60].strip())
                 y.bFactor = float(line[60:66].strip())
-                y.atomID = str(line[76:78].strip())
-                y.charge = str(line[78:80].strip())
+                y.atomID = str(line[77:79].strip())
+                y.charge = str(line[79:81].strip())
                 bdal2Append(y)
 
             # Adds atoms whose atom type is in addAtoms list.
@@ -198,8 +196,8 @@ def b_damage_atom_list(fileName, atomList, HETATM, protOrNA, addAtoms,
                                [float(line[46:54].strip())]]
                 y.occupancy = float(line[54:60].strip())
                 y.bFactor = float(line[60:66].strip())
-                y.atomID = str(line[76:78].strip())
-                y.charge = str(line[78:80].strip())
+                y.atomID = str(line[77:79].strip())
+                y.charge = str(line[79:81].strip())
                 bdal2Append(y)
 
             # Adds atoms whose residue type is in addAtoms list.
@@ -216,8 +214,8 @@ def b_damage_atom_list(fileName, atomList, HETATM, protOrNA, addAtoms,
                                [float(line[46:54].strip())]]
                 y.occupancy = float(line[54:60].strip())
                 y.bFactor = float(line[60:66].strip())
-                y.atomID = str(line[76:78].strip())
-                y.charge = str(line[78:80].strip())
+                y.atomID = str(line[77:79].strip())
+                y.charge = str(line[79:81].strip())
                 bdal2Append(y)
 
     fileOpen.close()
@@ -231,8 +229,8 @@ def b_damage_atom_list(fileName, atomList, HETATM, protOrNA, addAtoms,
             bdamatomList.append(atm)
             bdamatomSet.add(atm.atomNum)
 
-    print 'Finished filtering atoms --> %d atoms' % int(len(bdamatomList))
-    print 'in asymmetric unit retained for B_damage analysis'
+    print 'Finished reading in atoms --> %d atoms found' % int(len(atomList))
+    print 'in %s' % fileName
 
     bdamatomList = sorted(bdamatomList, key=lambda x: x.atomNum)
     return bdamatomList
@@ -261,22 +259,22 @@ def getUnitCellParams(fileName):
     return (a, b, c, alpha, beta, gamma)
 
 
-def getAUparams(bdamatomList):
+def getAUparams(atomList):
     # Determines the min. and max. values of the x, y and z coordinates in the
     # asymmetric unit. (These are required later when calculating the size
     # of the trimmed atoms box.)
 
     # Initialises xyz minima and maxima using values from first atom in
     # atomList.
-    xMin = float(bdamatomList[0].xyzCoords[0][0])
-    xMax = float(bdamatomList[0].xyzCoords[0][0])
-    yMin = float(bdamatomList[0].xyzCoords[1][0])
-    yMax = float(bdamatomList[0].xyzCoords[1][0])
-    zMin = float(bdamatomList[0].xyzCoords[2][0])
-    zMax = float(bdamatomList[0].xyzCoords[2][0])
+    xMin = float(atomList[0].xyzCoords[0][0])
+    xMax = float(atomList[0].xyzCoords[0][0])
+    yMin = float(atomList[0].xyzCoords[1][0])
+    yMax = float(atomList[0].xyzCoords[1][0])
+    zMin = float(atomList[0].xyzCoords[2][0])
+    zMax = float(atomList[0].xyzCoords[2][0])
 
     # Updates xyz minima and maxima as loop through atomList.
-    for atm in bdamatomList:
+    for atm in atomList:
         x = float(atm.xyzCoords[0][0])
         y = float(atm.xyzCoords[1][0])
         z = float(atm.xyzCoords[2][0])
@@ -298,22 +296,21 @@ def getAUparams(bdamatomList):
     return auParams
 
 
-def trimAtoms(transatomList, params):
+def trimAtoms(atomList, params):
     # Removes all atoms with coordinates which lie outside of the trimmed
     # atoms box from the list of atoms in the 3x3 unit cell assembly.
 
     from atomCheck import isInXYZparams
 
-    print 'Excluding atoms outside of trimmed atoms box'
+    print 'Excluding the atoms that lie outside of the box'
 
-    trimmedAtomList = []
-    trimAppend = trimmedAtomList.append
+    trimAtomList = []
+    trimAppend = trimAtomList.append
 
-    for atom in transatomList:
+    for atom in atomList:
         atomXYZ = atom.xyzCoords
         if isInXYZparams(atomXYZ, params):
             trimAppend(atom)
 
-    print '%.0f atoms have been retained' % int(len(trimmedAtomList))
-    print 'in trimmed atoms box'
-    return trimmedAtomList
+    print '%.0f atoms have been retained\n' % int(len(trimAtomList))
+    return trimAtomList
