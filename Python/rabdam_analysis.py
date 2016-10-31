@@ -36,6 +36,8 @@ for item in splitArgs:
     if '=' not in item:
         pathToPDBlist.append(item.strip())
 pathToPDBlist = filter(None, pathToPDBlist)
+if len(pathToPDBlist) == 0:
+    sys.exit('No input PDB code / file listed in INPUT.txt')
 
 # Reads in the remaining rabdam_analysis function arguments from INPUT.txt.
 functionArgs = functionArgs.replace(' ', '')
