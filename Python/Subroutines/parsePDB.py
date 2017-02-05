@@ -92,8 +92,8 @@ def full_atom_list(fileName):
                            [float(line[46:54].strip())]]
             y.occupancy = float(line[54:60].strip())
             y.bFactor = float(line[60:66].strip())
-            y.atomID = str(line[77:79].strip())
-            y.charge = str(line[79:81].strip())
+            y.atomID = str(line[76:78].strip())
+            y.charge = str(line[78:80].strip())
             alAppend(y)
 
         else:
@@ -178,8 +178,8 @@ def b_damage_atom_list(fileName, atomList, HETATM, protOrNA, addAtoms,
                                [float(line[46:54].strip())]]
                 y.occupancy = float(line[54:60].strip())
                 y.bFactor = float(line[60:66].strip())
-                y.atomID = str(line[77:79].strip())
-                y.charge = str(line[79:81].strip())
+                y.atomID = str(line[76:78].strip())
+                y.charge = str(line[78:80].strip())
                 bdal2Append(y)
 
             # Adds atoms whose atom type is in addAtoms list.
@@ -196,8 +196,8 @@ def b_damage_atom_list(fileName, atomList, HETATM, protOrNA, addAtoms,
                                [float(line[46:54].strip())]]
                 y.occupancy = float(line[54:60].strip())
                 y.bFactor = float(line[60:66].strip())
-                y.atomID = str(line[77:79].strip())
-                y.charge = str(line[79:81].strip())
+                y.atomID = str(line[76:78].strip())
+                y.charge = str(line[78:80].strip())
                 bdal2Append(y)
 
             # Adds atoms whose residue type is in addAtoms list.
@@ -214,8 +214,8 @@ def b_damage_atom_list(fileName, atomList, HETATM, protOrNA, addAtoms,
                                [float(line[46:54].strip())]]
                 y.occupancy = float(line[54:60].strip())
                 y.bFactor = float(line[60:66].strip())
-                y.atomID = str(line[77:79].strip())
-                y.charge = str(line[79:81].strip())
+                y.atomID = str(line[76:78].strip())
+                y.charge = str(line[78:80].strip())
                 bdal2Append(y)
 
     fileOpen.close()
