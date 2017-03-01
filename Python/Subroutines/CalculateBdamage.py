@@ -138,14 +138,15 @@ def rabdam_dataframe(pathToPDB, PDT=14, windowSize=0.02,
         # If doesn't already exist, new PDB directory is created and copy of
         # input PDB file is saved to the new directory.
         owd = os.getcwd()
-        os.chdir('c://')
+        splitPath = pathToPDB.split('/')
+        disk = '%s/' % splitPath[0]
+        os.chdir(disk)
 
         if not os.path.exists(pathToPDB):
             sys.exit('Error 02: Supplied filepath not recognised')
 
         if pathToPDB[-4:] == '.pdb' or pathToPDB[-4:] == '.txt':
             print 'Filepath to .pdb or .txt file supplied\n'
-            splitPath = pathToPDB.split('/')
             fileName = splitPath[len(splitPath)-1]
             splitFilename = fileName.split('.')
             fileName = str((splitFilename[len(splitFilename)-2]).upper()) + '.' + str(splitFilename[len(splitFilename)-1])
