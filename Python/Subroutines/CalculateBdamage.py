@@ -138,6 +138,7 @@ def rabdam_dataframe(pathToPDB, PDT=14, windowSize=0.02,
         # If doesn't already exist, new PDB directory is created and copy of
         # input PDB file is saved to the new directory.
         owd = os.getcwd()
+        pathToPDB = pathToPDB.replace('\\', '/')
         splitPath = pathToPDB.split('/')
         disk = '%s/' % splitPath[0]
         os.chdir(disk)
@@ -168,7 +169,7 @@ def rabdam_dataframe(pathToPDB, PDT=14, windowSize=0.02,
                     if owChoice == 'YES' or owChoice == 'Y':
                         print '\nOverwriting existing folder'
                         shutil.rmtree(str(PDBdirectory))
-                        copyPDB(pathToPDB, newPathToPDB, PDBdirectory)
+                        copyPDB(pathToPDB, disk, newPathToPDB, PDBdirectory)
                         break
                     elif owChoice == 'NO' or owChoice == 'N':
                         print('\nKeeping original folder\n'
@@ -178,7 +179,7 @@ def rabdam_dataframe(pathToPDB, PDT=14, windowSize=0.02,
                     else:
                         print 'Unrecognised input - please answer "yes" or "no"'
             else:
-                copyPDB(pathToPDB, newPathToPDB, PDBdirectory)
+                copyPDB(pathToPDB, disk, newPathToPDB, PDBdirectory)
                 owChoice = 'null'
 
             if not os.path.exists(newPathToPDB):
