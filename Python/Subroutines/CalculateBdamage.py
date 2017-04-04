@@ -405,6 +405,7 @@ def rabdam_analysis(pathToPDB, threshold=0.02, highlightAtoms=[],
     # Note there is no option to replace only a subset of the output analysis
     # files.
 
+    pathToPDB = pathToPDB.replace('\\', '/')
     splitPath = pathToPDB.split('/')
     pathToPDB = splitPath[len(splitPath)-1]
     PDBcode = pathToPDB.replace('.pdb', '')
