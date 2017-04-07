@@ -260,7 +260,7 @@ def make_colourbyBdam_pdb(df, bof, eof, fileName, atomList, x_values_RHS):
 
     newPDBfile.close()
 
-"""
+	
 def calculate_global_BDam(df, PDBcode, fileName):
     # Plots a kernel density estimate of Cys S, Glu O and Asp O atoms from
     # the subset of atoms considered for B_damage analysis. The global
@@ -343,4 +343,3 @@ def calculate_global_BDam(df, PDBcode, fileName):
                      xy=((max((plot.get_lines()[0].get_data())[0])*0.65),
                      (max(y_values)*0.9)))  # Need to fix annotation position
         plt.savefig(str(fileName)+"globalBdamage.png")
-"""

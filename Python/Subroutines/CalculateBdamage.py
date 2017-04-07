@@ -141,6 +141,7 @@ def rabdam_dataframe(pathToPDB, PDT=14, windowSize=0.02,
         pathToPDB = pathToPDB.replace('\\', '/')
         splitPath = pathToPDB.split('/')
         disk = '%s/' % splitPath[0]
+        os.chdir('/')
         os.chdir(disk)
 
         if not os.path.exists(pathToPDB):
@@ -383,7 +384,8 @@ def rabdam_analysis(pathToPDB, threshold=0.02, highlightAtoms=[],
     prompt = '> '
     import pickle
     import pandas as pd
-    from output import (make_csv, make_histogram, make_colourbyBdam_pdb)
+    from output import (make_csv, make_histogram, make_colourbyBdam_pdb,
+                        calculate_global_BDam)
 
     if run == 'rabdam_analysis':
         print '************************ RABDAM ANALYSIS ***********************\n'
@@ -482,7 +484,7 @@ def rabdam_analysis(pathToPDB, threshold=0.02, highlightAtoms=[],
         )
 
     print 'Calculating global B_damage\n'
-    #  calculate_global_BDam(df, PDBcode, fileName)
+    calculate_global_BDam(df, PDBcode, fileName)
 
     print 'Writing pdb files\n'
     make_colourbyBdam_pdb(df, bof, eof, fileName, bdamAtomList, x_values_RHS)
