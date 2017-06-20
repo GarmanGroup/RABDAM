@@ -3,10 +3,8 @@
 import sys
 import time
 import math
-import copy
 
 sys.path.insert(0, './Subroutines')
-duplicate = copy.copy
 
 from CalculateBdamage import rabdam_dataframe
 
@@ -32,10 +30,7 @@ print 'This program was run on %d/%d/%d at %02.0f:%02.0f:%02.0f\n\n' % (
 fileCont = open(sys.argv[1], 'r')
 functionArgs = fileCont.read()
 splitArgs = functionArgs.split(',')
-pathToPDBlist = []
-for item in splitArgs:
-    if '=' not in item:
-        pathToPDBlist.append(item.strip())
+pathToPDBlist = [item.strip() for item in splitArgs if '=' not in item]
 pathToPDBlist = filter(None, pathToPDBlist)
 if len(pathToPDBlist) == 0:
     sys.exit('No input PDB code / file listed in INPUT.txt')
@@ -45,15 +40,12 @@ functionArgs = functionArgs.replace(' ', '')
 functionArgs = functionArgs.replace('\n', '')
 functionArgs = functionArgs.replace('\r', '')
 splitArgs = functionArgs.split(',')
-splitArgsDuplicate = duplicate(splitArgs)
-for item in splitArgsDuplicate:
-    if '=' not in item:
-        splitArgs.remove(item)
+splitArgs = [item for item in splitArgs if '=' in item]
 
 # Initialises argument default values.
 pdtVal = int(14)
 windowVal = float(0.02)
-protOrNAVal = 'PROTEIN'
+protOrNAVal = 'BOTH'
 hetatmVal = False
 addAtomsList = []
 removeAtomsList = []
@@ -93,9 +85,7 @@ for x in xrange(0, len(splitArgs)):
         addAtomsList = []
         addAtomsArg = splitArgs[x].split('=')
         addAtomsStr = str((addAtomsArg[len(addAtomsArg)-1]).upper())
-        if addAtomsStr == '':
-            addAtomsList = []
-        else:
+        if addAtomsStr != '':
             addAtomsSubList = addAtomsStr.split(';')
             for item in addAtomsSubList:
                 addAtomsRange = str(item).split('-')
@@ -112,9 +102,7 @@ for x in xrange(0, len(splitArgs)):
         removeAtomsList = []
         removeAtomsArg = splitArgs[x].split('=')
         removeAtomsStr = str((removeAtomsArg[len(removeAtomsArg)-1]).upper())
-        if removeAtomsStr == '':
-            removeAtomsList = []
-        else:
+        if removeAtomsStr != '':
             removeAtomsSubList = removeAtomsStr.split(';')
             for item in removeAtomsSubList:
                 removeAtomsRange = str(item).split('-')
@@ -172,17 +160,6 @@ runtime = time.time() - start
 mins = math.floor(runtime/60)
 secs = math.fmod(runtime, 60)
 if mins == 0:
-    if secs == 1:
-        print 'Program run time = %02.3f second\n\n' % secs
-    else:
-        print 'Program run time = %02.3f seconds\n\n' % secs
-elif mins == 1:
-    if secs == 1:
-        print 'Program run time = %01.0f minute, %02.3f second\n\n' % (mins,
-                                                                       secs)
-    else:
-        print 'Program run time = %01.0f minute, %02.3f seconds\n\n' % (mins,
-                                                                        secs)
-else:
-    print 'Program run time = %01.0f minutes, %02.3f seconds\n\n' % (mins,
-                                                                     secs)
+    print 'Program run time: %02.3f sec\n\n' % secs
+elif mins >= 1:
+    print 'Program run time: %01.0f min, %02.3f sec\n\n' % (mins, secs)
