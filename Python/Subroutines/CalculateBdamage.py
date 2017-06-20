@@ -1,14 +1,14 @@
 
 
 def rabdam_dataframe(pathToPDB, PDT=14, windowSize=0.02,
-                     protOrNA='PROTEIN', HETATM=False, addAtoms=[],
+                     protOrNA='BOTH', HETATM=False, addAtoms=[],
                      removeAtoms=[], createAUpdb=False, createUCpdb=False,
                      createAUCpdb=False, createTApdb=False, run='rabdam'):
-    # Calculates B_damage values from input PDB file and writes
+    # Calculates B_Damage values from input PDB file and writes
     # output to DataFrame.
 
-    import sys
     prompt = '> '
+    import sys
     import os
     import shutil
     import copy
@@ -37,42 +37,42 @@ def rabdam_dataframe(pathToPDB, PDT=14, windowSize=0.02,
               'http://dx.doi.org/doi:10.1107/S1600577515002131\n')
 
     print('\n****************************************************************\n'
-          '**************** Program to calculate B_damage *****************\n'
+          '**************** Program to calculate B_Damage *****************\n'
           '****************************************************************\n')
 
     print('****************************************************************\n'
           '************************* Input Section ************************\n')
     # Prints the input values read into the program from INPUT.txt.
 
-    print 'Calculating B_damage for %s\n' % pathToPDB
+    print 'Calculating B_Damage for %s' % pathToPDB
     if PDT == 14:
-        print 'Using default packing density threshold of 14 Angstroms\n'
+        print 'Using default packing density threshold of 14 Angstroms'
     else:
-        print 'Packing density threshold defined by user as %s Angstroms\n' % PDT
+        print 'Packing density threshold defined by user as %s Angstroms' % PDT
     if windowSize == 0.02:
-        print 'Using default window size of 0.02\n'
+        print 'Using default window size of 0.02'
     else:
-        print 'Window size defined by user as %s\n' % windowSize
+        print 'Window size defined by user as %s' % windowSize
     if HETATM is True:
-        print 'All HETATM to be retained\n'
+        print 'Keeping HETATM'
     elif HETATM is False:
-        print 'All HETATM to be removed\n'
+        print 'Removing HETATM'
     if protOrNA == 'PROTEIN':
-        print 'Retaining protein atoms, discarding nucleic acid atoms\n'
+        print 'Retaining protein atoms, discarding nucleic acid atoms'
     elif protOrNA in ['NUCLEICACID', 'NA']:
-        print 'Retaining nucleic acid atoms, discarding protein atoms\n'
+        print 'Retaining nucleic acid atoms, discarding protein atoms'
     if len(addAtoms) == 0:
-        print 'No atoms to be added\n'
+        print 'No atoms to be added'
     else:
         for value in addAtoms:
-            print 'Atoms to be added: %s\n' % value
+            print 'Atoms to be added: %s' % value
     if len(removeAtoms) == 0:
-        print 'No atoms to be removed\n'
+        print 'No atoms to be removed'
     else:
         for value in removeAtoms:
-            print 'Atoms to be removed: %s\n' % value
+            print 'Atoms to be removed: %s' % value
 
-    print('********************* End of Input Section *********************\n'
+    print('\n********************* End of Input Section *********************\n'
           '****************************************************************\n')
 
     print('****************************************************************\n'
@@ -94,7 +94,7 @@ def rabdam_dataframe(pathToPDB, PDT=14, windowSize=0.02,
         #       copy of the PDB file is downloaded from the RSCB PDB website
         #       and saved to the new directory
         # no = old PDB directory is retained, exit program
-        # If doesn't already exist, new PDB directory is created and copy of
+        # If it doesn't already exist, new PDB directory is created and copy of
         # the PDB file is downloaded from the RSCB PDB website and saved to
         # the new directory.
         if os.path.isdir(PDBdirectory):
@@ -121,21 +121,22 @@ def rabdam_dataframe(pathToPDB, PDT=14, windowSize=0.02,
                     print 'Unrecognised input - please answer "yes" or "no"'
         else:
             downloadPDB(PDBcode, PDBdirectory, pathToPDB)
-            owChoice = 'null'
 
+        # Checks that PDB file has been successfully downloaded and saved to
+        # the Logfiles directory
         if not os.path.exists(pathToPDB):
-            sys.exit('Error 03: Failed to download and save PDB - cause unknown')
+            sys.exit('Error 03: Failed to download and save PDB file - cause unknown')
 
     # If filepath to PDB has been supplied:
     else:
         # Changes directory to allow input PDB file (a '.pdb' or '.txt' file)
-        # to be read from any path on local disk (C://). If PDB directory of
-        # this name already exists in Logfiles directory, user input
-        # requested ('Do you want to overwrite the existing file?'):
+        # to be read from any provided file path. If PDB directory of this
+        # name already exists in Logfiles directory, user input requested
+        # ('Do you want to overwrite the existing file?'):
         # yes = old PDB directory is deleted, new PDB directory is created and
         #       copy of input PDB file is saved to the new directory
         # no = old PDB directory is retained, exit program
-        # If doesn't already exist, new PDB directory is created and copy of
+        # If it doesn't already exist, new PDB directory is created and copy of
         # input PDB file is saved to the new directory.
         owd = os.getcwd()
         pathToPDB = pathToPDB.replace('\\', '/')
@@ -147,7 +148,10 @@ def rabdam_dataframe(pathToPDB, PDT=14, windowSize=0.02,
         if not os.path.exists(pathToPDB):
             sys.exit('Error 02: Supplied filepath not recognised')
 
-        if pathToPDB[-4:] == '.pdb' or pathToPDB[-4:] == '.txt':
+        if pathToPDB[-4:] not in ['.pdb', '.txt']:
+            sys.exit('Error 01: Supplied filepath to PDB is not a .pdb or'
+                     '.txt file')
+        else:
             print 'Filepath to .pdb or .txt file supplied\n'
             fileName = splitPath[len(splitPath)-1]
             splitFilename = fileName.split('.')
@@ -181,27 +185,24 @@ def rabdam_dataframe(pathToPDB, PDT=14, windowSize=0.02,
                         print 'Unrecognised input - please answer "yes" or "no"'
             else:
                 copyPDB(pathToPDB, disk, newPathToPDB, PDBdirectory)
-                owChoice = 'null'
 
+            # Checks that PDB file has been successfully copied to the Logfiles
+            # directory
             if not os.path.exists(newPathToPDB):
                 sys.exit('Error 04: Failed to copy PDB to Logfiles directory.\n'
-                         'Check that supplied PDB is not in use by another'
+                         'Check that supplied PDB file is not in use by another'
                          'program')
 
             pathToPDB = newPathToPDB
 
-        else:
-            sys.exit('Error 01: Supplied filepath to PDB is not a .pdb or'
-                     '.txt file')
-
-    print('All files generated by this program will be stored in:'
-          '\n%s\n' % PDBdirectory)
+    print('All files generated by this program will be stored in:\n'
+          '    %s\n' % PDBdirectory)
 
     # Processes the input PDB file via PDBCUR to remove hydrogen atoms,
-    # atoms with zero occupancy and anisotropic B factor records, and to
-    # retain only the most probable alternate conformations and set their
-    # occupancies to 1. PDBCUR is then used to generate a unit cell from the
-    # processed PDB file and its associated symmetry operations.
+    # anisotropic B factor records, and atoms with zero occupancy, as well as
+    # retaining only the most probable alternate conformations and setting
+    # their occupancies to 1. PDBCUR is then used to generate a unit cell from
+    # the processed PDB file and its associated symmetry operations.
 
     print '\nProcessing PDB file with PDBCUR\n'
 
@@ -338,13 +339,13 @@ def rabdam_dataframe(pathToPDB, PDT=14, windowSize=0.02,
           '****************************************************************\n')
 
     print('****************************************************************\n'
-          '****************** Calculate B_damage Section ******************\n')
+          '****************** Calculate B_Damage Section ******************\n')
     # Atoms in the asymmetric unit are ordered via their packing density
-    # values; the B_damage value of each atom is then calculated as the ratio
+    # values; the B_Damage value of each atom is then calculated as the ratio
     # of its B factor as compared to the average of the B factor values of
     # similarly (identified via sliding window) packed atoms.
 
-    print 'Calculating B_damage values\n'
+    print 'Calculating B_Damage values\n'
     window = int(round((len(bdamAtomList)*windowSize), 0))
     if window % 2 == 0:
         window = window + 1  # Window size must be an odd number.
@@ -355,11 +356,11 @@ def rabdam_dataframe(pathToPDB, PDT=14, windowSize=0.02,
     print('****************************************************************\n'
           '******************* Writing DataFrame Section ******************\n')
     # Writes asymmetric unit atom properties, including their newly calculated
-    # B_damage values, to DataFrame, for ease of statistical analysis.
+    # B_Damage values, to DataFrame, for ease of statistical analysis.
     # DataFrame, plus additional variables and lists required for subsequent
     # analysis, are pickled.
 
-    print 'Writing B_damage data to DataFrame\n'
+    print 'Writing B_Damage data to DataFrame\n'
     df = writeBdam(bdamAtomList)
 
     print 'Saving DataFrame\n'
@@ -465,16 +466,16 @@ def rabdam_analysis(pathToPDB, threshold=0.02, highlightAtoms=[],
     print('****************************************************************\n'
           '***************** Writing Output Files Section *****************\n')
     # Uses values in DataFrame created by 'rabdam_dataframe' function to:
-    # - draw a kernel density plot of distribution of B_damage values of
+    # - draw a kernel density plot of distribution of B_Damage values of
     #   all analysed atoms in asymmetric unit
-    # - write an html file listing all atoms whose B_damage values lie above
+    # - write an html file listing all atoms whose B_Damage values lie above
     #   threshold specified in INPUT.txt
-    # - calculate global B_damage metric, plus draw a kernel density plot
-    #   of B_damage values of subset of atoms (Cys S, Glu O and Asp O)
+    # - calculate global B_Damage metric, plus draw a kernel density plot
+    #   of B_Damage values of subset of atoms (Cys S, Glu O and Asp O)
     #   used to calculate it
-    # - write pdb files with B factor values replaced by B_damage values to
+    # - write pdb files with B factor values replaced by B_Damage values to
     #   allow structure when viewed with molecular graphics software to be
-    #   coloured by B_damage
+    #   coloured by B_Damage
     # - write DataFrame values to csv file, to allow user to easily further
     #   manipulate data as required
 
@@ -483,7 +484,7 @@ def rabdam_analysis(pathToPDB, threshold=0.02, highlightAtoms=[],
         df, fileName, PDBcode, threshold, highlightAtoms
         )
 
-    print 'Calculating global B_damage\n'
+    print 'Calculating global B_Damage\n'
     calculate_global_BDam(df, PDBcode, fileName)
 
     print 'Writing pdb files\n'

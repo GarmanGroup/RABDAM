@@ -43,15 +43,17 @@ def downloadPDB(PDBcode, PDBdirectory, pathToPDB):
 
 
 def copyPDB(pathToPDB, disk, newPathToPDB, PDBdirectory):
-    # Copies .pdb file from any path on local disk (C://) to Logfiles
+    # Copies .pdb / .txt file from any provided file path to Logfiles
     # directory.
 
     import os
+
     owd = os.getcwd()
+    os.chdir('/')
     os.chdir(disk)
     origPDB = open(pathToPDB, 'r')
     os.chdir(owd)
-    os.mkdir(PDBdirectory)
+    os.makedirs(PDBdirectory)
     localFile = open(newPathToPDB, 'w')
     localFile.write(origPDB.read())
     print 'PDB file copied to %s' % newPathToPDB
