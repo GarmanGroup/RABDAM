@@ -29,15 +29,15 @@ def downloadPDB(PDBcode, PDBdirectory, pathToPDB):
     # Downloads and saves PDB file from the RSCB PDB website.
 
     import os
-    import urllib2
+    import requests
 
     urlText = 'http://www.rcsb.org/pdb/files/%s.pdb' % PDBcode
     os.makedirs(PDBdirectory)
     print 'Directory %s created' % PDBdirectory
-    origPDB = urllib2.urlopen(urlText)
+    origPDB = requests.get(urlText)
     print 'Downloaded PDB file from %s' % urlText
     localFile = open(pathToPDB, 'w')
-    localFile.write(origPDB.read())
+    localFile.write(origPDB.text)
     print 'PDB file saved to %s' % pathToPDB
     localFile.close()
 
@@ -76,12 +76,14 @@ def full_atom_list(fileName):
     eof = []
     eAppend = eof.append
 
-    beforeAtoms = True  # Lines before the 'ATOM'/'HETATM' information are stored in 'bof' list
+    beforeAtoms = True  # Lines before the 'ATOM' / 'HETATM' information are
+    # stored in the 'bof' list
 
     fileOpen = open(fileName, 'r')
     for line in fileOpen.readlines():
         if str((line[0:6]).strip()) in ['ATOM', 'HETATM']:
-            beforeAtoms = False  # Lines after the 'ATOM' / 'HETATM' information are stored in 'eof' list
+            beforeAtoms = False  # Ensures that lines after the 'ATOM' /
+            # 'HETATM' information are stored in the 'eof' list
             y = atom()
             y.lineID = str(line[0:6].strip())
             y.atomNum = int(line[6:11].strip())
@@ -246,7 +248,7 @@ def getUnitCellParams(fileName):
 
     fileOpen = open(fileName, 'r')
     for line in fileOpen.readlines():
-        if('CRYST1' in str(line[0:6])):  # Unit cell parameters are stored in this line
+        if 'CRYST1' in str(line[0:6]):  # Unit cell parameters are stored in this line
             params = line.split()
             a = float(params[1])
             b = float(params[2])
@@ -254,9 +256,9 @@ def getUnitCellParams(fileName):
             alpha = math.radians(float(params[4]))
             beta = math.radians(float(params[5]))
             gamma = math.radians(float(params[6]))
+            print 'Unit cell parameters successfully extracted'
             break
 
-    print 'Unit cell parameters successfully extracted'
     fileOpen.close()
     return (a, b, c, alpha, beta, gamma)
 
