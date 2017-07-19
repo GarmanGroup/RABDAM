@@ -236,26 +236,26 @@ for x in xrange(0, len(splitArgs)):
 for item in pathToPDBlist:
     for windowVal in windowList:
         for pdtVal in pdtList:
-            y = rabdam(pathToPDB=item, outputDir=outputLoc, PDT=pdtVal,
-                       windowSize=windowVal, protOrNA=protOrNAVal,
-                       HETATM=hetatmVal, addAtoms=addAtomsList,
-                       removeAtoms=removeAtomsList, threshold=thresholdVal,
-                       highlightAtoms=highlightAtomsList,
-                       createAUpdb=auVal, createUCpdb=ucVal,
-                       createAUCpdb=aucVal, createTApdb=taVal)
+            pdb = rabdam(pathToPDB=item, outputDir=outputLoc, PDT=pdtVal,
+                         windowSize=windowVal, protOrNA=protOrNAVal,
+                         HETATM=hetatmVal, addAtoms=addAtomsList,
+                         removeAtoms=removeAtomsList, threshold=thresholdVal,
+                         highlightAtoms=highlightAtomsList,
+                         createAUpdb=auVal, createUCpdb=ucVal,
+                         createAUCpdb=aucVal, createTApdb=taVal)
             if vars(args)['output'] is None:
                 # Calculates B_damage values and writes them to a DataFrame.
-                y.rabdam_dataframe(run='rabdam')
+                pdb.rabdam_dataframe(run='rabdam')
                 # Generates output analysis files from pre-calculated B_damage
                 # values.
-                y.rabdam_analysis(run='rabdam')
+                pdb.rabdam_analysis(run='rabdam')
             elif vars(args)['output'].lower() in ['dataframe', 'df']:
                 # Calculates B_damage values and writes them to a DataFrame.
-                y.rabdam_dataframe(run='rabdam_dataframe')
+                pdb.rabdam_dataframe(run='rabdam_dataframe')
             elif vars(args)['output'].lower() in ['analysis']:
                 # Generates output analysis files from pre-calculated B_damage
                 # values.
-                y.rabdam_analysis(run='rabdam_analysis')
+                pdb.rabdam_analysis(run='rabdam_analysis')
 
 
 runtime = time.time() - start

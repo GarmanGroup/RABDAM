@@ -387,8 +387,7 @@ class rabdam():
         prompt = '> '
         import pickle
         import pandas as pd
-        from output import (make_csv, make_histogram, make_colourbyBdam_pdb,
-                            calculate_Bnet)
+        from output import generate_output_files
 
         if run == 'rabdam_analysis':
             print '************************ RABDAM ANALYSIS ***********************\n'
@@ -433,9 +432,9 @@ class rabdam():
             print 'Exiting RABDAM analysis'
             sys.exit()
 
-        potential_analysis_files = [
-                     'Bdamage.csv', 'Bdamage.html', 'Bdamage.pdb',
-                     'Bdamage.png', 'Bnet_Protein.png', 'Bnet_NA.png']
+        potential_analysis_files = ['Bdamage.csv', 'Bdamage.html',
+                                    'Bdamage.pdb', 'Bdamage.png',
+                                    'Bnet_Protein.png', 'Bnet_NA.png']
         actual_analysis_files = []
         for name in potential_analysis_files:
             if os.path.isfile(str(PDB_analysis_file) + str(name)):
@@ -487,21 +486,19 @@ class rabdam():
         #   coloured by B_Damage
         # - write DataFrame values to csv file, to allow user to easily further
         #   manipulate data as required
+        output = generate_output_files(pdb_file_path=pdb_file_path, df=df)
 
         print 'Writing histogram and html files\n'
-        make_histogram(df, pdb_file_path, PDBcode, self.threshold,
-                       self.highlightAtoms)
+        output.make_histogram(self.threshold, self.highlightAtoms)
 
         print 'Calculating global B_Damage\n'
-        calculate_Bnet(df, PDBcode, pdb_file_path, window_name, pdt_name)
+        output.calculate_Bnet(window_name, pdt_name)
 
         print 'Writing pdb files\n'
-        make_colourbyBdam_pdb(df, header_lines, footer_lines, pdb_file_path,
-                              bdamAtomList)
+        output.make_colourbyBdam_pdb(header_lines, footer_lines, bdamAtomList)
 
         print 'Writing csv file\n'
-        bDamFileName = '%s_Bdamage.csv' % pdb_file_path
-        make_csv(bdamAtomList, bDamFileName, window)
+        output.make_csv(bdamAtomList, window)
 
         print('************** End of Writing Output Files Section *************\n'
               '****************************************************************\n')
