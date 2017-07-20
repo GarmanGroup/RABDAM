@@ -1,4 +1,5 @@
 
+
 class rabdam():
     def __init__(self, pathToPDB, outputDir, PDT, windowSize, protOrNA, HETATM,
                  addAtoms, removeAtoms, threshold, highlightAtoms, createAUpdb,
@@ -19,8 +20,8 @@ class rabdam():
         self.createTApdb = createTApdb
 
     def rabdam_dataframe(self, run):
-        # Calculates B_Damage values from input PDB file and writes
-        # output to DataFrame.
+        # Calculates B_Damage for selected atoms within input PDB file and
+        # writes output to DataFrame.
 
         prompt = '> '
         import sys
@@ -32,22 +33,22 @@ class rabdam():
 
         from PDBCUR import clean_pdb_file, genPDBCURinputs, runPDBCUR
         from parsePDB import (full_atom_list, b_damage_atom_list, downloadPDB,
-                              copyPDB, getAUparams, trimAtoms)
-        from translateUnitCell import (convertToCartesian, translateUnitCell)
-        from makePDB import makePDB, writeBdam
-        from atomCheck import convertParams
+                              copyPDB)
+        from translateUnitCell import convertToCartesian, translateUnitCell
+        from trimUnitCellAssembly import getAUparams, convertParams, trimAtoms
+        from makeDataFrame import makePDB, writeDataFrame
         from Bdamage import (calcBdam, get_xyz_from_objects,
                              calc_packing_density, write_pckg_dens_to_atoms)
 
         if run == 'rabdam':
             print '**************************** RABDAM ****************************\n'
             print('\nPlease cite: M. Gerstel, C. M. Deane and E.F. Garman. (2015).\n'
-                  'J. Synchrotron Radiation, 22, 201-212\n'
+                  'J. Synchrotron Radiation, 22, 201-212.\n'
                   'http://dx.doi.org/doi:10.1107/S1600577515002131\n')
         elif run == 'rabdam_dataframe':
             print '*********************** RABDAM DATAFRAME ***********************\n'
             print('\nPlease cite: M. Gerstel, C. M. Deane and E.F. Garman. (2015).\n'
-                  'J. Synchrotron Radiation, 22, 201-212\n'
+                  'J. Synchrotron Radiation, 22, 201-212.\n'
                   'http://dx.doi.org/doi:10.1107/S1600577515002131\n')
 
         print('\n****************************************************************\n'
@@ -56,8 +57,8 @@ class rabdam():
 
         print('****************************************************************\n'
               '************************* Input Section ************************\n')
-        # Prints the input values read into the program from INPUT.txt.
-
+        # Prints the values of the program options to be used in the current
+        # RABDAM run
         print 'Calculating B_Damage for %s' % self.pathToPDB
         print 'Writing output files to %s' % self.outputDir
         if self.PDT == 14:
@@ -65,9 +66,9 @@ class rabdam():
         else:
             print 'Packing density threshold defined by user as %s Angstroms' % self.PDT
         if self.windowSize == 0.02:
-            print 'Using default window size of 0.02'
+            print 'Using default window size of 2%'
         else:
-            print 'Window size defined by user as %s' % self.windowSize
+            print 'Window size defined by user as %s%' % (self.windowSize)*100
         if self.HETATM is True:
             print 'Keeping HETATM'
         elif self.HETATM is False:
@@ -79,25 +80,37 @@ class rabdam():
         if len(self.addAtoms) == 0:
             print 'No atoms to be added'
         else:
+            add_atoms_string = ''
             for value in self.addAtoms:
-                print 'Atoms to be added: %s' % value
+                value = value + ', '
+                add_atoms_string = add_atoms_string + value
+            add_atoms_string = add_atoms_string.strip(', ')
+            print 'Atoms to be added: %s' % add_atoms_string
         if len(self.removeAtoms) == 0:
             print 'No atoms to be removed'
         else:
+            remove_atoms_string = ''
             for value in self.removeAtoms:
-                print 'Atoms to be removed: %s' % value
+                value = value + ', '
+                remove_atoms_string = remove_atoms_string + value
+            remove_atoms_string = remove_atoms_string.strip(', ')
+            print 'Atoms to be removed: %s' % remove_atoms_string
 
         print('\n********************* End of Input Section *********************\n'
               '****************************************************************\n')
 
+        # Changes directory to the specified location for the output 'Logfiles'
+        # directory. The default location is the current working directory
+        # (i.e. that in which the rabdam.py script is saved).
         cwd = os.getcwd()
         os.chdir('%s' % self.outputDir)
 
         print('****************************************************************\n'
               '********************** Process PDB Section *********************\n')
-        # Creates a new directory named after the input PDB file (after checking
-        # that this directory does not already exist) in the Logfiles directory.
-        # Then saves a copy of the input PDB file to the new directory.
+        # Creates a new directory named after the input PDB file (after
+        # checking that this directory does not already exist) in the
+        # 'Logfiles' directory. Then saves a copy of the input PDB file to the
+        # new directory.
 
         # If 4 digit PDB accession code has been supplied:
         if len(self.pathToPDB) == 4:
@@ -110,31 +123,32 @@ class rabdam():
             pdb_file_path = '%s%s' % (PDBdirectory, PDBcode)
             pathToPDB = '%s%s.pdb' % (PDBdirectory, PDBcode)
 
-            # If PDB directory of this name already exists in Logfiles directory,
-            # user input requested ('Do you want to overwrite the existing file?'):
-            # yes = old PDB directory is deleted, new PDB directory is created and
-            #       copy of the PDB file is downloaded from the RSCB PDB website
-            #       and saved to the new directory
-            # no = old PDB directory is retained, exit program
-            # If it doesn't already exist, new PDB directory is created and copy of
-            # the PDB file is downloaded from the RSCB PDB website and saved to
-            # the new directory.
+            # If directory with same name as PDBdirectory already exists in
+            # 'Logfiles' directory, user input is requested ('Do you want to
+            # overwrite the existing folder?'):
+            # yes = old PDBdirectory is deleted, new PDBdirectory is created
+            #       and copy of the PDB file is downloaded from the RSCB PDB
+            #       website and saved to the new directory
+            # no = old PDBdirectory is retained, exit program
+            # If it doesn't already exist, new PDBdirectory is created and
+            # copy of the PDB file is downloaded from the RSCB PDB website and
+            # saved to the new directory.
             if os.path.isdir(PDBdirectory):
                 print 'Folder %s already exists locally at %s' % (PDBcode,
                                                                   PDBdirectory)
-                print('Do you want to overwrite the existing file?\n'
+                print('Do you want to overwrite the existing folder?\n'
                       '--USER INPUT-- type your choice and press RETURN\n'
                       'yes = overwrite this folder\n'
                       'no = do not overwrite this folder\n')
                 owChoice = None
-                while owChoice not in ['YES', 'NO', 'Y', 'N']:
-                    owChoice = raw_input(prompt).upper()
-                    if owChoice == 'YES' or owChoice == 'Y':
+                while owChoice not in ['yes', 'no', 'y', 'n']:
+                    owChoice = raw_input(prompt).lower()
+                    if owChoice == 'yes' or owChoice == 'y':
                         print '\nOverwriting existing folder'
-                        shutil.rmtree(str(PDBdirectory))
+                        shutil.rmtree(PDBdirectory)
                         downloadPDB(PDBcode, PDBdirectory, pathToPDB)
                         break
-                    elif owChoice == 'NO' or owChoice == 'N':
+                    elif owChoice == 'no' or owChoice == 'n':
                         print('\nKeeping original folder\n'
                               'Exiting RABDAM')
                         sys.exit()
@@ -145,61 +159,61 @@ class rabdam():
                 downloadPDB(PDBcode, PDBdirectory, pathToPDB)
 
             # Checks that PDB file has been successfully downloaded and saved to
-            # the Logfiles directory
+            # the 'Logfiles' directory
             if not os.path.exists(pathToPDB):
-                sys.exit('Error 03: Failed to download and save PDB file - cause unknown')
+                sys.exit('ERROR: Failed to download and save PDB file - cause unknown')
 
         # If filepath to PDB has been supplied:
         else:
-            # Changes directory to allow input PDB file (a '.pdb' or '.txt' file)
-            # to be read from any provided file path. If PDB directory of this
-            # name already exists in Logfiles directory, user input requested
-            # ('Do you want to overwrite the existing file?'):
-            # yes = old PDB directory is deleted, new PDB directory is created and
-            #       copy of input PDB file is saved to the new directory
-            # no = old PDB directory is retained, exit program
-            # If it doesn't already exist, new PDB directory is created and copy of
-            # input PDB file is saved to the new directory.
+            # Changes directory to allow input PDB file (a '.pdb' or '.txt'
+            # file) to be read from any provided file path. If directory with
+            # same name as PDBdirectory already exists in 'Logfiles' directory,
+            # user input is requested ('Do you want to overwrite the existing
+            # folder?'):
+            # yes = old PDBdirectory is deleted, new PDBdirectory is created
+            #       and copy of input PDB file is saved to the new directory
+            # no = old PDBdirectory is retained, exit program
+            # If it doesn't already exist, new PDBdirectory is created and copy
+            # of input PDB file is saved to the new directory.
             owd = os.getcwd()
             pathToPDB = pathToPDB.replace('\\', '/')
             splitPath = pathToPDB.split('/')
             disk = '%s/' % splitPath[0]
             os.chdir('/')
             os.chdir(disk)
-
             if not os.path.exists(pathToPDB):
-                sys.exit('Error 02: Supplied filepath not recognised')
+                sys.exit('ERROR: Supplied filepath not recognised')
+            os.chdir(owd)
 
             if pathToPDB[-4:] not in ['.pdb', '.txt']:
-                sys.exit('Error 01: Supplied filepath to PDB is not a .pdb or'
+                sys.exit('ERROR: Supplied filepath to PDB is not a .pdb or'
                          '.txt file')
             else:
                 print 'Filepath to .pdb or .txt file supplied\n'
                 fileName = splitPath[len(splitPath)-1]
                 splitFilename = fileName.split('.')
-                fileName = splitFilename[len(splitFilename)-2].upper() + '.' + splitFilename[len(splitFilename)-1]
                 PDBcode = splitFilename[len(splitFilename)-2].upper()
+                fileName = PDBcode + '.' + splitFilename[len(splitFilename)-1]
                 PDBdirectory = 'Logfiles/%s/' % PDBcode
                 pdb_file_path = '%s%s' % (PDBdirectory, PDBcode)
                 newPathToPDB = '%s%s' % (PDBdirectory, fileName)
 
-                os.chdir(owd)
                 if os.path.isdir(PDBdirectory):
-                    print 'Folder %s already exists locally at %s' % (PDBcode,
-                                                                      PDBdirectory)
+                    print 'Folder %s already exists locally at %s' % (
+                        PDBcode, PDBdirectory)
                     print('Do you want to overwrite the existing folder?\n'
                           '--USER INPUT-- type your choice and press RETURN\n'
                           'yes = overwrite this folder\n'
                           'no = do not overwrite this folder\n')
                     owChoice = None
-                    while owChoice not in ['YES', 'NO', 'Y', 'N']:
-                        owChoice = raw_input(prompt).upper()
-                        if owChoice == 'YES' or owChoice == 'Y':
+                    while owChoice not in ['yes', 'no', 'y', 'n']:
+                        owChoice = raw_input(prompt).lower()
+                        if owChoice == 'yes' or owChoice == 'y':
                             print '\nOverwriting existing folder'
-                            shutil.rmtree(str(PDBdirectory))
+                            shutil.rmtree(PDBdirectory)
                             copyPDB(pathToPDB, disk, newPathToPDB, PDBdirectory)
                             break
-                        elif owChoice == 'NO' or owChoice == 'N':
+                        elif owChoice == 'no' or owChoice == 'n':
                             print('\nKeeping original folder\n'
                                   'Exiting RABDAM')
                             sys.exit()
@@ -209,12 +223,12 @@ class rabdam():
                 else:
                     copyPDB(pathToPDB, disk, newPathToPDB, PDBdirectory)
 
-                # Checks that PDB file has been successfully copied to the Logfiles
-                # directory
+                # Checks that PDB file has been successfully copied to the
+                # 'Logfiles' directory
                 if not os.path.exists(newPathToPDB):
-                    sys.exit('Error 04: Failed to copy PDB to Logfiles directory.\n'
-                             'Check that supplied PDB file is not in use by another'
-                             'program')
+                    sys.exit('ERROR: Failed to copy PDB file to Logfiles '
+                             'directory.\nCheck that supplied PDB file is not '
+                             'in use by another program')
 
                 pathToPDB = newPathToPDB
 
@@ -223,9 +237,11 @@ class rabdam():
 
         # Processes the input PDB file to remove hydrogen atoms, anisotropic
         # B factor records, and atoms with zero occupancy, as well as
-        # retaining only the most probable alternate conformations. The unit cell
-        # assembly is then generated from the coordinates of the processed PDB file
-        # and its associated symmetry operations.
+        # retaining only the most probable alternate conformations. The unit
+        # cell assembly is then generated from the coordinates of the processed
+        # PDB file and its associated symmetry operations. Note that unit cell
+        # generation is currently performed by the PDBCUR program from the CCP4
+        # software suite.
         print ('\nProcessing PDB file to remove hydrogen atoms, anisotropic '
                '\nB factor records, and atoms with zero occupancy, as well as '
                '\nretaining only the most probable alternate conformations')
@@ -241,7 +257,7 @@ class rabdam():
         runPDBCUR(clean_au_file, unit_cell_pdb, PDBCURinputFile, PDBCURlog)
 
         if not os.path.exists(unit_cell_pdb):
-            sys.exit('Error 05: Error in running PDBCUR, failed to generate Unit'
+            sys.exit('ERROR: Error in running PDBCUR, failed to generate Unit'
                      'Cell PDB file')
 
         print('****************** End of Process PDB Section ******************\n'
@@ -362,7 +378,7 @@ class rabdam():
         # analysis, are pickled.
 
         print 'Writing B_Damage data to DataFrame\n'
-        df = writeBdam(bdamAtomList)
+        df = writeDataFrame(bdamAtomList)
 
         print 'Saving DataFrame\n'
         storage = '%s/DataFrame' % PDBdirectory
@@ -432,8 +448,8 @@ class rabdam():
             print 'Exiting RABDAM analysis'
             sys.exit()
 
-        potential_analysis_files = ['Bdamage.csv', 'Bdamage.html',
-                                    'Bdamage.pdb', 'Bdamage.png',
+        potential_analysis_files = ['BDamage.csv', 'BDamage.html',
+                                    'BDamage.pdb', 'BDamage.png',
                                     'Bnet_Protein.png', 'Bnet_NA.png']
         actual_analysis_files = []
         for name in potential_analysis_files:

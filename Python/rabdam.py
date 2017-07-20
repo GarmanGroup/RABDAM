@@ -39,21 +39,21 @@ group = parser.add_mutually_exclusive_group(required=True)
 group.add_argument('-i', '--input', help='Path to input file listing program '
                    'options')
 group.add_argument('-f', '--pdb_file', nargs='+', help='Specifies input pdb '
-                   'file for BDamage analysis - this option allows the RABDAM '
+                   'file for B_Damage analysis - this option allows the RABDAM '
                    'program to be run (using default parameter values) '
                    'without providing an input file listing program options')
 parser.add_argument('-o', '--output', help='Specifies whether to run the '
-                    'complete program (default), to calculate BDamage values '
+                    'complete program (default), to calculate B_Damage values '
                     'only ("df" / "dataframe"), or to analyse pre-calculated '
-                    'BDamage values only ("analysis")')
+                    'B_Damage values only ("analysis")')
 args = parser.parse_args()
 
+cwd = os.getcwd()
 # Reads in program options from input file specified by -i flag
 if vars(args)['input'] is not None:
-    cwd = os.getcwd()
     # Reads in PDB file name(s) listed in input file
     input_file_loc = vars(args)['input']
-    input_file_loc = input_file_loc.replace('\'', '/')
+    input_file_loc = input_file_loc.replace('\\', '/')
     input_file_loc_list = input_file_loc.split('/')
     input_file = input_file_loc_list[len(input_file_loc_list)-1]
     if len(input_file_loc_list) > 1:
@@ -84,7 +84,7 @@ if len(pathToPDBlist) == 0:
     sys.exit('No input PDB code / file provided')
 
 # Initialises default program options
-outputLoc = '.'
+outputLoc = cwd
 pdtList = [14.0]
 windowList = [0.02]
 protOrNAVal = 'BOTH'
@@ -107,8 +107,8 @@ for x in xrange(0, len(splitArgs)):
         dirArg = splitArgs[x].split('=')
         outputLoc = dirArg[len(dirArg)-1]
         if outputLoc == '':
-            outputLoc = '.'
-        outputLoc = outputLoc.replace('\'', '/')
+            outputLoc = cwd
+        outputLoc = outputLoc.replace('\\', '/')
 
     # Specifies packing density threshold
     elif splitArgs[x][0:3].lower() == 'pdt':
@@ -123,7 +123,7 @@ for x in xrange(0, len(splitArgs)):
             pdtList = [float(pdtArg)]
 
     # Specifies size of sliding window (as a percentage of the total number of
-    # atoms considered for BDamage analysis)
+    # atoms considered for B_Damage analysis)
     elif splitArgs[x][0:10].lower() == 'windowsize':
         windowArg = splitArgs[x].split('=')
         windowArg = windowArg[len(windowArg)-1]
@@ -138,12 +138,12 @@ for x in xrange(0, len(splitArgs)):
                 windowList.append(float(number))
 
     # Specifies whether to include protein atoms alone, nucleic atoms alone,
-    # or both atom types (if present) in the BDamage calculation
+    # or both atom types (if present) in the B_Damage calculation
     elif splitArgs[x][0:20].lower() == 'proteinornucleicacid':
         protOrNAArg = splitArgs[x].split('=')
         protOrNAVal = protOrNAArg[len(protOrNAArg)-1].upper()
 
-    # Specifies whether to remove HETATM from the BDamage calculation or to
+    # Specifies whether to remove HETATM from the B_Damage calculation or to
     # retain them
     elif splitArgs[x][0:6].lower() == 'hetatm':
         hetatmArg = splitArgs[x].split('=')
@@ -154,7 +154,7 @@ for x in xrange(0, len(splitArgs)):
             hetatmVal = False
 
     # Lists atoms (via either their atom numbers or their residue names) to be
-    # included in the BDamage calculation. (This is useful to add back in a
+    # included in the B_Damage calculation. (This is useful to add back in a
     # subset of atoms of interest that has been removed by the
     # proteinOrNucleicAcid / HETATM / removeAtoms options.)
     elif splitArgs[x][0:8].lower() == 'addatoms':
@@ -175,7 +175,7 @@ for x in xrange(0, len(splitArgs)):
                     addAtomsList.append(addAtomsRange[-1])
 
     # Lists atoms (via either their atom numbers or their residue names) to be
-    # removed from the BDamage calculation. (This is useful to remove
+    # removed from the B_Damage calculation. (This is useful to remove
     # additional atoms not covered by the proteinOrNucleicAcid / HETATM
     # options.)
     elif splitArgs[x][0:11].lower() == 'removeatoms':
@@ -196,7 +196,7 @@ for x in xrange(0, len(splitArgs)):
                     removeAtomsList.append(removeAtomsRange[-1])
 
     # Specifies the number of atoms (as a percentage of the total number of
-    # atoms considered for BDamage analysis) with the highest BDamage values
+    # atoms considered for B_Damage analysis) with the highest B_Damage values
     # to be listed in the program output
     elif splitArgs[x][0:9].lower() == 'threshold':
         thresholdArg = splitArgs[x].split('=')
@@ -206,8 +206,8 @@ for x in xrange(0, len(splitArgs)):
             thresholdVal = float(thresholdVal) / 100
         thresholdVal = float(thresholdVal)
 
-    # Lists atoms (via their atom numbers) whose BDamage values are to be
-    # indicated on the kernel density estimate of the BDamage distribution
+    # Lists atoms (via their atom numbers) whose B_Damage values are to be
+    # indicated on the kernel density estimate of the B_Damage distribution
     # output by the program. Note that it is recommended no more than 6 atoms
     # are listed in the highlightAtoms option in the input file (beyond 6
     # atoms, the colour scheme will repeat itself, and in addition the key may
@@ -229,7 +229,7 @@ for x in xrange(0, len(splitArgs)):
                 elif len(highlightAtomsRange) == 1:
                     highlightAtomsList.append(highlightAtomsRange[-1])
 
-    # Specifies whether to create a pdb file of the (filtered) asymmetric unit
+    # Specifies whether to create a PDB file of the (filtered) asymmetric unit
     elif splitArgs[x][0:11].lower() == 'createaupdb':
         auArg = splitArgs[x].split('=')
         auVal = auArg[len(auArg)-1].lower()
@@ -238,7 +238,7 @@ for x in xrange(0, len(splitArgs)):
         elif auVal in ['false', 'no', 'f', 'n']:
             auVal = False
 
-    # Specifies whether to create a pdb file of the unit cell
+    # Specifies whether to create a PDB file of the unit cell
     elif splitArgs[x][0:11].lower() == 'createucpdb':
         ucArg = splitArgs[x].split('=')
         ucVal = ucArg[len(ucArg)-1].lower()
@@ -247,7 +247,7 @@ for x in xrange(0, len(splitArgs)):
         elif ucVal in ['false', 'no', 'f', 'n']:
             ucVal = False
 
-    # Specifies whether to create a pdb file of the 3x3x3 unit cell assembly
+    # Specifies whether to create a PDB file of the 3x3x3 unit cell assembly
     elif splitArgs[x][0:12].lower() == 'createaucpdb':
         aucArg = splitArgs[x].split('=')
         aucVal = aucArg[len(aucArg)-1].lower()
@@ -256,7 +256,7 @@ for x in xrange(0, len(splitArgs)):
         elif aucVal in ['false', 'no', 'f', 'n']:
             aucVal = False
 
-    # Specifies whether to create a pdb file of the trimmed atoms assembly
+    # Specifies whether to create a PDB file of the trimmed atoms assembly
     # (which consists of the asymmetric unit, plus every atom in the 3x3x3 unit
     # cell assembly within a PDT (default=14) Angstrom radius of the asymmetric
     # unit)
@@ -268,7 +268,7 @@ for x in xrange(0, len(splitArgs)):
         elif taVal in ['false', 'no', 'f', 'n']:
             taVal = False
 
-# Runs the BDamage calculation for every specified pdb file
+# Runs the B_Damage calculation for every specified PDB file
 for item in pathToPDBlist:
     for windowVal in windowList:
         for pdtVal in pdtList:
@@ -285,12 +285,12 @@ for item in pathToPDBlist:
                 pdb.rabdam_dataframe(run='rabdam')
                 pdb.rabdam_analysis(run='rabdam')
             elif vars(args)['output'].lower() in ['dataframe', 'df']:
-                # Runs subset of program; calculates BDamage values and writes
+                # Runs subset of program; calculates B_Damage values and writes
                 # them to a DataFrame
                 pdb.rabdam_dataframe(run='rabdam_dataframe')
             elif vars(args)['output'].lower() in ['analysis']:
                 # Runs subset of program; generates output analysis files from
-                # pre-calculated BDamage values
+                # pre-calculated B_Damage values
                 pdb.rabdam_analysis(run='rabdam_analysis')
 
 

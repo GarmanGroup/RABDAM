@@ -38,7 +38,7 @@ def makePDB(bof, atomList, eof, newPDBfilename):
     newPDBfile.close()
 
 
-def writeBdam(bdamatomList):
+def writeDataFrame(bdamatomList):
     # Returns a DataFrame containing a complete set of atom information
     # (including both that provided in the input PDB file and also the
     # B_damage values calculated by RABDAM) for all atoms considered for
