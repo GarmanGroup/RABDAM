@@ -265,11 +265,12 @@ class rabdam():
 
         print('****************************************************************\n'
               '********************** Parsing PDB Section *********************\n')
-        # Parses the newly generated unit cell PDB file into RABDAM, returning a
-        # list of all atoms in the unit cell, plus the unit cell parameters. The
-        # unit cell PDB file is then deleted unless createUCpdb is set equal to
-        # True in INPUT.txt.
-        ucAtomList, xyzList = full_atom_list(unit_cell_pdb)
+        # Parses the newly generated unit cell PDB file into RABDAM, returning
+        # a list of all atoms in the unit cell, plus the unit cell parameters.
+        # The unit cell PDB file is then deleted unless createUCpdb is set
+        # equal to True in INPUT.txt.
+        print 'Reading in unit cell coordinates'
+        ucAtomList = full_atom_list(unit_cell_pdb)
 
         if self.createUCpdb is False:
             os.remove(unit_cell_pdb)
@@ -281,8 +282,8 @@ class rabdam():
               '****************** Translate Unit Cell Section *****************\n')
         # The unit cell parameters are converted into Cartesian vectors. These
         # vectors are then used to translate the unit cell -/+ 1 units in all
-        # (3) dimensions to generate a 3x3 parallelepiped. A PDB file of this 3x3
-        # parallelepiped is output if createAUCpdb is set equal to True in
+        # (3) dimensions to generate a 3x3 parallelepiped. A PDB file of this
+        # 3x3 parallelepiped is output if createAUCpdb is set equal to True in
         # INPUT.txt.
 
         cartesianVectors = convertToCartesian(unit_cell_params)
@@ -298,7 +299,8 @@ class rabdam():
 
         if self.createAUCpdb is True:
             aucPDBfilepath = '%s_all_unit_cells.pdb' % pdb_file_path
-            makePDB(header_lines, transAtomList, footer_lines, aucPDBfilepath)
+            makePDB(header_lines, transAtomList, footer_lines, aucPDBfilepath,
+                    'Bfactor')
 
         print('\n************** End of Translate Unit Cell Section **************\n'
               '****************************************************************\n')
@@ -333,7 +335,8 @@ class rabdam():
 
         if self.createTApdb is True:
             taPDBfilepath = '%s_trimmed_atoms.pdb' % pdb_file_path
-            makePDB(header_lines, trimmedAtomList, footer_lines, taPDBfilepath)
+            makePDB(header_lines, trimmedAtomList, footer_lines, taPDBfilepath,
+                    'Bfactor')
 
         print('****************** End of Trim Crystal Section *****************\n'
               '****************************************************************\n')
@@ -404,6 +407,7 @@ class rabdam():
         import pickle
         import pandas as pd
         from output import generate_output_files
+        from makeDataFrame import makePDB
 
         if run == 'rabdam_analysis':
             print '************************ RABDAM ANALYSIS ***********************\n'
@@ -510,8 +514,10 @@ class rabdam():
         print 'Calculating global B_Damage\n'
         output.calculate_Bnet(window_name, pdt_name)
 
-        print 'Writing pdb files\n'
-        output.make_colourbyBdam_pdb(header_lines, footer_lines, bdamAtomList)
+        print 'Writing pdb file with BDamage values replacing Bfactors\n'
+        pdb_file_name = pdb_file_path + '_BDamage.pdb'
+        makePDB(header_lines, bdamAtomList, footer_lines, pdb_file_name,
+                'BDamage')
 
         print 'Writing csv file\n'
         output.make_csv(bdamAtomList, window)

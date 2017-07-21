@@ -12,12 +12,13 @@ class generate_output_files():
         # B_damage analysis. (This provides the user with a copy of the raw data
         # which they can manipulate as they wish.)
 
-        newFile = open('%sBdamage.csv' % self.pdb_file_path, 'w')
+        newFile = open('%s_BDamage.csv' % self.pdb_file_path, 'w')
 
         # Defines column header abbreviations at top of file.
         newFile.write('REC = RECORD NAME\n'
                       'ATMNUM = ATOM SERIAL NUMBER\n'
                       'ATMNAME = ATOM NAME\n'
+                      'CONFORMER = ALTERNATE LOCATION INDICATOR\n'
                       'RESNAME = RESIDUE NAME\n'
                       'CHAIN = CHAIN IDENTIFIER\n'
                       'RESNUM = RESIDUE SEQUENCE NUMBER\n'
@@ -37,6 +38,7 @@ class generate_output_files():
         newFile.write('REC' + ','
                       'ATMNUM' + ','
                       'ATMNAME' + ','
+                      'CONFORMER' + ','
                       'RESNAME' + ','
                       'CHAIN' + ','
                       'RESNUM' + ','
@@ -56,6 +58,7 @@ class generate_output_files():
             newFile.write(str(atm.lineID) + ',')
             newFile.write(str(atm.atomNum) + ',')
             newFile.write(str(atm.atomType) + ',')
+            newFile.write(str(atm.conformer) + ',')
             newFile.write(str(atm.resiType) + ',')
             newFile.write(str(atm.chainID) + ',')
             newFile.write(str(atm.resiNum) + ',')
@@ -85,7 +88,6 @@ class generate_output_files():
 
         import matplotlib.pyplot as plt
         import seaborn as sns
-        import pandas as pd
 
         # Generates kernel density plot
         plt.clf()  # Prevents kernel density plots of all atoms considered for
@@ -129,27 +131,10 @@ class generate_output_files():
             if value >= x_values_RHS[0]:
                 RHS_Bdam_values.append(value)
 
-        # Those atoms considered for B_damage analysis with an associated
-        # B_damage value greater than the threshold boundary are listed in an
-        # html file.
-        df_ordered = self.df.sort_values(by='BDAM', ascending=False)
-        df_trunc = df_ordered.head(len(RHS_Bdam_values))
-        decimals = pd.Series([2, 2, 2], index=['BFAC', 'AVRG BF', 'BDAM'])
-        df_trunc = df_trunc.round(decimals)
-        df_trunc.to_html(str(self.pdb_file_path) + '_Bdamage.html', index=False,
-                         float_format='%11.3f')
-
         # Marks the position of the threshold boundary, plus the positions of any
         # atoms whose numbers are listed in highlightAtoms argument as defined in
         # INPUT.txt, on the kernel density plot.
         highlighted_atoms = [None]
-
-        boundary_line = plt.plot([x_values_RHS[0], x_values_RHS[0]],
-                                 [0, max(y_values)], linewidth=2, color='black',
-                                 label=' boundary = {:.2f}\n (threshold = {:})'.format(x_values_RHS[0],
-                                 threshold))
-        highlighted_atoms.append(boundary_line)
-
         if len(highlightAtoms) != 0:
             lines = [None]
             for atm in highlightAtoms:
@@ -164,49 +149,12 @@ class generate_output_files():
                                          + '\n B_damage = {:.2f}'.format(value))
                             highlighted_atoms.append(m)
 
-        plt.legend(handles=highlighted_atoms[0])
+        if len(highlighted_atoms) >= 1:
+            plt.legend(handles=highlighted_atoms[0])
         plt.xlabel('B Damage')
         plt.ylabel('Normalised Frequency')
         plt.title(str(self.pdb_code) + ' kernel density plot')
-        plt.savefig(str(self.pdb_file_path)+"_Bdamage.png")
-
-    def make_colourbyBdam_pdb(self, header_lines, footer_lines, atomList):
-        # Writes pdb files in which B factor values are replaced by B_damage
-        # values to allow structure when viewed with molecular graphics software
-        # to be coloured by B_damage.
-
-        import numpy as np
-
-        # Writes PDB file in which every atom can be coloured by its B_damage
-        # values.
-        newPDBfile = open(str(self.pdb_file_path) + '_Bdamage.pdb', 'a')
-
-        for line in header_lines:
-            newPDBfile.write(line)
-
-        for atm in atomList:
-            a = str(atm.lineID)
-            b = int(atm.atomNum)
-            c = str(atm.atomType)
-            d = str(atm.resiType)
-            e = str(atm.chainID)
-            f = int(atm.resiNum)
-            g = float(atm.xyzCoords[0][0])
-            h = float(atm.xyzCoords[1][0])
-            j = float(atm.xyzCoords[2][0])
-            k = float(atm.occupancy)
-            l = float(np.log(atm.bd))  # Converts log normal B_damage distribution
-            # to a linear distribution such that a fixed change in colour will
-            # represent a fixed change in B_damage.
-            m = str(atm.atomID)
-            n = str(atm.charge)
-            newLine = '%-6s%5d  %-3s %3s %1s%4d    %8.3f%8.3f%8.3f%6.2f%6.2f          %2s%2s\n' % (a, b, c, d, e, f, g, h, j, k, l, m, n)
-            newPDBfile.write(newLine)
-
-        for line in footer_lines:
-            newPDBfile.write(line)
-
-        newPDBfile.close()
+        plt.savefig(str(self.pdb_file_path)+'_BDamage.png')
 
     def calculate_Bnet(self, window_name, pdt_name):
         # Plots a kernel density estimate of Cys S, Glu O and Asp O atoms from
@@ -223,8 +171,10 @@ class generate_output_files():
         median = self.df.BDAM.median()
 
         # Selects atoms of Glu / Asp terminal oxygens from complete DataFrame.
-        a = self.df[self.df.RESNAME.isin(['GLU'])][self.df.ATMNAME.isin(['OE1', 'OE2'])]
-        b = self.df[self.df.RESNAME.isin(['ASP'])][self.df.ATMNAME.isin(['OD1', 'OD2'])]
+        # Note that brackets either side of '&' are required to specify
+        # correct evaluation order.
+        a = self.df[(self.df.RESNAME.isin(['GLU'])) & (self.df.ATMNAME.isin(['OE1', 'OE2']))]
+        b = self.df[(self.df.RESNAME.isin(['ASP'])) & (self.df.ATMNAME.isin(['OD1', 'OD2']))]
         dataframes = [a, b]
         prot = pd.concat(dataframes)
 

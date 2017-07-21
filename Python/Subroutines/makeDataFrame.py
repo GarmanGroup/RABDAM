@@ -1,37 +1,43 @@
 
 
-def makePDB(bof, atomList, eof, newPDBfilename):
+def makePDB(header_lines, atomList, footer_lines, newPDBfilename, Bfac):
     # Writes a pdb file containing a complete set of atom information for all
     # atoms in 'atomList', plus header and footer information.
 
+    import numpy as np
+
     newPDBfile = open(newPDBfilename, 'a')
 
-    for line in bof:
+    for line in header_lines:
         newPDBfile.write(line)
 
     for atm in atomList:
-        a = str(atm.lineID)
-        b = int(atm.atomNum)
-        c = str(atm.atomType)
-        d = str(atm.resiType)
-        e = str(atm.chainID)
-        f = int(atm.resiNum)
-        g = float(atm.xyzCoords[0][0])
-        h = float(atm.xyzCoords[1][0])
-        j = float(atm.xyzCoords[2][0])
-        k = float(atm.occupancy)
-        l = float(atm.bFactor)
-        m = str(atm.atomID)
-        n = str(atm.charge)
+        a = atm.lineID
+        b = atm.atomNum
+        c = atm.atomType
+        d = atm.conformer
+        e = atm.resiType
+        f = atm.chainID
+        g = atm.resiNum
+        h = atm.xyzCoords[0][0]
+        i = atm.xyzCoords[1][0]
+        j = atm.xyzCoords[2][0]
+        k = atm.occupancy
+        if Bfac == 'Bfactor':
+            l = atm.bFactor
+        elif Bfac == 'BDamage':
+            l = np.log(atm.bd)
+        m = atm.atomID
+        n = atm.charge
         # Atom properties are appropriately ordered and spaced, and reported
         # to the expected number of significant figures, for the PDB file
         # format.
-        newLine = '%-6s%5d  %-3s %3s %1s%4d    %8.3f%8.3f%8.3f%6.2f%6.2f          %2s%2s\n' % (
-            a, b, c, d, e, f, g, h, j, k, l, m, n
+        newLine = '%-6s%5d %-4s%1s%3s%2s%4d    %8.3f%8.3f%8.3f%6.2f%6.2f          %2s%2s\n' % (
+            a, b, c, d, e, f, g, h, i, j, k, l, m, n
             )
         newPDBfile.write(newLine)
 
-    for line in eof:
+    for line in footer_lines:
         newPDBfile.write(line)
 
     print '\nNew PDB file saved to %s' % newPDBfilename
@@ -50,6 +56,7 @@ def writeDataFrame(bdamatomList):
     REC = [None]*len(bdamatomList)
     ATMNUM = [None]*len(bdamatomList)
     ATMNAME = [None]*len(bdamatomList)
+    CONFORMER = [None]*len(bdamatomList)
     RESNAME = [None]*len(bdamatomList)
     CHAIN = [None]*len(bdamatomList)
     RESNUM = [None]*len(bdamatomList)
@@ -70,6 +77,7 @@ def writeDataFrame(bdamatomList):
         REC[index] = atm.lineID
         ATMNUM[index] = atm.atomNum
         ATMNAME[index] = atm.atomType
+        CONFORMER[index] = atm.conformer
         RESNAME[index] = atm.resiType
         CHAIN[index] = atm.chainID
         RESNUM[index] = atm.resiNum
@@ -88,6 +96,7 @@ def writeDataFrame(bdamatomList):
     df = pd.DataFrame({'REC': REC,
                        'ATMNUM': ATMNUM,
                        'ATMNAME': ATMNAME,
+                       'CONFORMER': CONFORMER,
                        'RESNAME': RESNAME,
                        'CHAIN': CHAIN,
                        'RESNUM': RESNUM,
@@ -104,11 +113,10 @@ def writeDataFrame(bdamatomList):
 
     # DataFrame columns are ordered.
     cols = df.columns.tolist()
-    cols_a = [cols[10]] + [cols[1]] + [cols[0]] + [cols[11]] + [cols[5]]
-    cols_b = [cols[12]] + [cols[13]] + [cols[14]] + [cols[15]] + [cols[8]]
-    cols_c = [cols[4]] + [cols[7]] + [cols[6]] + [cols[9]]
-    cols_d = [cols[2]] + [cols[3]]
-    cols = cols_a + cols_b + cols_c + cols_d
+    cols = ([cols[11]] + [cols[1]] + [cols[0]] + [cols[7]] + [cols[12]]
+            + [cols[5]] + [cols[13]] + [cols[14]] + [cols[15]] + [cols[16]]
+            + [cols[9]] + [cols[4]] + [cols[8]] + [cols[6]] + [cols[10]]
+            + [cols[2]] + [cols[3]])
     df = df[cols]
 
     return df

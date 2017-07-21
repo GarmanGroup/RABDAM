@@ -97,19 +97,20 @@ def clean_pdb_file(pathToPDB, pdb_file_path):
             ):
             clean_au_file.write(line)
             new_atom = atom()
-            new_atom.lineID = str(line[0:6].strip())
+            new_atom.lineID = line[0:6].strip()
             new_atom.atomNum = int(line[6:11].strip())
-            new_atom.atomType = str(line[12:16].strip())
-            new_atom.resiType = str(line[17:20].strip())
-            new_atom.chainID = str(line[21:22].strip())
+            new_atom.atomType = line[12:16].strip()
+            new_atom.conformer = line[16:17].strip()
+            new_atom.resiType = line[17:20].strip()
+            new_atom.chainID = line[21:22].strip()
             new_atom.resiNum = int(line[22:26].strip())
             new_atom.xyzCoords = [[float(line[30:38].strip())],
                                   [float(line[38:46].strip())],
                                   [float(line[46:54].strip())]]
             new_atom.occupancy = float(line[54:60].strip())
             new_atom.bFactor = float(line[60:66].strip())
-            new_atom.atomID = str(line[76:78].strip())
-            new_atom.charge = str(line[78:80].strip())
+            new_atom.atomID = line[76:78].strip()
+            new_atom.charge = line[78:80].strip()
             clean_au_list.append(new_atom)
 
     for line in footer_lines:
@@ -140,7 +141,7 @@ def runPDBCUR(clean_au_file, PDBCURoutputPDB, PDBCURinputFile, PDBCURlog):
     runPDBCURcommand = 'pdbcur xyzin %s xyzout %s < %s > %s' % (
         clean_au_file, PDBCURoutputPDB, PDBCURinputFile, PDBCURlog
         )
-    print 'Running PDBCUR (Winn et al. 2011) to process the PDB file'
+    print 'Running PDBCUR (Winn et al. 2011) to generate unit cell'
     os.system(runPDBCURcommand)
     print 'PDBCUR log is printed below\n'
     PDBCURlogText = open(PDBCURlog, 'r')
