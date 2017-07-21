@@ -1,6 +1,6 @@
 
 
-def convertToCartesian(unitCell):
+def convertToCartesian(unit_cell_params):
     # Converts the unit cell parameters into Cartesian vectors.
 
     import math
@@ -8,12 +8,12 @@ def convertToCartesian(unitCell):
 
     print 'Converting the unit cell parameters to Cartesian vectors'
 
-    a = float(unitCell[0])
-    b = float(unitCell[1])
-    c = float(unitCell[2])
-    alpha = float(unitCell[3])
-    beta = float(unitCell[4])
-    gamma = float(unitCell[5])
+    a = unit_cell_params[0]
+    b = unit_cell_params[1]
+    c = unit_cell_params[2]
+    alpha = unit_cell_params[3]
+    beta = unit_cell_params[4]
+    gamma = unit_cell_params[5]
 
     # Calculates the volume, v, of a unit parallelepiped with the same angles
     # as the unit cell. The unit cell parameters, plus the volume v, are
@@ -53,28 +53,16 @@ def convertToCartesian(unitCell):
     return cartesianVectors
 
 
-def getXYZlist(atomList):
-    # Returns a list of the xyz coordinates of all atoms in 'atomList' (= a
-    # list of all atoms in the unit cell). ('xyzList' is thus a 'slimmer'
-    # version of 'atomList')
-
-    noAtoms = len(atomList)
-    xyzList = [0]*noAtoms
-    for n in xrange(noAtoms):
-        xyzList[n] = atomList[n].xyzCoords
-    return xyzList
-
-
-def translateUnitCell(atomXYZlist, ucAtomList, transAtomList,
-                      cartesianVectors, aTrans, bTrans, cTrans):  # Need to increase speed
-    # Translates the unit cell +/- 1 units in all dimensions to generate
-    # a 3x3 assembly.
+def translateUnitCell(ucAtomList, transAtomList, cartesianVectors,
+                      aTrans, bTrans, cTrans):
+    # Translates the unit cell +/- 1 units in all dimensions (a, b and c) to
+    # generate a 3x3 assembly.
 
     import copy
     duplicate = copy.copy
     import numpy as np
 
-    # Converts input x, y and z unit vectors into matrices.
+    # Converts input unit vectors into matrices.
     aTransMat = np.array([[aTrans], [aTrans], [aTrans]])
     bTransMat = np.array([[bTrans], [bTrans], [bTrans]])
     cTransMat = np.array([[cTrans], [cTrans], [cTrans]])
@@ -86,17 +74,16 @@ def translateUnitCell(atomXYZlist, ucAtomList, transAtomList,
     aVec = np.multiply(aTransMat, cartesianVectors[0])
     bVec = np.multiply(bTransMat, cartesianVectors[1])
     cVec = np.multiply(cTransMat, cartesianVectors[2])
-    transVector = np.add(aVec, bVec)
-    transVector = np.add(transVector, cVec)
+    transVector = np.array([aVec, bVec, cVec])
+    transVector = np.sum(transVector, axis=0)
 
     # Each atom in the unit cell is translated as described by the translation
     # matrix, and its new xyz coordinates stored in a list of all atoms in
     # the 3x3 assembly.
-    taAppend = transAtomList.append
-    for n in xrange(len(atomXYZlist)):
-        atm = duplicate(ucAtomList[n])
-        atm.xyzCoords = np.add(np.array(duplicate(atomXYZlist[n])), transVector)
-        taAppend(atm)
+    for item in ucAtomList:
+        new_item = duplicate(item)
+        new_item.xyzCoords = np.add(item.xyzCoords, transVector)
+        transAtomList.append(new_item)
 
     print 'Successfully translated by (%2sa,%2sb,%2sc) unit cells' % (
         aTrans, bTrans, cTrans

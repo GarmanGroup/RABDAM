@@ -39,13 +39,13 @@ group = parser.add_mutually_exclusive_group(required=True)
 group.add_argument('-i', '--input', help='Path to input file listing program '
                    'options')
 group.add_argument('-f', '--pdb_file', nargs='+', help='Specifies input pdb '
-                   'file for B_Damage analysis - this option allows the RABDAM '
+                   'file for BDamage analysis - this option allows the RABDAM '
                    'program to be run (using default parameter values) '
                    'without providing an input file listing program options')
 parser.add_argument('-o', '--output', help='Specifies whether to run the '
-                    'complete program (default), to calculate B_Damage values '
+                    'complete program (default), to calculate BDamage values '
                     'only ("df" / "dataframe"), or to analyse pre-calculated '
-                    'B_Damage values only ("analysis")')
+                    'BDamage values only ("analysis")')
 args = parser.parse_args()
 
 cwd = os.getcwd()
@@ -123,7 +123,7 @@ for x in xrange(0, len(splitArgs)):
             pdtList = [float(pdtArg)]
 
     # Specifies size of sliding window (as a percentage of the total number of
-    # atoms considered for B_Damage analysis)
+    # atoms considered for BDamage analysis)
     elif splitArgs[x][0:10].lower() == 'windowsize':
         windowArg = splitArgs[x].split('=')
         windowArg = windowArg[len(windowArg)-1]
@@ -138,12 +138,12 @@ for x in xrange(0, len(splitArgs)):
                 windowList.append(float(number))
 
     # Specifies whether to include protein atoms alone, nucleic atoms alone,
-    # or both atom types (if present) in the B_Damage calculation
+    # or both atom types (if present) in the BDamage calculation
     elif splitArgs[x][0:20].lower() == 'proteinornucleicacid':
         protOrNAArg = splitArgs[x].split('=')
         protOrNAVal = protOrNAArg[len(protOrNAArg)-1].upper()
 
-    # Specifies whether to remove HETATM from the B_Damage calculation or to
+    # Specifies whether to remove HETATM from the BDamage calculation or to
     # retain them
     elif splitArgs[x][0:6].lower() == 'hetatm':
         hetatmArg = splitArgs[x].split('=')
@@ -154,7 +154,7 @@ for x in xrange(0, len(splitArgs)):
             hetatmVal = False
 
     # Lists atoms (via either their atom numbers or their residue names) to be
-    # included in the B_Damage calculation. (This is useful to add back in a
+    # included in the BDamage calculation. (This is useful to add back in a
     # subset of atoms of interest that has been removed by the
     # proteinOrNucleicAcid / HETATM / removeAtoms options.)
     elif splitArgs[x][0:8].lower() == 'addatoms':
@@ -175,7 +175,7 @@ for x in xrange(0, len(splitArgs)):
                     addAtomsList.append(addAtomsRange[-1])
 
     # Lists atoms (via either their atom numbers or their residue names) to be
-    # removed from the B_Damage calculation. (This is useful to remove
+    # removed from the BDamage calculation. (This is useful to remove
     # additional atoms not covered by the proteinOrNucleicAcid / HETATM
     # options.)
     elif splitArgs[x][0:11].lower() == 'removeatoms':
@@ -196,7 +196,7 @@ for x in xrange(0, len(splitArgs)):
                     removeAtomsList.append(removeAtomsRange[-1])
 
     # Specifies the number of atoms (as a percentage of the total number of
-    # atoms considered for B_Damage analysis) with the highest B_Damage values
+    # atoms considered for BDamage analysis) with the highest BDamage values
     # to be listed in the program output
     elif splitArgs[x][0:9].lower() == 'threshold':
         thresholdArg = splitArgs[x].split('=')
@@ -206,8 +206,8 @@ for x in xrange(0, len(splitArgs)):
             thresholdVal = float(thresholdVal) / 100
         thresholdVal = float(thresholdVal)
 
-    # Lists atoms (via their atom numbers) whose B_Damage values are to be
-    # indicated on the kernel density estimate of the B_Damage distribution
+    # Lists atoms (via their atom numbers) whose BDamage values are to be
+    # indicated on the kernel density estimate of the BDamage distribution
     # output by the program. Note that it is recommended no more than 6 atoms
     # are listed in the highlightAtoms option in the input file (beyond 6
     # atoms, the colour scheme will repeat itself, and in addition the key may
@@ -268,7 +268,7 @@ for x in xrange(0, len(splitArgs)):
         elif taVal in ['false', 'no', 'f', 'n']:
             taVal = False
 
-# Runs the B_Damage calculation for every specified PDB file
+# Runs the BDamage calculation for every specified PDB file
 for item in pathToPDBlist:
     for windowVal in windowList:
         for pdtVal in pdtList:
@@ -285,12 +285,12 @@ for item in pathToPDBlist:
                 pdb.rabdam_dataframe(run='rabdam')
                 pdb.rabdam_analysis(run='rabdam')
             elif vars(args)['output'].lower() in ['dataframe', 'df']:
-                # Runs subset of program; calculates B_Damage values and writes
+                # Runs subset of program; calculates BDamage values and writes
                 # them to a DataFrame
                 pdb.rabdam_dataframe(run='rabdam_dataframe')
             elif vars(args)['output'].lower() in ['analysis']:
                 # Runs subset of program; generates output analysis files from
-                # pre-calculated B_Damage values
+                # pre-calculated BDamage values
                 pdb.rabdam_analysis(run='rabdam_analysis')
 
 

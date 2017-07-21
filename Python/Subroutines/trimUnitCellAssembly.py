@@ -1,56 +1,35 @@
 
 
-def getUnitCellParams(fileName):
-    # Parses in the unit cell parameters (the vectors a, b, c, and the angles
-    # alpha, beta and gamma) from the input PDB file.
-
-    import math
-
-    fileOpen = open(fileName, 'r')
-    for line in fileOpen.readlines():
-        if 'CRYST1' in str(line[0:6]):  # Unit cell parameters are stored in this line
-            params = line.split()
-            a = float(params[1])
-            b = float(params[2])
-            c = float(params[3])
-            alpha = math.radians(float(params[4]))
-            beta = math.radians(float(params[5]))
-            gamma = math.radians(float(params[6]))
-            print 'Unit cell parameters successfully extracted'
-            break
-
-    fileOpen.close()
-    return (a, b, c, alpha, beta, gamma)
-
-
 def getAUparams(atomList):
     # Determines the min. and max. values of the x, y and z coordinates in the
     # asymmetric unit. (These are required later when calculating the size
     # of the trimmed atoms box.)
 
-    # Initialises xyz minima and maxima using values from first atom in
+    # Initialises x, y and z minima and maxima using values from first atom in
     # atomList.
-    xMin = float(atomList[0].xyzCoords[0][0])
-    xMax = float(atomList[0].xyzCoords[0][0])
-    yMin = float(atomList[0].xyzCoords[1][0])
-    yMax = float(atomList[0].xyzCoords[1][0])
-    zMin = float(atomList[0].xyzCoords[2][0])
-    zMax = float(atomList[0].xyzCoords[2][0])
+    xMin = atomList[0].xyzCoords[0][0]
+    xMax = atomList[0].xyzCoords[0][0]
+    yMin = atomList[0].xyzCoords[1][0]
+    yMax = atomList[0].xyzCoords[1][0]
+    zMin = atomList[0].xyzCoords[2][0]
+    zMax = atomList[0].xyzCoords[2][0]
 
-    # Updates xyz minima and maxima as loop through atomList.
+    # Updates x, y and z minima and maxima as loop through atomList
     for atm in atomList:
-        x = float(atm.xyzCoords[0][0])
-        y = float(atm.xyzCoords[1][0])
-        z = float(atm.xyzCoords[2][0])
+        x = atm.xyzCoords[0][0]
+        y = atm.xyzCoords[1][0]
+        z = atm.xyzCoords[2][0]
 
         if x < xMin:
             xMin = x
         elif x > xMax:
             xMax = x
+
         if y < yMin:
             yMin = y
         elif y > yMax:
             yMax = y
+
         if z < zMin:
             zMin = z
         elif z > zMax:
@@ -60,19 +39,20 @@ def getAUparams(atomList):
     return auParams
 
 
-def convertParams(params, margin):
+def convertParams(params, pdt):
     # Adds/subtracts the packing density threshold to/from the
     # maximum/minimum x, y and z coordinate values of atoms in the
     # asymmetric unit. The values returned define the boundaries of the
     # trimmed atoms box.
 
-    convParams = [0, 0, 0, 0, 0, 0]
-    convParams[0] = float(params[0]) - margin
-    convParams[1] = float(params[1]) + margin
-    convParams[2] = float(params[2]) - margin
-    convParams[3] = float(params[3]) + margin
-    convParams[4] = float(params[4]) - margin
-    convParams[5] = float(params[5]) + margin
+    xMin = params[0] - pdt
+    xMax = params[1] + pdt
+    yMin = params[2] - pdt
+    yMax = params[3] + pdt
+    zMin = params[4] - pdt
+    zMax = params[5] + pdt
+
+    convParams = [xMin, xMax, yMin, yMax, zMin, zMax]
     return convParams
 
 
@@ -80,12 +60,12 @@ def isInXYZparams(atomXYZ, params):
     # Determines whether the xyz coordinates of atoms in the unit cell 3x3
     # assembly lie within the boundaries of the trimmed atoms box.
 
-    x = float(atomXYZ[0][0])
-    y = float(atomXYZ[1][0])
-    z = float(atomXYZ[2][0])
-    if float(params[0]) < x < float(params[1]):
-        if float(params[2]) < y < float(params[3]):
-            if float(params[4]) < z < float(params[5]):
+    x = atomXYZ[0][0]
+    y = atomXYZ[1][0]
+    z = atomXYZ[2][0]
+    if params[0] < x < params[1]:
+        if params[2] < y < params[3]:
+            if params[4] < z < params[5]:
                 return True
     else:
         return False
@@ -94,15 +74,15 @@ def isInXYZparams(atomXYZ, params):
 def trimAtoms(atomList, params):
     # Removes all atoms with coordinates which lie outside of the trimmed
     # atoms box from the list of atoms in the 3x3 unit cell assembly.
-    print 'Excluding the atoms that lie outside of the box'
 
-    trimAtomList = []
-    trimAppend = trimAtomList.append
+    print ('Discarding atoms that lie further than 14 Angstroms from the\n'
+           'asymmetric unit')
 
+    trimmedAtomList = []
     for atom in atomList:
         atomXYZ = atom.xyzCoords
         if isInXYZparams(atomXYZ, params):
-            trimAppend(atom)
+            trimmedAtomList.append(atom)
 
-    print '%.0f atoms have been retained\n' % int(len(trimAtomList))
-    return trimAtomList
+    print '--> %s atoms have been retained' % len(trimmedAtomList)
+    return trimmedAtomList

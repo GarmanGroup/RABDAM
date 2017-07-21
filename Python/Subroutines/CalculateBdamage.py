@@ -20,7 +20,7 @@ class rabdam():
         self.createTApdb = createTApdb
 
     def rabdam_dataframe(self, run):
-        # Calculates B_Damage for selected atoms within input PDB file and
+        # Calculates BDamage for selected atoms within input PDB file and
         # writes output to DataFrame.
 
         prompt = '> '
@@ -52,14 +52,14 @@ class rabdam():
                   'http://dx.doi.org/doi:10.1107/S1600577515002131\n')
 
         print('\n****************************************************************\n'
-              '**************** Program to calculate B_Damage *****************\n'
+              '***************** Program to calculate BDamage *****************\n'
               '****************************************************************\n')
 
         print('****************************************************************\n'
               '************************* Input Section ************************\n')
         # Prints the values of the program options to be used in the current
         # RABDAM run
-        print 'Calculating B_Damage for %s' % self.pathToPDB
+        print 'Calculating BDamage for %s' % self.pathToPDB
         print 'Writing output files to %s' % self.outputDir
         if self.PDT == 14:
             print 'Using default packing density threshold of 14 Angstroms'
@@ -268,7 +268,7 @@ class rabdam():
         # Parses the newly generated unit cell PDB file into RABDAM, returning
         # a list of all atoms in the unit cell, plus the unit cell parameters.
         # The unit cell PDB file is then deleted unless createUCpdb is set
-        # equal to True in INPUT.txt.
+        # equal to True in the input file (default = False).
         print 'Reading in unit cell coordinates'
         ucAtomList = full_atom_list(unit_cell_pdb)
 
@@ -282,20 +282,22 @@ class rabdam():
               '****************** Translate Unit Cell Section *****************\n')
         # The unit cell parameters are converted into Cartesian vectors. These
         # vectors are then used to translate the unit cell -/+ 1 units in all
-        # (3) dimensions to generate a 3x3 parallelepiped. A PDB file of this
-        # 3x3 parallelepiped is output if createAUCpdb is set equal to True in
-        # INPUT.txt.
+        # (3 - a, b and c) dimensions to generate a 3x3 parallelepiped. A PDB
+        # file of this 3x3 parallelepiped is output if createAUCpdb is set
+        # equal to True in the input file (default = False).
 
-        cartesianVectors = convertToCartesian(unit_cell_params)
         transAtomList = duplicate(ucAtomList)
+        cartesianVectors = convertToCartesian(unit_cell_params)
         for a in xrange(-1, 2):
             for b in xrange(-1, 2):
                 for c in xrange(-1, 2):
                     if a == 0 and b == 0 and c == 0:
                         pass  # No identity translation
                     else:
-                        transAtomList = translateUnitCell(ucAtomList, transAtomList,
-                                                          cartesianVectors, a, b, c)
+                        transAtomList = translateUnitCell(ucAtomList,
+                                                          transAtomList,
+                                                          cartesianVectors,
+                                                          a, b, c)
 
         if self.createAUCpdb is True:
             aucPDBfilepath = '%s_all_unit_cells.pdb' % pdb_file_path
@@ -309,10 +311,11 @@ class rabdam():
               '********************* Trim Crystal Section *********************\n')
         # Atoms in the 3x3 parallelepiped which are a distance greater than the
         # packing density threshold from the boundaries of the processed
-        # asymmetric unit are discarded. The PDB files of the processed
-        # asymmetric unit and the trimmed parallelepiped are subsequently
-        # deleted unless createAUpdb and createTApdb are respectively set equal
-        # to True in INPUT.txt.
+        # asymmetric unit are discarded. A PDB file of the trimmed
+        # parallelepiped is created if createTApdb is set equal to True
+        # (default = False) in the input file. The PDB file of the processed
+        # asymmetric unit is deleted unless createAUpdb is set equal to True
+        # (default = False) in the input file.
         bdamAtomList = b_damage_atom_list(clean_au_list, self.HETATM,
                                           self.protOrNA, self.addAtoms,
                                           self.removeAtoms)
@@ -329,7 +332,7 @@ class rabdam():
         print 'zMin = %8.3f' % auParams[4]
         print 'zMax = %8.3f\n' % auParams[5]
 
-        print 'Removing atoms outside of packing density threshold\n'
+        print 'Removing atoms outside of packing density threshold'
         keepParams = convertParams(auParams, self.PDT)
         trimmedAtomList = trimAtoms(transAtomList, keepParams)
 
@@ -338,49 +341,48 @@ class rabdam():
             makePDB(header_lines, trimmedAtomList, footer_lines, taPDBfilepath,
                     'Bfactor')
 
-        print('****************** End of Trim Crystal Section *****************\n'
+        print('\n****************** End of Trim Crystal Section *****************\n'
               '****************************************************************\n')
 
         print('****************************************************************\n'
               '*************** Calculate Packing Density Section **************\n')
-        # Calculates the packing density (atomic contact number) of all atoms
+        # Calculates the packing density (atomic contact number) of every atom
         # in the asymmetric unit.
 
         print 'Calculating packing density values\n'
-        au_atom_xyz, trim_atom_xyz = get_xyz_from_objects(
-            bdamAtomList, trimmedAtomList
-            )
-        packing_density_array = calc_packing_density(
-            au_atom_xyz, trim_atom_xyz, self.PDT
-            )
+        au_atom_xyz, trim_atom_xyz = get_xyz_from_objects(bdamAtomList,
+                                                          trimmedAtomList)
+        packing_density_array = calc_packing_density(au_atom_xyz,
+                                                     trim_atom_xyz, self.PDT)
         write_pckg_dens_to_atoms(bdamAtomList, packing_density_array)
 
         print('*********** End of Calculate Packing Density Section ***********\n'
               '****************************************************************\n')
 
         print('****************************************************************\n'
-              '****************** Calculate B_Damage Section ******************\n')
+              '****************** Calculate BDamage Section *******************\n')
         # Atoms in the asymmetric unit are ordered via their packing density
-        # values; the B_Damage value of each atom is then calculated as the ratio
-        # of its B factor as compared to the average of the B factor values of
-        # similarly (identified via sliding window) packed atoms.
+        # values; the BDamage value of each atom is then calculated as the
+        # ratio of its Bfactor as compared to the average of the Bfactor values
+        # of similarly (identified via sliding window) packed atoms.
 
-        print 'Calculating B_Damage values\n'
+        print 'Calculating BDamage values\n'
         window = int(round((len(bdamAtomList)*self.windowSize), 0))
         if window % 2 == 0:
             window = window + 1  # Window size must be an odd number.
         if window < 3:
             window == 3  # Minimum window size is 3.
+        print 'Size of sliding window --> %s atoms\n' % window
         calcBdam(bdamAtomList, window)
 
         print('****************************************************************\n'
               '******************* Writing DataFrame Section ******************\n')
         # Writes asymmetric unit atom properties, including their newly calculated
-        # B_Damage values, to DataFrame, for ease of statistical analysis.
+        # BDamage values, to DataFrame, for ease of statistical analysis.
         # DataFrame, plus additional variables and lists required for subsequent
         # analysis, are pickled.
 
-        print 'Writing B_Damage data to DataFrame\n'
+        print 'Writing BDamage data to DataFrame\n'
         df = writeDataFrame(bdamAtomList)
 
         print 'Saving DataFrame\n'
@@ -494,16 +496,16 @@ class rabdam():
         print('****************************************************************\n'
               '***************** Writing Output Files Section *****************\n')
         # Uses values in DataFrame created by 'rabdam_dataframe' function to:
-        # - draw a kernel density plot of distribution of B_Damage values of
+        # - draw a kernel density plot of distribution of BDamage values of
         #   all analysed atoms in asymmetric unit
-        # - write an html file listing all atoms whose B_Damage values lie above
+        # - write an html file listing all atoms whose BDamage values lie above
         #   threshold specified in INPUT.txt
-        # - calculate global B_Damage metric, plus draw a kernel density plot
-        #   of B_Damage values of subset of atoms (Cys S, Glu O and Asp O)
+        # - calculate Bnet metric, plus draw a kernel density plot
+        #   of BDamage values of subset of atoms (Cys S, Glu O and Asp O)
         #   used to calculate it
-        # - write pdb files with B factor values replaced by B_Damage values to
+        # - write pdb files with B factor values replaced by BDamage values to
         #   allow structure when viewed with molecular graphics software to be
-        #   coloured by B_Damage
+        #   coloured by BDamage
         # - write DataFrame values to csv file, to allow user to easily further
         #   manipulate data as required
         output = generate_output_files(pdb_file_path=pdb_file_path, df=df)
@@ -511,15 +513,15 @@ class rabdam():
         print 'Writing histogram and html files\n'
         output.make_histogram(self.threshold, self.highlightAtoms)
 
-        print 'Calculating global B_Damage\n'
+        print 'Calculating Bnet\n'
         output.calculate_Bnet(window_name, pdt_name)
 
-        print 'Writing pdb file with BDamage values replacing Bfactors\n'
+        print 'Writing pdb file with BDamage values replacing Bfactors'
         pdb_file_name = pdb_file_path + '_BDamage.pdb'
         makePDB(header_lines, bdamAtomList, footer_lines, pdb_file_name,
                 'BDamage')
 
-        print 'Writing csv file\n'
+        print '\nWriting csv file\n'
         output.make_csv(bdamAtomList, window)
 
         print('************** End of Writing Output Files Section *************\n'

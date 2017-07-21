@@ -2,7 +2,7 @@
 
 class atom(object):
     # A class to assign properties to atoms (specifically all properties
-    # provided in the input PDB file, plus values relating to the B_Damage
+    # provided in the input PDB file, plus values relating to the BDamage
     # calculation).
 
     def __init__(self, lineidentifier='', atomnum=0, atomtype='', conformer='',
@@ -95,80 +95,62 @@ def full_atom_list(fileName):
 
 def b_damage_atom_list(clean_au_list, HETATM, protOrNA, addAtoms,
                        removeAtoms):
-    # Trims a copy of the clean_au_list
-    # to the subset of atoms to be included in B_damage calculations. The
-    # subset of atoms retained is specified by the 'HETATM',
-    # 'proteinOrNucleicAcid', 'addAtoms'  and 'removeAtoms' argument values
-    # specified in INPUT.txt:
+    # Filters a copy of the clean_au_list to retain only the subset of atoms
+    # to be included in the BDamage calculation, as specified by the 'HETATM',
+    # 'proteinOrNucleicAcid', 'addAtoms'  and 'removeAtoms' argument values set
+    # in the input file.
 
     import copy
     duplicate = copy.copy
 
-    bdamatomList_1 = duplicate(clean_au_list)
-    bdamatomList_2 = duplicate(bdamatomList_1)
-
-    # Removes hetatm if HETATM set to 'Remove' in INPUT.txt.
-    for index, atm in enumerate(bdamatomList_1):
-        if atm.lineID == 'HETATM':
-            if HETATM is False:
-                bdamatomList_2[index] = None
-
-    for index, atm in enumerate(bdamatomList_1):
-        if atm.lineID == 'ATOM':
-            # Removes nucleic acid atoms if proteinOrNucleicAcid set to
-            # 'Protein' in INPUT.txt.
-            if protOrNA == 'PROTEIN':
-                if len(str(atm.resiType)) != 3:
-                    bdamatomList_2[index] = None
-
-            # Removes protein atoms if proteinOrNucleicAcid set to
-            # 'Nucleic Acid' in INPUT.txt.
-            elif protOrNA in ['NUCLEICACID', 'NA']:
-                if len(str(atm.resiType)) == 3:
-                    bdamatomList_2[index] = None
-
-    # Removes atoms whose number is in removeAtoms list.
-    for index, atm in enumerate(bdamatomList_1):
-        if str(atm.atomNum) in removeAtoms:
-            bdamatomList_2[index] = None
-
-    # Removes atoms whose atom type is in removeAtoms list.
-    for index, atm in enumerate(bdamatomList_1):
-        if str(atm.atomType) in removeAtoms:
-            bdamatomList_2[index] = None
-
-    # Removes atoms whose residue type is in removeAtoms list.
-    for index, atm in enumerate(bdamatomList_1):
-        if str(atm.resiType) in removeAtoms:
-            bdamatomList_2[index] = None
-
-    bdamatomList_2 = filter(None, bdamatomList_2)
-    bdal2Append = bdamatomList_2.append
+    bdam_list_unfiltered = duplicate(clean_au_list)
+    bdam_list_unfiltered = bdam_list_unfiltered + [None]*len(addAtoms)
 
     for index, atm in enumerate(clean_au_list):
-        if atm.lineID in ['ATOM', 'HETATM']:
-            # Adds atoms whose number is in addAtoms list.
-            if atm.atomNum in addAtoms:
-                bdal2Append(atm)
+        # Removes hetatm if HETATM set to 'Remove' in input file.
+        if atm.lineID == 'HETATM':
+            if HETATM is False:
+                bdam_list_unfiltered[index] = None
 
-            # Adds atoms whose atom type is in addAtoms list.
-        elif atm.atomType in addAtoms:
-                bdal2Append(atm)
+        elif atm.lineID == 'ATOM':
+            # Removes nucleic acid atoms if proteinOrNucleicAcid set to
+            # 'Protein' in input file.
+            if protOrNA == 'PROTEIN':
+                if len(atm.resiType) != 3:
+                    bdam_list_unfiltered[index] = None
+            # Removes protein atoms if proteinOrNucleicAcid set to
+            # 'Nucleic Acid' / 'NA' in input file.
+            elif protOrNA in ['NUCLEICACID', 'NA']:
+                if len(atm.resiType) == 3:
+                    bdam_list_unfiltered[index] = None
 
-            # Adds atoms whose residue type is in addAtoms list.
+        # Removes atoms whose number is in removeAtoms list.
+        if str(atm.atomNum) in removeAtoms:
+            bdam_list_unfiltered[index] = None
+        # Removes atoms whose residue type is in removeAtoms list.
+        elif atm.resiType in removeAtoms:
+            bdam_list_unfiltered[index] = None
+
+        # Adds atoms whose number is in addAtoms list.
+        if str(atm.atomNum) in addAtoms:
+            ext_index = addAtoms.index(str(atm.atomNum))
+            bdam_list_unfiltered[len(clean_au_list)+ext_index] = atm
+        # Adds atoms whose residue type is in addAtoms list.
         elif atm.resiType in addAtoms:
-                bdal2Append(atm)
+            ext_index = addAtoms.index(atm.atomNum)
+            bdam_list_unfiltered[len(clean_au_list)+ext_index] = atm
 
-    # Filters list of atoms for B_damage analysis to remove multiple copies
+    bdam_list_filtered = filter(None, bdam_list_unfiltered)
+    bdam_list_filtered = sorted(bdam_list_filtered, key=lambda x: x.atomNum)
+
+    # Filters list of atoms for BDamage analysis to remove multiple copies
     # of the same atom.
     bdamatomSet = set()
     bdamatomList = []
-    for atm in bdamatomList_2:
+    for atm in bdam_list_filtered:
         if atm.atomNum not in bdamatomSet:
             bdamatomList.append(atm)
             bdamatomSet.add(atm.atomNum)
 
     print 'Finished reading in atoms --> %d atoms found' % int(len(clean_au_list))
-
-    bdamatomList = sorted(bdamatomList, key=lambda x: x.atomNum)
     return bdamatomList
