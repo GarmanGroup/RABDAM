@@ -377,10 +377,11 @@ class rabdam():
 
         print('****************************************************************\n'
               '******************* Writing DataFrame Section ******************\n')
-        # Writes asymmetric unit atom properties, including their newly calculated
-        # BDamage values, to DataFrame, for ease of statistical analysis.
-        # DataFrame, plus additional variables and lists required for subsequent
-        # analysis, are pickled.
+        # Writes properties of atoms to be considered for BDamage analysis to a
+        # DataFrame. The DataFrame, plus additional variables and lists
+        # required for subsequent analysis, are then pickled - this allows
+        # multiple analysis runs to be performed from the same DataFrame,
+        # thereby reducing their calculation time.
 
         print 'Writing BDamage data to DataFrame\n'
         df = writeDataFrame(bdamAtomList)
@@ -389,14 +390,16 @@ class rabdam():
         storage = '%s/DataFrame' % PDBdirectory
         os.makedirs(storage)
         storage_fileName = '%s/%s' % (storage, PDBcode)
-        df.to_pickle(str(storage_fileName) + '_dataframe.pkl')
-        with open(str(storage_fileName) + '_variables.pkl', 'wb') as f:
+        df.to_pickle(storage_fileName + '_dataframe.pkl')
+        with open(storage_fileName + '_variables.pkl', 'wb') as f:
             pickle.dump((pdb_file_path, PDBcode, bdamAtomList, header_lines,
                          footer_lines, window), f)
 
         print('****************************************************************\n'
               '*************** End Of Writing DataFrame Section ***************\n')
 
+        # Changes directory back to the 'RABDAM' directory (that in which the
+        # rabdam.py script is saved).
         os.chdir('%s' % cwd)
 
     def rabdam_analysis(self, run):

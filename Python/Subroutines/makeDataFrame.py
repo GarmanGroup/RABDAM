@@ -31,8 +31,11 @@ def makePDB(header_lines, atomList, footer_lines, newPDBfilename, Bfac):
         n = atm.charge
         # Atom properties are appropriately ordered and spaced, and reported
         # to the expected number of significant figures, for the PDB file
-        # format.
-        newLine = '%-6s%5d %-4s%1s%3s%2s%4d    %8.3f%8.3f%8.3f%6.2f%6.2f          %2s%2s\n' % (
+        # format. Note that atomType for some metal ions will not follow
+        # standard PDB file format, but this will not affect the running of
+        # RABDAM (nor most other programs that the user might want to load the
+        # PDB file into, such as PyMol, Chimera, CCP4MG, WinCoot, etc.)
+        newLine = '%-6s%5d  %-3s%1s%3s%2s%4d    %8.3f%8.3f%8.3f%6.2f%6.2f          %2s%2s\n' % (
             a, b, c, d, e, f, g, h, i, j, k, l, m, n
             )
         newPDBfile.write(newLine)
@@ -44,36 +47,36 @@ def makePDB(header_lines, atomList, footer_lines, newPDBfilename, Bfac):
     newPDBfile.close()
 
 
-def writeDataFrame(bdamatomList):
+def writeDataFrame(bdamAtomList):
     # Returns a DataFrame containing a complete set of atom information
     # (including both that provided in the input PDB file and also the
-    # B_damage values calculated by RABDAM) for all atoms considered for
-    # B_damage analysis.
+    # BDamage values calculated by RABDAM) for all atoms considered for
+    # BDamage analysis.
 
     import pandas as pd
 
     # Initialises a list for each atom property considered.
-    REC = [None]*len(bdamatomList)
-    ATMNUM = [None]*len(bdamatomList)
-    ATMNAME = [None]*len(bdamatomList)
-    CONFORMER = [None]*len(bdamatomList)
-    RESNAME = [None]*len(bdamatomList)
-    CHAIN = [None]*len(bdamatomList)
-    RESNUM = [None]*len(bdamatomList)
-    XPOS = [None]*len(bdamatomList)
-    YPOS = [None]*len(bdamatomList)
-    ZPOS = [None]*len(bdamatomList)
-    OCC = [None]*len(bdamatomList)
-    BFAC = [None]*len(bdamatomList)
-    ELEMENT = [None]*len(bdamatomList)
-    CHARGE = [None]*len(bdamatomList)
-    PD = [None]*len(bdamatomList)
-    AVRG_BF = [None]*len(bdamatomList)
-    BDAM = [None]*len(bdamatomList)
+    REC = [None]*len(bdamAtomList)
+    ATMNUM = [None]*len(bdamAtomList)
+    ATMNAME = [None]*len(bdamAtomList)
+    CONFORMER = [None]*len(bdamAtomList)
+    RESNAME = [None]*len(bdamAtomList)
+    CHAIN = [None]*len(bdamAtomList)
+    RESNUM = [None]*len(bdamAtomList)
+    XPOS = [None]*len(bdamAtomList)
+    YPOS = [None]*len(bdamAtomList)
+    ZPOS = [None]*len(bdamAtomList)
+    OCC = [None]*len(bdamAtomList)
+    BFAC = [None]*len(bdamAtomList)
+    ELEMENT = [None]*len(bdamAtomList)
+    CHARGE = [None]*len(bdamAtomList)
+    PD = [None]*len(bdamAtomList)
+    AVRG_BF = [None]*len(bdamAtomList)
+    BDAM = [None]*len(bdamAtomList)
 
     # Lists are filled with the relevant values of the properties associated
-    # with each of the atoms considered for B_damage analysis.
-    for index, atm in enumerate(bdamatomList):
+    # with each of the atoms considered for BDamage analysis.
+    for index, atm in enumerate(bdamAtomList):
         REC[index] = atm.lineID
         ATMNUM[index] = atm.atomNum
         ATMNAME[index] = atm.atomType
