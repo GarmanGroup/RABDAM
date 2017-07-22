@@ -15,7 +15,6 @@ sys.path.insert(0, './Subroutines')
 
 from CalculateBdamage import rabdam
 
-
 # Initialises program start time
 start = time.time()
 startIndex = time.localtime()
@@ -35,17 +34,21 @@ print '\nThis program was run on %d/%d/%d at %02.0f:%02.0f:%02.0f\n\n' % (
 # of one of these flags is compulsory. Program outputs are specified by the
 # optional -o flag.
 parser = argparse.ArgumentParser()
-group = parser.add_mutually_exclusive_group(required=True)
-group.add_argument('-i', '--input', help='Path to input file listing program '
-                   'options')
-group.add_argument('-f', '--pdb_file', nargs='+', help='Specifies input pdb '
-                   'file for BDamage analysis - this option allows the RABDAM '
-                   'program to be run (using default parameter values) '
-                   'without providing an input file listing program options')
-parser.add_argument('-o', '--output', help='Specifies whether to run the '
+input_file_group = parser.add_mutually_exclusive_group(required=True)
+input_file_group.add_argument('-i', '--input', help='Path to input file '
+                              'listing program parameter values')
+input_file_group.add_argument('-f', '--pdb_file', nargs='+', help='Specifies '
+                              'input pdb file for BDamage analysis - this '
+                              'option allows the RABDAM program to be run '
+                              '(using default program parameter values) '
+                              'without providing an input file listing '
+                              'program options')
+parser.add_argument('-r', '--run', help='Specifies whether to run the '
                     'complete program (default), to calculate BDamage values '
                     'only ("df" / "dataframe"), or to analyse pre-calculated '
                     'BDamage values only ("analysis")')
+parser.add_argument('-o', '--output', nargs='+', help='Specifies the output '
+                    'files to write (default = all)')
 args = parser.parse_args()
 
 cwd = os.getcwd()
@@ -268,6 +271,10 @@ for x in xrange(0, len(splitArgs)):
         elif taVal in ['false', 'no', 'f', 'n']:
             taVal = False
 
+# Sets default option for -o flag (default = generate all output files)
+if vars(args)['output'] is None:
+    vars(args)['output'] = ['csv', 'pdb', 'kde', 'bnet']
+
 # Runs the BDamage calculation for every specified PDB file
 for item in pathToPDBlist:
     for windowVal in windowList:
@@ -280,18 +287,20 @@ for item in pathToPDBlist:
                          highlightAtoms=highlightAtomsList,
                          createAUpdb=auVal, createUCpdb=ucVal,
                          createAUCpdb=aucVal, createTApdb=taVal)
-            if vars(args)['output'] is None:
+            if vars(args)['run'] is None:
                 # Runs full program
                 pdb.rabdam_dataframe(run='rabdam')
-                pdb.rabdam_analysis(run='rabdam')
-            elif vars(args)['output'].lower() in ['dataframe', 'df']:
+                pdb.rabdam_analysis(run='rabdam',
+                                    output_options=vars(args)['output'])
+            elif vars(args)['run'].lower() in ['dataframe', 'df']:
                 # Runs subset of program; calculates BDamage values and writes
                 # them to a DataFrame
                 pdb.rabdam_dataframe(run='rabdam_dataframe')
-            elif vars(args)['output'].lower() in ['analysis']:
+            elif vars(args)['run'].lower() in ['analysis']:
                 # Runs subset of program; generates output analysis files from
                 # pre-calculated BDamage values
-                pdb.rabdam_analysis(run='rabdam_analysis')
+                pdb.rabdam_analysis(run='rabdam_analysis',
+                                    output_options=vars(args)['output'])
 
 
 # Prints total program run time to screen

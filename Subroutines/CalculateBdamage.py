@@ -402,7 +402,7 @@ class rabdam():
         # rabdam.py script is saved).
         os.chdir('%s' % cwd)
 
-    def rabdam_analysis(self, run):
+    def rabdam_analysis(self, run, output_options):
         # Uses values in DataFrame returned from calling the 'rabdam_dataframe'
         # function to write output analysis files.
 
@@ -516,19 +516,23 @@ class rabdam():
 
         output = generate_output_files(pdb_file_path=pdb_file_path, df=df)
 
-        print 'Writing csv file\n'
-        output.make_csv(bdamAtomList, window)
+        if 'csv' in output_options:
+            print 'Writing csv file\n'
+            output.make_csv(bdamAtomList, window)
 
-        print 'Writing PDB file with BDamage values replacing Bfactors'
-        pdb_file_name = pdb_file_path + '_BDamage.pdb'
-        makePDB(header_lines, bdamAtomList, footer_lines, pdb_file_name,
-                'BDamage')
+        if 'pdb' in output_options:
+            print 'Writing PDB file with BDamage values replacing Bfactors'
+            pdb_file_name = pdb_file_path + '_BDamage.pdb'
+            makePDB(header_lines, bdamAtomList, footer_lines, pdb_file_name,
+                    'BDamage')
 
-        print '\nPlotting kernel density estimate\n'
-        output.make_histogram(self.threshold, self.highlightAtoms)
+        if 'kde' in output_options:
+            print '\nPlotting kernel density estimate\n'
+            output.make_histogram(self.threshold, self.highlightAtoms)
 
-        print 'Calculating Bnet\n'
-        output.calculate_Bnet(window_name, pdt_name)
+        if 'bnet' in output_options:
+            print 'Calculating Bnet\n'
+            output.calculate_Bnet(window_name, pdt_name)
 
         print('************** End of Writing Output Files Section *************\n'
               '****************************************************************\n')
