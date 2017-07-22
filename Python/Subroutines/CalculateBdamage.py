@@ -389,9 +389,9 @@ class rabdam():
         print 'Saving DataFrame\n'
         storage = '%s/DataFrame' % PDBdirectory
         os.makedirs(storage)
-        storage_fileName = '%s/%s' % (storage, PDBcode)
-        df.to_pickle(storage_fileName + '_dataframe.pkl')
-        with open(storage_fileName + '_variables.pkl', 'wb') as f:
+        storage_file = '%s/%s' % (storage, PDBcode)
+        df.to_pickle(storage_file + '_dataframe.pkl')
+        with open(storage_file + '_variables.pkl', 'wb') as f:
             pickle.dump((pdb_file_path, PDBcode, bdamAtomList, header_lines,
                          footer_lines, window), f)
 
@@ -403,8 +403,8 @@ class rabdam():
         os.chdir('%s' % cwd)
 
     def rabdam_analysis(self, run):
-        # Uses values in DataFrame returned from 'rabdam_dataframe' function to
-        # write output analysis files.
+        # Uses values in DataFrame returned from calling the 'rabdam_dataframe'
+        # function to write output analysis files.
 
         import os
         import sys
@@ -417,25 +417,27 @@ class rabdam():
         if run == 'rabdam_analysis':
             print '************************ RABDAM ANALYSIS ***********************\n'
             print('\nPlease cite: M. Gerstel, C. M. Deane and E.F. Garman. (2015).\n'
-                  'J. Synchrotron Radiation, 22, 201-212\n'
+                  'J. Synchrotron Radiation, 22, 201-212.\n'
                   'http://dx.doi.org/doi:10.1107/S1600577515002131\n')
 
+        # Changes directory to the specified location for the output 'Logfiles'
+        # directory. The default location is the current working directory
+        # (i.e. that in which the rabdam.py script is saved).
         cwd = os.getcwd()
         os.chdir('%s' % self.outputDir)
 
         print('\n****************************************************************\n'
               '***************** Processing DataFrame Section *****************\n')
-        # Checks that pkl files output by 'rabdam_dataframe' function required for
-        # analysis exist.
-        #
-        # Then checks if Logfiles/PDBcode directory already contains any analysis
-        # files - if so then user input requested:
+        # Checks that pkl files output by 'rabdam_dataframe' function exist.
+        # Then checks if output directory specified in input file (default =
+        # current working directory) already contains any analysis output files
+        # - if it does then user input is requested ('Do you want to overwrite
+        # the existing analysis files?'):
         # yes = all old analysis files are removed and replaced by new analysis
         #       files
         # no = old analysis files are retained, exit program
-        #
-        # Note there is no option to replace only a subset of the output analysis
-        # files.
+        # Note that currently there is no option to replace only a subset of
+        # the output analysis files.
 
         pathToPDB = self.pathToPDB.replace('\\', '/')
         splitPath = pathToPDB.split('/')
@@ -450,20 +452,20 @@ class rabdam():
                                                          pdt_name)
         PDB_analysis_file = '%s/%s' % (PDBdirectory, PDBcode)
         storage_directory = '%s/DataFrame' % PDBdirectory
-        storage_fileName = '%s/%s' % (storage_directory, PDBcode)
+        storage_file = '%s/%s' % (storage_directory, PDBcode)
 
         if not os.path.isdir(storage_directory):
             print 'Folder %s not found' % (storage_directory)
             print 'Exiting RABDAM analysis'
             sys.exit()
 
-        potential_analysis_files = ['BDamage.csv', 'BDamage.html',
-                                    'BDamage.pdb', 'BDamage.png',
-                                    'Bnet_Protein.png', 'Bnet_NA.png']
+        potential_analysis_files = ['_BDamage.csv', '_BDamage.html',
+                                    '_BDamage.pdb', '_BDamage.png',
+                                    '_Bnet_Protein.png', '_Bnet_NA.png']
         actual_analysis_files = []
         for name in potential_analysis_files:
-            if os.path.isfile(str(PDB_analysis_file) + str(name)):
-                actual_analysis_files.append(str(PDB_analysis_file) + str(name))
+            if os.path.isfile(PDB_analysis_file + name):
+                actual_analysis_files.append(PDB_analysis_file + name)
         if len(actual_analysis_files) > 0:
             print('There are one or more RABDAM analysis files already present\n'
                   'in folder %s' % PDBdirectory)
@@ -472,14 +474,14 @@ class rabdam():
                   'yes = overwrite ALL analysis files\n'
                   'no = do not overwrite analysis files\n')
             owChoice = None
-            while owChoice not in ['YES', 'NO', 'Y', 'N']:
-                owChoice = raw_input(prompt).upper()
-                if owChoice == 'YES' or owChoice == 'Y':
-                    print 'Overwriting existing analysis files'
+            while owChoice not in ['yes', 'no', 'y', 'n']:
+                owChoice = raw_input(prompt).lower()
+                if owChoice == 'y' or owChoice == 'y':
+                    print '\nOverwriting existing analysis files\n'
                     for name in actual_analysis_files:
                         os.remove(name)
                     break
-                elif owChoice == 'NO' or owChoice == 'N':
+                elif owChoice == 'no' or owChoice == 'n':
                     print('Keeping original analysis files\n'
                           'Exiting RABDAM')
                     sys.exit()
@@ -488,46 +490,49 @@ class rabdam():
                     print 'Unrecognised input - please answer "yes" or "no"'
 
         # Pkl files unpickled
-        with open(str(storage_fileName) + '_variables.pkl', 'rb') as f:
+        print 'Unpickling DataFrame and variables\n'
+        with open(storage_file + '_variables.pkl', 'rb') as f:
             (pdb_file_path, PDBcode, bdamAtomList, header_lines, footer_lines,
              window) = pickle.load(f)
-        df = pd.read_pickle(str(storage_fileName) + '_dataframe.pkl')
+        df = pd.read_pickle(storage_file + '_dataframe.pkl')
 
         print('************** End Of Processing DataFrame Section *************\n'
               '****************************************************************\n')
 
         print('****************************************************************\n'
               '***************** Writing Output Files Section *****************\n')
-        # Uses values in DataFrame created by 'rabdam_dataframe' function to:
-        # - draw a kernel density plot of distribution of BDamage values of
-        #   all analysed atoms in asymmetric unit
-        # - write an html file listing all atoms whose BDamage values lie above
-        #   threshold specified in INPUT.txt
-        # - calculate Bnet metric, plus draw a kernel density plot
-        #   of BDamage values of subset of atoms (Cys S, Glu O and Asp O)
-        #   used to calculate it
-        # - write pdb files with B factor values replaced by BDamage values to
-        #   allow structure when viewed with molecular graphics software to be
-        #   coloured by BDamage
-        # - write DataFrame values to csv file, to allow user to easily further
-        #   manipulate data as required
+        # Uses the values stored in the BDamage DataFrame to:
+        # - write DataFrame values to csv file (providing users with a copy of
+        #   the raw data that they can manipulate for further analysis as they
+        #   wish)
+        # - write a PDB file in which the Bfactors are replaced by BDamage
+        #   values (allowing users to e.g. colour the structure by BDamage
+        #   when viewed with molecular graphics software)
+        # - plot a kernel density estimate of the complete (i.e. all analysed
+        #   atoms) BDamage distribution
+        # - plot a kernel density estimate of the BDamage values of the
+        #   carboxyl group oxygens of Asp and Glu residues, this plot is then
+        #   used to calculate the value of the Bnet summary metric
+
         output = generate_output_files(pdb_file_path=pdb_file_path, df=df)
 
-        print 'Writing histogram and html files\n'
+        print 'Writing csv file\n'
+        output.make_csv(bdamAtomList, window)
+
+        print 'Writing PDB file with BDamage values replacing Bfactors'
+        pdb_file_name = pdb_file_path + '_BDamage.pdb'
+        makePDB(header_lines, bdamAtomList, footer_lines, pdb_file_name,
+                'BDamage')
+
+        print '\nPlotting kernel density estimate\n'
         output.make_histogram(self.threshold, self.highlightAtoms)
 
         print 'Calculating Bnet\n'
         output.calculate_Bnet(window_name, pdt_name)
 
-        print 'Writing pdb file with BDamage values replacing Bfactors'
-        pdb_file_name = pdb_file_path + '_BDamage.pdb'
-        makePDB(header_lines, bdamAtomList, footer_lines, pdb_file_name,
-                'BDamage')
-
-        print '\nWriting csv file\n'
-        output.make_csv(bdamAtomList, window)
-
         print('************** End of Writing Output Files Section *************\n'
               '****************************************************************\n')
 
+        # Changes directory back to the 'RABDAM' directory (i.e. that in which
+        # the rabdam.py script is saved).
         os.chdir('%s' % cwd)

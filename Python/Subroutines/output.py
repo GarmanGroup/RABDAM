@@ -1,4 +1,5 @@
 
+
 class generate_output_files():
     def __init__(self, pdb_file_path, df):
         self.pdb_file_path = pdb_file_path
@@ -8,13 +9,13 @@ class generate_output_files():
     def make_csv(self, bdamatomList, window):
         # Returns a csv file containing a complete set of atom information
         # (including both that provided in the input PDB file and also the
-        # B_damage values calculated by RABDAM) for all atoms considered for
-        # B_damage analysis. (This provides the user with a copy of the raw data
+        # BDamage values calculated by RABDAM) for all atoms considered for
+        # BDamage analysis. (This provides the user with a copy of the raw data
         # which they can manipulate as they wish.)
 
         newFile = open('%s_BDamage.csv' % self.pdb_file_path, 'w')
 
-        # Defines column header abbreviations at top of file.
+        # Defines column header abbreviations
         newFile.write('REC = RECORD NAME\n'
                       'ATMNUM = ATOM SERIAL NUMBER\n'
                       'ATMNAME = ATOM NAME\n'
@@ -30,11 +31,12 @@ class generate_output_files():
                       'ELEMENT = ELEMENT SYMBOL\n'
                       'CHARGE = CHARGE ON ATOM\n'
                       'PD = PACKING DENSITY (ATOMIC CONTACT NUMBER)\n')
-        newFile.write('AVRG_BF = AVERAGE B FACTOR FOR ATOMS IN A SIMILAR PACKING'
-                      'DENSITY ENVIRONMENT (SLIDING WINDOW SIZE = %s)\n' % window)
-        newFile.write('BDAM = BDAMAGE VALUE\n'
+        newFile.write('AVRG_BF = AVERAGE B FACTOR FOR ATOMS IN A SIMILAR '
+                      'PACKING DENSITY ENVIRONMENT (SLIDING WINDOW SIZE '
+                      '= %s)\n' % window)
+        newFile.write('BDAM = B DAMAGE VALUE\n'
                       '\n')
-        # Writes column headers to file
+        # Writes column headers
         newFile.write('REC' + ','
                       'ATMNUM' + ','
                       'ATMNAME' + ','
@@ -53,21 +55,21 @@ class generate_output_files():
                       'AVRG_BF' + ','
                       'BDAM' + '\n')
 
-        # Writes properties of each atom considered fpr B_damage analysis to file.
+        # Writes properties of each atom considered for BDamage analysis.
         for atm in bdamatomList:
-            newFile.write(str(atm.lineID) + ',')
+            newFile.write(atm.lineID + ',')
             newFile.write(str(atm.atomNum) + ',')
-            newFile.write(str(atm.atomType) + ',')
-            newFile.write(str(atm.conformer) + ',')
-            newFile.write(str(atm.resiType) + ',')
-            newFile.write(str(atm.chainID) + ',')
+            newFile.write(atm.atomType + ',')
+            newFile.write(atm.conformer + ',')
+            newFile.write(atm.resiType + ',')
+            newFile.write(atm.chainID + ',')
             newFile.write(str(atm.resiNum) + ',')
             newFile.write(str(atm.xyzCoords[0][0]) + ',')
             newFile.write(str(atm.xyzCoords[1][0]) + ',')
             newFile.write(str(atm.xyzCoords[2][0]) + ',')
             newFile.write(str(atm.occupancy) + ',')
             newFile.write(str(atm.bFactor) + ',')
-            newFile.write(str(atm.atomID) + ',')
+            newFile.write(atm.atomID + ',')
             newFile.write(str(atm.charge) + ',')
             newFile.write(str(atm.pd) + ',')
             newFile.write(str(atm.avrg_bf) + ',')
@@ -75,90 +77,53 @@ class generate_output_files():
 
         newFile.close()
 
-    def make_histogram(self, threshold, highlightAtoms):  # Need to increase speed
-        # Returns a kernel density plot of the B_damage values of every atom
-        # considered for B_damage analysis. The area under the kernel density
-        # plot (which is equal to 1) is then calculated, and a boundary is drawn
-        # at the B_damage value above which a particular % (equal to the value
-        # of the 'threshold' argument as defined in INPUT.txt, default value is
-        # 2%) of the area under the curve lies. Those atoms which lie above this
-        # threshold are listed in an html file. Any atom numbers listed in
-        # highlightAtoms argument as defined in INPUT.txt will be marked on the
-        # kernel density plot.
+    def make_histogram(self, threshold, highlightAtoms):
+        # Returns a kernel density estimate of the BDamage values of every atom
+        # considered for BDamage analysis. Any atom whose number is listed
+        # in the highlightAtoms option in the input file will be marked on the
+        # plot. (Note that it is recommended no more than 6 atoms are listed
+        # in the highlightAtoms option in the input file (beyond 6 atoms, the
+        # colour scheme will repeat itself, and in addition the key may not fit
+        # onto the graph).)
 
         import matplotlib.pyplot as plt
         import seaborn as sns
 
+        plt.clf()  # Prevents the kernel density estimate of all atoms
+        # considered for BDamage analysis from being plotted on the same axes
+        # as the kernel density estimate of the atoms considered for
+        # calculation of the Bnet summary metric
+
         # Generates kernel density plot
-        plt.clf()  # Prevents kernel density plots of all atoms considered for
-        # B_damage analysis, and the subset of atoms considered for calculation
-        # of the global B_damage metric, from being plotted on the same axes.
         line1 = sns.distplot(self.df.BDAM.values, hist=False, rug=True)
 
-        # Extracts an array of (x, y) coordinate pairs evenly spaced along the
-        # x(B_damage)-axis. These coordinate pairs are used to calculate the
-        # area under the curve via the trapezium rule. Concomitantly, the (x, y)
-        # coordinate pair values are separated depending upon whether they lie
-        # below or above the threshold area defined in INPUT.txt or not. The
-        # threshold B_damage boundary is then taken as the smallest x coordinate
-        # of the (x, y) pairs which lie above the threshold area.
+        # Marks on the positions of any atoms whose numbers are listed in the
+        # highlightAtoms option specified in the input file.
         xy_values = line1.get_lines()[0].get_data()
-        x_values = xy_values[0]
         y_values = xy_values[1]
 
-        total_area = 0
-        for index, value in enumerate(y_values):
-            if index != len(y_values) - 1:
-                area = (((y_values[int(index)] + y_values[int((index)+1)]) / 2)
-                        * (float(x_values[len(x_values)-1] - x_values[0]) / float(len(x_values)-1)))
-                total_area = total_area + area
-
-        area_LHS = 0
-        atoms_list = []
-        for index, value in enumerate(y_values):
-            if area_LHS <= (1-float(threshold)) * total_area:
-                atoms_list.append(value)
-                area = (((y_values[int(index)] + y_values[int((index)+1)]) / 2)
-                        * (float(x_values[len(x_values)-1] - x_values[0]) / float(len(x_values)-1)))
-                if area_LHS + area <= (1-float(threshold)) * total_area:
-                    area_LHS = area_LHS + area
-                else:
+        highlighted_atoms = []
+        for number in highlightAtoms:
+            for index, value in enumerate(self.df.ATMNUM.values):
+                if int(number) == value:
+                    b_dam_value = self.df.BDAM.values[index]
+                    line, = plt.plot([b_dam_value, b_dam_value],
+                                     [0, max(y_values)], linewidth=2,
+                                     label=' atom ' + str(number) +
+                                     '\n BDamage = {:.2f}'.format(b_dam_value))
+                    highlighted_atoms.append(line)
                     break
 
-        x_values_RHS = x_values[len(atoms_list):]
-        RHS_Bdam_values = []
-        for value in self.df.BDAM.values:
-            if value >= x_values_RHS[0]:
-                RHS_Bdam_values.append(value)
-
-        # Marks the position of the threshold boundary, plus the positions of any
-        # atoms whose numbers are listed in highlightAtoms argument as defined in
-        # INPUT.txt, on the kernel density plot.
-        highlighted_atoms = [None]
-        if len(highlightAtoms) != 0:
-            lines = [None]
-            for atm in highlightAtoms:
-                for index, value in enumerate(self.df.ATMNUM.values):
-                    if float(atm) == value:
-                        lines[0] = index
-                for line in lines:
-                    for index, value in enumerate(self.df.BDAM.values):
-                        if line == index:
-                            m = plt.plot([value, value], [0, max(y_values)],
-                                         linewidth=2, label=' atom ' + str(atm)
-                                         + '\n B_damage = {:.2f}'.format(value))
-                            highlighted_atoms.append(m)
-
         if len(highlighted_atoms) >= 1:
-            plt.legend(handles=highlighted_atoms[0])
+            plt.legend(handles=highlighted_atoms)
         plt.xlabel('B Damage')
         plt.ylabel('Normalised Frequency')
-        plt.title(str(self.pdb_code) + ' kernel density plot')
-        plt.savefig(str(self.pdb_file_path)+'_BDamage.png')
+        plt.title(self.pdb_code + ' kernel density plot')
+        plt.savefig(self.pdb_file_path + '_BDamage.png')
 
     def calculate_Bnet(self, window_name, pdt_name):
         # Plots a kernel density estimate of Cys S, Glu O and Asp O atoms from
-        # the subset of atoms considered for B_damage analysis. The Bnet metric
+        # the subset of atoms considered for BDamage analysis. The Bnet metric
         # is then calculated as the ratio of the areas under the curve either side
         # of 1.
 
@@ -187,19 +152,19 @@ class generate_output_files():
 
         if not prot.empty:
             plt.clf()  # Prevents kernel density plots of all atoms considered for
-            # B_damage analysis, and the subset of atoms considered for calculation
-            # of the global B_damage metric, from being plotted on the same axes.
+            # BDamage analysis, and the subset of atoms considered for calculation
+            # of the global BDamage metric, from being plotted on the same axes.
             plot = sns.distplot(prot.BDAM.values, hist=False, rug=True)
             plt.xlabel("B Damage")
             plt.ylabel("Normalised Frequency")
             plt.title(str(self.pdb_code) + ' kernel density plot')
 
             # Extracts an array of (x, y) coordinate pairs evenly spaced along
-            # the x(B_damage)-axis from the kernel density plot. These coordinate
+            # the x(BDamage)-axis from the kernel density plot. These coordinate
             # pairs are used to calculate, via the trapezium rule, the area under
             # the curve between the smallest value of x and 1 (= area LHS), and
             # the area under the curve between 1 and the largest value of x
-            # (= area RHS). The global B_damage metric is then calculated as the
+            # (= area RHS). The global BDamage metric is then calculated as the
             # ratio of area RHS to area LHS.
             xy_values = plot.get_lines()[0].get_data()
             x_values = xy_values[0]
@@ -237,7 +202,7 @@ class generate_output_files():
                                 * (float(x_distance_LHS) / float(x_max_LHS)))
                     total_area_LHS = total_area_LHS + area_LHS
 
-            # Calculates area ratio ( = global B_damage metric)
+            # Calculates area ratio ( = global BDamage metric)
             ratio = total_area_RHS / total_area_LHS
 
             plt.annotate('Bnet = {:.2f}'.format(ratio),
@@ -264,19 +229,19 @@ class generate_output_files():
 
         if not na.empty:
             plt.clf()  # Prevents kernel density plots of all atoms considered for
-            # B_damage analysis, and the subset of atoms considered for calculation
-            # of the global B_damage metric, from being plotted on the same axes.
+            # BDamage analysis, and the subset of atoms considered for calculation
+            # of the global BDamage metric, from being plotted on the same axes.
             plot = sns.distplot(na.BDAM.values, hist=False, rug=True)
             plt.xlabel("B Damage")
             plt.ylabel("Normalised Frequency")
             plt.title(str(self.pdb_code) + ' kernel density plot')
 
             # Extracts an array of (x, y) coordinate pairs evenly spaced along
-            # the x(B_damage)-axis from the kernel density plot. These coordinate
+            # the x(BDamage)-axis from the kernel density plot. These coordinate
             # pairs are used to calculate, via the trapezium rule, the area under
             # the curve between the smallest value of x and 1 (= area LHS), and
             # the area under the curve between 1 and the largest value of x
-            # (= area RHS). The global B_damage metric is then calculated as the
+            # (= area RHS). The global BDamage metric is then calculated as the
             # ratio of area RHS to area LHS.
             xy_values = plot.get_lines()[0].get_data()
             x_values = xy_values[0]
@@ -314,7 +279,7 @@ class generate_output_files():
                                 * (float(x_distance_LHS) / float(x_max_LHS)))
                     total_area_LHS = total_area_LHS + area_LHS
 
-            # Calculates area ratio ( = global B_damage metric)
+            # Calculates area ratio ( = global BDamage metric)
             ratio = total_area_RHS / total_area_LHS
 
             plt.annotate('Bnet = {:.2f}'.format(ratio),
