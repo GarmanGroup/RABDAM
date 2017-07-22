@@ -95,11 +95,11 @@ class generate_output_files():
         # calculation of the Bnet summary metric
 
         # Generates kernel density plot
-        line1 = sns.distplot(self.df.BDAM.values, hist=False, rug=True)
+        plot = sns.distplot(self.df.BDAM.values, hist=False, rug=True)
 
         # Marks on the positions of any atoms whose numbers are listed in the
         # highlightAtoms option specified in the input file.
-        xy_values = line1.get_lines()[0].get_data()
+        xy_values = plot.get_lines()[0].get_data()
         y_values = xy_values[1]
 
         highlighted_atoms = []
@@ -122,96 +122,77 @@ class generate_output_files():
         plt.savefig(self.pdb_file_path + '_BDamage.png')
 
     def calculate_Bnet(self, window_name, pdt_name):
-        # Plots a kernel density estimate of Cys S, Glu O and Asp O atoms from
-        # the subset of atoms considered for BDamage analysis. The Bnet metric
-        # is then calculated as the ratio of the areas under the curve either side
-        # of 1.
+        # Plots a kernel density estimate of the BDamage values of Glu O and
+        # Asp O atoms. The summary metric Bnet is then calculated as the ratio
+        # of the areas under the curve either side of the median (of the
+        # overall BDamage distribution).
 
         import os
         import matplotlib.pyplot as plt
         import seaborn as sns
         import pandas as pd
 
-        # Calculates median
+        # Calculates median of overall BDamage distribution
         median = self.df.BDAM.median()
 
-        # Selects atoms of Glu / Asp terminal oxygens from complete DataFrame.
-        # Note that brackets either side of '&' are required to specify
-        # correct evaluation order.
-        a = self.df[(self.df.RESNAME.isin(['GLU'])) & (self.df.ATMNAME.isin(['OE1', 'OE2']))]
-        b = self.df[(self.df.RESNAME.isin(['ASP'])) & (self.df.ATMNAME.isin(['OD1', 'OD2']))]
+        # Selects Glu / Asp terminal oxygen atoms from complete DataFrame.
+        a = self.df[(self.df.RESNAME.isin(['GLU']))
+                    & (self.df.ATMNAME.isin(['OE1', 'OE2']))]
+        b = self.df[(self.df.RESNAME.isin(['ASP']))
+                    & (self.df.ATMNAME.isin(['OD1', 'OD2']))]
         dataframes = [a, b]
         prot = pd.concat(dataframes)
-
         # Selects atoms of sugar-phosphate C-O bonds from complete DataFrame.
         na = self.df[self.df.ATMNAME.isin(["O3'", "O5'", "C3'", "C5'"])]
 
         if prot.empty and na.empty:
             print('\nNo sites used for Bnet calculation present in structure\n')
-            pass
 
         if not prot.empty:
-            plt.clf()  # Prevents kernel density plots of all atoms considered for
-            # BDamage analysis, and the subset of atoms considered for calculation
-            # of the global BDamage metric, from being plotted on the same axes.
+            plt.clf()  # Prevents the kernel density estimate of the atoms
+            # considered for calculation of the Bnet summary metric from being
+            # plotted on the same axes as the kernel density estimate of all
+            # atoms considered for BDamage analysis.
             plot = sns.distplot(prot.BDAM.values, hist=False, rug=True)
             plt.xlabel("B Damage")
             plt.ylabel("Normalised Frequency")
-            plt.title(str(self.pdb_code) + ' kernel density plot')
+            plt.title(self.pdb_code + ' kernel density plot')
 
-            # Extracts an array of (x, y) coordinate pairs evenly spaced along
-            # the x(BDamage)-axis from the kernel density plot. These coordinate
-            # pairs are used to calculate, via the trapezium rule, the area under
-            # the curve between the smallest value of x and 1 (= area LHS), and
-            # the area under the curve between 1 and the largest value of x
-            # (= area RHS). The global BDamage metric is then calculated as the
-            # ratio of area RHS to area LHS.
+            # Extracts an array of 128 (x, y) coordinate pairs evenly spaced
+            # along the x(BDamage)-axis from the kernel density plot. These
+            # coordinate pairs are used to calculate, via the trapezium rule,
+            # the area under the curve between the smallest value of x and the
+            # median (= area LHS), and the area under the curve between the
+            # median and the largest value of x (= area RHS). The Bnet summary
+            # metric is then calculated as the ratio of area RHS to area LHS.
             xy_values = plot.get_lines()[0].get_data()
             x_values = xy_values[0]
             y_values = xy_values[1]
 
-            # Calculates area RHS
-            x_values_RHS = x_values[x_values >= median]
-            x_min_index = len(x_values) - len(x_values_RHS)
-            y_values_RHS = y_values[x_min_index:]
-
-            x_max_RHS = int(len(x_values_RHS) - 1)
-            x_distance_RHS = x_values_RHS[x_max_RHS] - x_values_RHS[0]
-
-            total_area_RHS = 0
-
-            for index, value in enumerate(y_values_RHS):
-                if float(index) != (len(y_values_RHS) - 1):
-                    area_RHS = (((y_values_RHS[int(index)] + y_values_RHS[int((index) + 1)]) / 2)
-                                * (float(x_distance_RHS) / float(x_max_RHS)))
-                    total_area_RHS = total_area_RHS + area_RHS
-
-            # Calculates area LHS
-            x_values_LHS = x_values[x_values <= median]
-            x_max_index = len(x_values_LHS) - 1
-            y_values_LHS = y_values[:x_max_index]
-
-            x_max_LHS = int(len(x_values_LHS) - 1)
-            x_distance_LHS = x_values_LHS[x_max_index] - x_values_LHS[0]
-
             total_area_LHS = 0
-
-            for index, value in enumerate(y_values_LHS):
-                if float(index) != (len(y_values_LHS) - 1):
-                    area_LHS = (((y_values_LHS[int(index)] + y_values_LHS[int((index) + 1)]) / 2)
-                                * (float(x_distance_LHS) / float(x_max_LHS)))
+            for index, value in enumerate(y_values):
+                if x_values[index] < median:
+                    area_LHS = (((y_values[index] + y_values[index+1]) / 2)
+                                * ((x_values[-1]-x_values[0]) / (len(x_values)-1)))
                     total_area_LHS = total_area_LHS + area_LHS
 
-            # Calculates area ratio ( = global BDamage metric)
+            total_area_RHS = 0
+            for index, value in enumerate(y_values):
+                if x_values[index] >= median and index < len(y_values)-1:
+                    area_RHS = (((y_values[index] + y_values[index+1]) / 2)
+                                * ((x_values[-1]-x_values[0]) / (len(x_values)-1)))
+                    total_area_RHS = total_area_RHS + area_RHS
+
+            # Calculates area ratio (= Bnet)
             ratio = total_area_RHS / total_area_LHS
 
-            plt.annotate('Bnet = {:.2f}'.format(ratio),
-                         xy=((max((plot.get_lines()[0].get_data())[0])*0.65),
-                         (max(y_values)*0.9)))  # Need to fix annotation position
+            plt.annotate('Bnet = {:.1f}'.format(ratio),
+                         xy=(max(x_values)*0.65, max(y_values)*0.9),
+                         fontsize=10)
             plt.annotate('Median = {:.2f}'.format(median),
-                         xy=((max((plot.get_lines()[0].get_data())[0])*0.65),
-                         (max(y_values)*0.8)))  # Need to fix annotation position
-            plt.savefig(str(self.pdb_file_path)+'_Bnet_Protein.png')
+                         xy=(max(x_values)*0.65, max(y_values)*0.85),
+                         fontsize=10)
+            plt.savefig(self.pdb_file_path + '_Bnet_Protein.png')
 
             if not os.path.isfile('Logfiles/Bnet_Protein.csv'):
                 Bnet_list = open('Logfiles/Bnet_Protein.csv', 'w')
@@ -228,66 +209,49 @@ class generate_output_files():
             Bnet_list.close()
 
         if not na.empty:
-            plt.clf()  # Prevents kernel density plots of all atoms considered for
-            # BDamage analysis, and the subset of atoms considered for calculation
-            # of the global BDamage metric, from being plotted on the same axes.
+            plt.clf()  # Prevents the kernel density estimate of the atoms
+            # considered for calculation of the Bnet summary metric from being
+            # plotted on the same axes as the kernel density estimate of all
+            # atoms considered for BDamage analysis.
             plot = sns.distplot(na.BDAM.values, hist=False, rug=True)
             plt.xlabel("B Damage")
             plt.ylabel("Normalised Frequency")
-            plt.title(str(self.pdb_code) + ' kernel density plot')
+            plt.title(self.pdb_code + ' kernel density plot')
 
-            # Extracts an array of (x, y) coordinate pairs evenly spaced along
-            # the x(BDamage)-axis from the kernel density plot. These coordinate
-            # pairs are used to calculate, via the trapezium rule, the area under
-            # the curve between the smallest value of x and 1 (= area LHS), and
-            # the area under the curve between 1 and the largest value of x
-            # (= area RHS). The global BDamage metric is then calculated as the
-            # ratio of area RHS to area LHS.
+            # Extracts an array of 128 (x, y) coordinate pairs evenly spaced
+            # along the x(BDamage)-axis from the kernel density plot. These
+            # coordinate pairs are used to calculate, via the trapezium rule,
+            # the area under the curve between the smallest value of x and the
+            # median (= area LHS), and the area under the curve between the
+            # median and the largest value of x (= area RHS). The Bnet summary
+            # metric is then calculated as the ratio of area RHS to area LHS.
             xy_values = plot.get_lines()[0].get_data()
             x_values = xy_values[0]
             y_values = xy_values[1]
 
-            # Calculates area RHS
-            x_values_RHS = x_values[x_values >= median]
-            x_min_index = len(x_values) - len(x_values_RHS)
-            y_values_RHS = y_values[x_min_index:]
-
-            x_max_RHS = int(len(x_values_RHS) - 1)
-            x_distance_RHS = x_values_RHS[x_max_RHS] - x_values_RHS[0]
-
-            total_area_RHS = 0
-
-            for index, value in enumerate(y_values_RHS):
-                if float(index) != (len(y_values_RHS) - 1):
-                    area_RHS = (((y_values_RHS[int(index)] + y_values_RHS[int((index) + 1)]) / 2)
-                                * (float(x_distance_RHS) / float(x_max_RHS)))
-                    total_area_RHS = total_area_RHS + area_RHS
-
-            # Calculates area LHS
-            x_values_LHS = x_values[x_values <= median]
-            x_max_index = len(x_values_LHS) - 1
-            y_values_LHS = y_values[:x_max_index]
-
-            x_max_LHS = int(len(x_values_LHS) - 1)
-            x_distance_LHS = x_values_LHS[x_max_index] - x_values_LHS[0]
-
             total_area_LHS = 0
-
-            for index, value in enumerate(y_values_LHS):
-                if float(index) != (len(y_values_LHS) - 1):
-                    area_LHS = (((y_values_LHS[int(index)] + y_values_LHS[int((index) + 1)]) / 2)
-                                * (float(x_distance_LHS) / float(x_max_LHS)))
+            for index, value in enumerate(y_values):
+                if x_values[index] < median:
+                    area_LHS = (((y_values[index] + y_values[index+1]) / 2)
+                                * ((x_values[-1]-x_values[0]) / (len(x_values)-1)))
                     total_area_LHS = total_area_LHS + area_LHS
 
-            # Calculates area ratio ( = global BDamage metric)
+            total_area_RHS = 0
+            for index, value in enumerate(y_values):
+                if x_values[index] >= median and index < len(y_values)-1:
+                    area_RHS = (((y_values[index] + y_values[index+1]) / 2)
+                                * ((x_values[-1]-x_values[0]) / (len(x_values)-1)))
+                    total_area_RHS = total_area_RHS + area_RHS
+
+            # Calculates area ratio (= Bnet)
             ratio = total_area_RHS / total_area_LHS
 
-            plt.annotate('Bnet = {:.2f}'.format(ratio),
-                         xy=((max((plot.get_lines()[0].get_data())[0])*0.65),
-                         (max(y_values)*0.9)))  # Need to fix annotation position
+            plt.annotate('Bnet = {:.1f}'.format(ratio),
+                         xy=(max(x_values)*0.65, max(y_values)*0.9),
+                         fontsize=10)
             plt.annotate('Median = {:.2f}'.format(median),
-                         xy=((max((plot.get_lines()[0].get_data())[0])*0.65),
-                         (max(y_values)*0.8)))  # Need to fix annotation position
+                         xy=(max(x_values)*0.65, max(y_values)*0.85),
+                         fontsize=10)
             plt.savefig(str(self.pdb_file_path)+'_Bnet_NA.png')
 
             if not os.path.isfile('Logfiles/Bnet_NA.csv'):
