@@ -1,0 +1,11 @@
+4ins,
+
+dir=,
+
+PDT=14, windowSize=0.02, HETATM=Remove, proteinOrNucleicAcid=Protein,
+
+addAtoms=, removeAtoms=,
+
+threshold=0.02, highlightAtoms=,
+
+createAUpdb=False, createUCpdb=False, createAUCpdb=False, createTApdb=False
