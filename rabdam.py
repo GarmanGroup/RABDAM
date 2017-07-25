@@ -38,17 +38,18 @@ input_file_group = parser.add_mutually_exclusive_group(required=True)
 input_file_group.add_argument('-i', '--input', help='Path to input file '
                               'listing program parameter values')
 input_file_group.add_argument('-f', '--pdb_file', nargs='+', help='Specifies '
-                              'input pdb file for BDamage analysis - this '
-                              'option allows the RABDAM program to be run '
-                              '(using default program parameter values) '
-                              'without providing an input file listing '
-                              'program options')
+                              'input pdb file (via either a 4 character PDB '
+                              'accession code or a file path) for BDamage '
+                              'analysis - this option allows the RABDAM '
+                              'program to be run (using default program '
+                              'parameter values) without providing an input '
+                              'file listing program options')
 parser.add_argument('-r', '--run', help='Specifies whether to run the '
-                    'complete program (default), to calculate BDamage values '
-                    'only ("df" / "dataframe"), or to analyse pre-calculated '
-                    'BDamage values only ("analysis")')
+                    'complete program (= default), to calculate BDamage '
+                    'values only ("df" / "dataframe"), or to analyse '
+                    'pre-calculated BDamage values only ("analysis")')
 parser.add_argument('-o', '--output', nargs='+', help='Specifies the output '
-                    'files to write (default = all)')
+                    'files to write (default = all except html summary)')
 args = parser.parse_args()
 
 cwd = os.getcwd()
@@ -96,6 +97,7 @@ addAtomsList = []
 removeAtomsList = []
 thresholdVal = float(0.02)
 highlightAtomsList = []
+origVal = False
 auVal = False
 ucVal = False
 aucVal = False
@@ -232,6 +234,15 @@ for x in xrange(0, len(splitArgs)):
                 elif len(highlightAtomsRange) == 1:
                     highlightAtomsList.append(highlightAtomsRange[-1])
 
+    # Specifies whether to save the input PDB file fed into the program
+    elif splitArgs[x][0:11].lower() == 'createorigpdb':
+        origArg = splitArgs[x].split('=')
+        origVal = origArg[len(origArg)-1].lower()
+        if origVal in ['true', 'yes', 't', 'y']:
+            origVal = True
+        elif origVal in ['false', 'no', 'f', 'n']:
+            origVal = False
+
     # Specifies whether to create a PDB file of the (filtered) asymmetric unit
     elif splitArgs[x][0:11].lower() == 'createaupdb':
         auArg = splitArgs[x].split('=')
@@ -271,9 +282,11 @@ for x in xrange(0, len(splitArgs)):
         elif taVal in ['false', 'no', 'f', 'n']:
             taVal = False
 
-# Sets default option for -o flag (default = generate all output files)
+# Sets default option for -o flag (default = generate all output files bar the
+# summary file)
 if vars(args)['output'] is None:
     vars(args)['output'] = ['csv', 'pdb', 'kde', 'bnet']
+output_options = [item.lower() for item in vars(args)['output']]
 
 # Runs the BDamage calculation for every specified PDB file
 for item in pathToPDBlist:
@@ -285,13 +298,14 @@ for item in pathToPDBlist:
                          HETATM=hetatmVal, addAtoms=addAtomsList,
                          removeAtoms=removeAtomsList, threshold=thresholdVal,
                          highlightAtoms=highlightAtomsList,
-                         createAUpdb=auVal, createUCpdb=ucVal,
-                         createAUCpdb=aucVal, createTApdb=taVal)
+                         createOrigpdb=origVal, createAUpdb=auVal,
+                         createUCpdb=ucVal, createAUCpdb=aucVal,
+                         createTApdb=taVal)
             if vars(args)['run'] is None:
                 # Runs full program
                 pdb.rabdam_dataframe(run='rabdam')
                 pdb.rabdam_analysis(run='rabdam',
-                                    output_options=vars(args)['output'])
+                                    output_options=output_options)
             elif vars(args)['run'].lower() in ['dataframe', 'df']:
                 # Runs subset of program; calculates BDamage values and writes
                 # them to a DataFrame
@@ -300,7 +314,7 @@ for item in pathToPDBlist:
                 # Runs subset of program; generates output analysis files from
                 # pre-calculated BDamage values
                 pdb.rabdam_analysis(run='rabdam_analysis',
-                                    output_options=vars(args)['output'])
+                                    output_options=output_options)
 
 
 # Prints total program run time to screen

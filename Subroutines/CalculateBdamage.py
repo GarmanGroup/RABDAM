@@ -2,8 +2,9 @@
 
 class rabdam():
     def __init__(self, pathToPDB, outputDir, PDT, windowSize, protOrNA, HETATM,
-                 addAtoms, removeAtoms, threshold, highlightAtoms, createAUpdb,
-                 createUCpdb, createAUCpdb, createTApdb):
+                 addAtoms, removeAtoms, threshold, highlightAtoms,
+                 createOrigpdb, createAUpdb, createUCpdb, createAUCpdb,
+                 createTApdb):
         self.pathToPDB = pathToPDB
         self.outputDir = outputDir
         self.PDT = PDT
@@ -14,6 +15,7 @@ class rabdam():
         self.removeAtoms = removeAtoms
         self.threshold = threshold
         self.highlightAtoms = highlightAtoms
+        self.createOrigpdb = createOrigpdb
         self.createAUpdb = createAUpdb
         self.createUCpdb = createUCpdb
         self.createAUCpdb = createAUCpdb
@@ -249,6 +251,11 @@ class rabdam():
         (clean_au_file, clean_au_list, header_lines, footer_lines,
          unit_cell_params) = clean_pdb_file(pathToPDB, pdb_file_path)
 
+        # Deletes input PDB file fed into the program unless createOrigpdb
+        # is set equal to True in the input file (default=False).
+        if not self.createOrigpdb:
+            os.remove(pathToPDB)
+
         print '\nGenerating unit cell\n'
         PDBCURinputFile = '%sPDBCURinput.txt' % pdb_file_path
         PDBCURlog = '%sPDBCURlog.txt' % pdb_file_path
@@ -460,8 +467,8 @@ class rabdam():
             sys.exit()
 
         potential_analysis_files = ['_BDamage.csv', '_BDamage.html',
-                                    '_BDamage.pdb', '_BDamage.png',
-                                    '_Bnet_Protein.png', '_Bnet_NA.png']
+                                    '_BDamage.pdb', '_BDamage.svg',
+                                    '_Bnet_Protein.svg', '_Bnet_NA.svg']
         actual_analysis_files = []
         for name in potential_analysis_files:
             if os.path.isfile(PDB_analysis_file + name):
@@ -516,23 +523,27 @@ class rabdam():
 
         output = generate_output_files(pdb_file_path=pdb_file_path, df=df)
 
-        if 'csv' in output_options:
+        if 'csv' in output_options or 'summary' in output_options:
             print 'Writing csv file\n'
             output.make_csv(bdamAtomList, window)
 
-        if 'pdb' in output_options:
+        if 'pdb' in output_options or 'summary' in output_options:
             print 'Writing PDB file with BDamage values replacing Bfactors'
             pdb_file_name = pdb_file_path + '_BDamage.pdb'
             makePDB(header_lines, bdamAtomList, footer_lines, pdb_file_name,
                     'BDamage')
 
-        if 'kde' in output_options:
+        if 'kde' in output_options or 'summary' in output_options:
             print '\nPlotting kernel density estimate\n'
             output.make_histogram(self.threshold, self.highlightAtoms)
 
-        if 'bnet' in output_options:
+        if 'bnet' in output_options or 'summary' in output_options:
             print 'Calculating Bnet\n'
             output.calculate_Bnet(window_name, pdt_name)
+
+        if 'summary' in output_options:
+            print 'Writing summary html file\n'
+            output.write_html_summary(self.highlightAtoms)
 
         print('************** End of Writing Output Files Section *************\n'
               '****************************************************************\n')
