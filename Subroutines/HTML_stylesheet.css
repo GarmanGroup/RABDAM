@@ -44,6 +44,7 @@ ul.main_list {
   list-style-type: none;
   color: #212f3d;
   border: 2px solid #212f3d;
+  min-width: 1250px;
 }
 
 ul.sublist {
@@ -61,8 +62,7 @@ table {
   border: 2px solid #212f3d;
   border-collapse: collapse;
   border-radius: 5px;
-  max-width: 90%;
-  overflow: scroll;
+  max-width: 95%;
 }
 
 th {
