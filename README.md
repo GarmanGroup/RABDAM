@@ -21,20 +21,24 @@ RABDAM is a command line program. To run the program with its recommended defaul
 
 `python rabdam.py –f XXXX`
 
-, where XXXX is the 4 character PDB accession code of the MX structure under study. Alternatively, the user can provide RABDAM with a file path to a locally saved PDB file:
+, where XXXX is the 4 character PDB accession code of the MX structure under study. Alternatively, you can provide RABDAM with a file path to a locally saved PDB file:
 
 `python rabdam.py –f path/to/pdb_file.pdb`
 
-See the *“Usage”* section below for further details.
+See the “*Usage*” section below for further details.
 
 ## Background
-During macromolecular crystallography (MX) data collection, X-rays are also absorbed by and deposit energy within the crystal under study, causing damage. This damage can result in localised chemical changes to the macromolecule copies, for instance to disulfide bond cleavage in proteins, *etc*. Such specific radiation damage manifestations can lead to incorrect biological conclusions being drawn from an MX structure if they are not identified and accounted for. Unfortunately, the high intensities of third generation synchrotron sources have resulted in specific radiation damage artefacts commonly being present in MX structures deposited in the Protein Data Bank (PDB) even at 100 K.
+During macromolecular crystallography (MX) data collection, X-rays are also absorbed by and deposit energy within the crystal under study, causing damage. This damage can result in localised chemical changes to the crystalline macromolecule copies, for example to disulfide bond cleavage in proteins, *etc*. Such specific radiation damage manifestations can lead to incorrect biological conclusions being drawn from an MX structure if they are not identified and accounted for. Unfortunately, the high intensities of third generation synchrotron sources have resulted in specific radiation damage artefacts commonly being present in MX structures deposited in the Protein Data Bank (PDB) even at 100 K.
 
-The chemical changes induced by specific radiation damage cause an accompanying increase in the atomic *B*<sub>factor</sub> values of affected sites. Multiple factors can affect an atom’s *B*<sub>factor</sub> value in addition to radiation damage however, the most important of which is its mobility: the increase in *B*<sub>factor</sub> caused by specific radiation damage is insufficiently large to distinguish damage from mobility.
+The chemical changes induced by specific radiation damage cause an accompanying increase in the atomic *B*<sub>factor</sub> values of affected sites. Multiple factors can affect an atom’s *B*<sub>factor</sub> value in addition to radiation damage however, the most important of these being its mobility: the increase in *B*<sub>factor</sub> caused by specific radiation damage is insufficiently large to distinguish damage from mobility.
 
-There is a strong positive correlation between the mobility of an atom within a crystal structure and its packing density, i.e. the number of atoms present in its local environment. The *B*<sub>Damage</sub> metric is *B*<sub>factor</sub> corrected for packing density: specifically, the *B*<sub>Damage</sub> value for an atom *j* is calculated as the ratio between its *B*<sub>factor</sub> and the average *B*<sub>factor</sub> of atoms 1 to *n* which occupy a similar packing density environment to atom *j*.
+There is a strong positive correlation between the mobility of an atom within a crystal structure and its packing density, *i.e.* the number of atoms present in its local environment. The *B*<sub>Damage</sub> metric is *B*<sub>factor</sub> corrected for packing density: specifically, the *B*<sub>Damage</sub> value for an atom *j* is calculated as the ratio between its *B*<sub>factor</sub> and the average *B*<sub>factor</sub> of atoms 1 to *n* which occupy a similar packing density environment to atom *j*.
+
+![Images/BDamage_equation.png](Images/BDamage_equation.png)
 
 The *B*<sub>Damage</sub> metric has been shown to identify expected sites of specific radiation damage in damaged datasets (Gerstel *et al.*, 2015).
+
+![Images/BDamage_methodology.png]
 
 RABDAM calculates the value of the *B*<sub>Damage</sub> metric for every atom within a standard format PDB file, according to the method summarised in the diagram below.
 
