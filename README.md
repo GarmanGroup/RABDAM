@@ -38,7 +38,7 @@ There is a strong positive correlation between the mobility of an atom within a 
 
 The *B*<sub>Damage</sub> metric has been shown to identify expected sites of specific radiation damage in damaged datasets (Gerstel *et al.*, 2015).
 
-![Images/BDamage_methodology.png]
+![Images/BDamage_methodology.png](Images/BDamage_methodology.png)
 
 RABDAM calculates the value of the *B*<sub>Damage</sub> metric for every atom within a standard format PDB file, according to the method summarised in the diagram below.
 
