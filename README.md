@@ -54,7 +54,7 @@ The method of calculating the *B*<sub>net</sub> value for a protein structure is
 ___
 
 ![Images/Bnet_calculation.png](Images/Bnet_calculation.png)
-
+The *B*<sub>net</sub> metric is calculated as the ratio of the area either side of the median (of the overall *B*<sub>Damage</sub> distribution) underneath a kernel density estimate of the *B*<sub>Damage</sub> values of the terminal oxygen atoms of Glu and Asp residues.
 ___
 
 RABDAM calculates the values of the *B*<sub>Damage</sub> and *B*<sub>net</sub> metrics for a standard format PDB file, as detailed in the following sections.
