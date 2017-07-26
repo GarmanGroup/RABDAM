@@ -1,20 +1,20 @@
 # RABDAM – identifying specific radiation damage in MX structures
 A program to calculate the *B*<sub>Damage</sub> and *B*<sub>net</sub> metrics to quantify the extent of specific radiation damage present within an individual MX structure. Suitable for running on any standard format PDB file.
 
-**Note:** These scripts are currently under development and are being updated regularly.
+**NOTE:** These scripts are currently under development and are being updated regularly.
 
 
 ## Contents
--	[How to run in brief] (#how-to-run-in-brief)
-- [Background] (#background)
--	[Usage] (#usage)
-    -	[System requirements] (#system-requirements)
-    -	[Running RABDAM from the command line] (#running-rabdam-from-the-command-line)
-    -	[Writing the RABDAM input file] (#writing-the-rabdam-input-file)
-- [An example RABDAM run] (#an-example-rabdam-run)
--	[Queries] (#queries)
--	[Contributors] (#contributors)
--	[Citing RABDAM] (#citing-rabdam)
+-	[How to run in brief](#how-to-run-in-brief)
+- [Background](#background)
+-	[Usage](#usage)
+    -	[System requirements](#system-requirements)
+    -	[Running RABDAM from the command line](#running-rabdam-from-the-command-line)
+    -	[Writing the RABDAM input file](#writing-the-rabdam-input-file)
+- [An example RABDAM run](#an-example-rabdam-run)
+-	[Queries](#queries)
+-	[Contributors](#contributors)
+-	[Citing RABDAM](#citing-rabdam)
 
 ## How to run in brief
 RABDAM is a command line program. To run the program with its recommended default parameter values, execute:
