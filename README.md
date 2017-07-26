@@ -1,7 +1,7 @@
 # RABDAM – identifying specific radiation damage in MX structures
 A program to calculate the *B*<sub>Damage</sub> and *B*<sub>net</sub> metrics to quantify the extent of specific radiation damage present within an individual MX structure. Suitable for running on any standard format PDB file.
 
-**NOTE:** These scripts are currently under development and are being updated regularly.
+****NOTE:** These scripts are currently under development and are being updated regularly. **
 
 
 ## Contents
@@ -28,20 +28,36 @@ RABDAM is a command line program. To run the program with its recommended defaul
 See the “*Usage*” section below for further details.
 
 ## Background
-During macromolecular crystallography (MX) data collection, X-rays are also absorbed by and deposit energy within the crystal under study, causing damage. This damage can result in localised chemical changes to the crystalline macromolecule copies, for example to disulfide bond cleavage in proteins, *etc*. Such specific radiation damage manifestations can lead to incorrect biological conclusions being drawn from an MX structure if they are not identified and accounted for. Unfortunately, the high intensities of third generation synchrotron sources have resulted in specific radiation damage artefacts commonly being present in MX structures deposited in the Protein Data Bank (PDB) even at 100 K.
+During macromolecular crystallography (MX) data collection, X-rays are also absorbed by and deposit energy within the crystal under study, causing damage. This damage can result in localised chemical changes to the crystalline macromolecule copies, for example to disulfide bond cleavage in proteins, *etc*. Such *specific radiation damage* manifestations can lead to incorrect biological conclusions being drawn from an MX structure if they are not identified and accounted for. Unfortunately, the high intensities of third generation synchrotron sources have resulted in specific radiation damage artefacts commonly being present in MX structures deposited in the Protein Data Bank (PDB) even at 100 K.
 
-The chemical changes induced by specific radiation damage cause an accompanying increase in the atomic *B*<sub>factor</sub> values of affected sites. Multiple factors can affect an atom’s *B*<sub>factor</sub> value in addition to radiation damage however, the most important of these being its mobility: the increase in *B*<sub>factor</sub> caused by specific radiation damage is insufficiently large to distinguish damage from mobility.
+The chemical changes induced by specific radiation damage cause an accompanying increase in the atomic *B*<sub>factor</sub> values of affected sites. Multiple factors can affect an atom’s *B*<sub>factor</sub> value in addition to radiation damage however, the most important of these being its mobility. The increase in *B*<sub>factor</sub> caused by specific radiation damage is insufficiently large to distinguish damage from mobility.
 
-There is a strong positive correlation between the mobility of an atom within a crystal structure and its packing density, *i.e.* the number of atoms present in its local environment. The *B*<sub>Damage</sub> metric is *B*<sub>factor</sub> corrected for packing density: specifically, the *B*<sub>Damage</sub> value for an atom *j* is calculated as the ratio between its *B*<sub>factor</sub> and the average *B*<sub>factor</sub> of atoms 1 to *n* which occupy a similar packing density environment to atom *j*.
+There is a strong positive correlation between the mobility of an atom within a crystal structure and its packing density, *i.e.* the number of atoms present in its local environment. The *B*<sub>Damage</sub> metric is *B*<sub>factor</sub> corrected for packing density: specifically, the *B*<sub>Damage</sub> value of an atom *j* is equal to the ratio of its *B*<sub>factor</sub> to the average *B*<sub>factor</sub> of atoms 1 to *n* which occupy a similar packing density environment to atom *j*. The *B*<sub>Damage</sub> metric has been shown to identify expected sites of specific radiation damage in damaged MX structures (Gerstel *et al.*, 2015).
+
+___
 
 ![Images/BDamage_equation.png](Images/BDamage_equation.png)
 
-The *B*<sub>Damage</sub> metric has been shown to identify expected sites of specific radiation damage in damaged datasets (Gerstel *et al.*, 2015).
+___
+
+The method of calculating an atom’s *B*<sub>Damage</sub> value is summarised in the diagram below:
+
+___
 
 ![Images/BDamage_methodology.png](Images/BDamage_methodology.png)
+Calculation of the *B*<sub>Damage</sub> metric. From an input PDB file of the asymmetric unit of a macromolecule of interest, RABDAM **(A)** generates a copy of the unit cell, followed by **(B)** a 3x3x3 assembly of unit cells. **(C)** Atoms in the 3x3x3 unit cell assembly that lie further than 14 Å from the asymmetric unit are discounted. **(D)** The packing density of an atom *j* in the asymmetric unit is calculated as the number of atoms within a 14 Å radius. **(E)** Asymmetric unit atoms are ordered by packing density; the *B*<sub>Damage</sub> value of atom *j* is then calculated as the ratio of its *B*<sub>factor</sub> to the average of the *B*<sub>factor</sub> values of atoms grouped, via sliding window, as occupying a similar packing density environment. (Hydrogen atoms are not considered in the calculation of *B*<sub>Damage</sub>.)
 
-RABDAM calculates the value of the *B*<sub>Damage</sub> metric for every atom within a standard format PDB file, according to the method summarised in the diagram below.
+___
 
+The *B*<sub>net</sub> metric is a derivative of the (per-atom) *B*<sub>Damage</sub> metric that summarises in a single value the overall extent of specific radiation damage suffered by an MX structure. *B*<sub>net</sub> is calculated according to the method summarised in the diagram below:
+
+___
+
+![Images/Bnet_calculation.png](Images/Bnet_calculation.png)
+
+___
+
+RABDAM calculates the values of the *B*<sub>Damage</sub> and *B*<sub>net</sub> metrics for a standard format PDB file, as detailed in the following sections.
 
 ## Usage
 #### System requirements
