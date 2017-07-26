@@ -1,7 +1,7 @@
 # RABDAM – identifying specific radiation damage in MX structures
 A program to calculate the *B*<sub>Damage</sub> and *B*<sub>net</sub> metrics to quantify the extent of specific radiation damage present within an individual MX structure. Suitable for running on any standard format PDB file.
 
-****NOTE:** These scripts are currently under development and are being updated regularly. **
+\*\***NOTE:** These scripts are under development, and are updated regularly. The program is currently being extended to incorporate nucleic acids analysis. Whilst these new capabilities are being tested, it is strongly recommended that presently RABDAM is only used to assess damage to protein crystal structures.\*\*
 
 
 ## Contents
@@ -34,11 +34,7 @@ The chemical changes induced by specific radiation damage cause an accompanying 
 
 There is a strong positive correlation between the mobility of an atom within a crystal structure and its packing density, *i.e.* the number of atoms present in its local environment. The *B*<sub>Damage</sub> metric is *B*<sub>factor</sub> corrected for packing density: specifically, the *B*<sub>Damage</sub> value of an atom *j* is equal to the ratio of its *B*<sub>factor</sub> to the average *B*<sub>factor</sub> of atoms 1 to *n* which occupy a similar packing density environment to atom *j*. The *B*<sub>Damage</sub> metric has been shown to identify expected sites of specific radiation damage in damaged MX structures (Gerstel *et al.*, 2015).
 
-___
-
 ![Images/BDamage_equation.png](Images/BDamage_equation.png)
-
-___
 
 The method of calculating an atom’s *B*<sub>Damage</sub> value is summarised in the diagram below:
 
@@ -49,7 +45,11 @@ Calculation of the *B*<sub>Damage</sub> metric. From an input PDB file of the as
 
 ___
 
-The *B*<sub>net</sub> metric is a derivative of the (per-atom) *B*<sub>Damage</sub> metric that summarises in a single value the overall extent of specific radiation damage suffered by an MX structure. *B*<sub>net</sub> is calculated according to the method summarised in the diagram below:
+The *B*<sub>net</sub> metric is a derivative of the (per-atom) *B*<sub>Damage</sub> metric that summarises in a single value the overall extent of specific radiation damage suffered by an MX structure. One of the best-characterised chemical changes resulting from specific radiation damage that occurs within proteins\* is the decarboxylation of Glu and Asp residues; the *B*<sub>net</sub> metric is calculated from a kernel density plot of the *B*<sub>Damage</sub> values of a structure’s Glu and Asp terminal oxygen atoms as the ratio of the area either side of the median of the (overall) *B*<sub>Damage</sub> distribution.
+
+(\* An equivalent of this protein-specific *B*<sub>net</sub> metric for nucleic acids is currently being developed - see program description.)
+
+The method of calculating the *B*<sub>net</sub> value for a protein structure is summarised in the diagram below:
 
 ___
 
@@ -61,8 +61,11 @@ RABDAM calculates the values of the *B*<sub>Damage</sub> and *B*<sub>net</sub> m
 
 ## Usage
 #### System requirements
+___
 #### Running RABDAM from the command line
+___
 #### Writing the RABDAM input file
+___
 
 ## An example RABDAM run
 
