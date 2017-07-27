@@ -186,12 +186,12 @@ class generate_output_files():
             # Calculates area ratio (= Bnet)
             ratio = total_area_RHS / total_area_LHS
 
-            #plt.annotate('Bnet = {:.1f}'.format(ratio),
-            #             xy=(max(x_values)*0.65, max(y_values)*0.9),
-            #             fontsize=10)
-            #plt.annotate('Median = {:.2f}'.format(median),
-            #             xy=(max(x_values)*0.65, max(y_values)*0.85),
-            #             fontsize=10)
+            plt.annotate('Bnet = {:.1f}'.format(ratio),
+                         xy=(max(x_values)*0.65, max(y_values)*0.9),
+                         fontsize=10)
+            plt.annotate('Median = {:.2f}'.format(median),
+                         xy=(max(x_values)*0.65, max(y_values)*0.85),
+                         fontsize=10)
             plt.savefig(self.pdb_file_path + '_Bnet_Protein.svg')
 
             if not os.path.isfile('Logfiles/Bnet_Protein.csv'):
@@ -246,12 +246,12 @@ class generate_output_files():
             # Calculates area ratio (= Bnet)
             ratio = total_area_RHS / total_area_LHS
 
-            #plt.annotate('Bnet = {:.1f}'.format(ratio),
-            #             xy=(max(x_values)*0.65, max(y_values)*0.9),
-            #             fontsize=10)
-            #plt.annotate('Median = {:.2f}'.format(median),
-            #             xy=(max(x_values)*0.65, max(y_values)*0.85),
-            #             fontsize=10)
+            plt.annotate('Bnet = {:.1f}'.format(ratio),
+                         xy=(max(x_values)*0.65, max(y_values)*0.9),
+                         fontsize=10)
+            plt.annotate('Median = {:.2f}'.format(median),
+                         xy=(max(x_values)*0.65, max(y_values)*0.85),
+                         fontsize=10)
             plt.savefig(str(self.pdb_file_path)+'_Bnet_NA.svg')
 
             if not os.path.isfile('Logfiles/Bnet_NA.csv'):

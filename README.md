@@ -41,11 +41,11 @@ The method of calculating an atom’s *B*<sub>Damage</sub> value is summarised i
 ___
 
 ![Images/BDamage_methodology.png](Images/BDamage_methodology.png)
-Calculation of the *B*<sub>Damage</sub> metric. From an input PDB file of the asymmetric unit of a macromolecule of interest, RABDAM **(A)** generates a copy of the unit cell, followed by **(B)** a 3x3x3 assembly of unit cells. **(C)** Atoms in the 3x3x3 unit cell assembly that lie further than 14 Å from the asymmetric unit are discounted. **(D)** The packing density of an atom *j* in the asymmetric unit is calculated as the number of atoms within a 14 Å radius. **(E)** Asymmetric unit atoms are ordered by packing density; the *B*<sub>Damage</sub> value of atom *j* is then calculated as the ratio of its *B*<sub>factor</sub> to the average of the *B*<sub>factor</sub> values of atoms grouped, via sliding window, as occupying a similar packing density environment. (Hydrogen atoms are not considered in the calculation of *B*<sub>Damage</sub>.)
+Calculation of the *B*<sub>Damage</sub> metric. From an input PDB file of the asymmetric unit of a macromolecule of interest, RABDAM **(A)** generates a copy of the unit cell, followed by **(B)** a 3x3x3 assembly of unit cells. **(C)** Atoms in the 3x3x3 unit cell assembly that lie further than 14 Å from the asymmetric unit are discounted. **(D)** The packing density of an atom *j* in the asymmetric unit is calculated as the number of atoms within a 14 Å radius. **(E)** Asymmetric unit atoms are ordered by packing density; the *B*<sub>Damage</sub> value of atom *j* is then calculated as the ratio of its *B*<sub>factor</sub> to the average of the *B*<sub>factor</sub> values of atoms grouped, via sliding window, as occupying a similar packing density environment. Note that hydrogen atoms are not considered in the calculation of *B*<sub>Damage</sub>.
 
 ___
 
-The *B*<sub>net</sub> metric is a derivative of the (per-atom) *B*<sub>Damage</sub> metric that summarises in a single value the overall extent of specific radiation damage suffered by an MX structure. One of the best-characterised chemical changes resulting from specific radiation damage that occurs within proteins\* is the decarboxylation of Glu and Asp residues; the *B*<sub>net</sub> metric is calculated from a kernel density plot of the *B*<sub>Damage</sub> values of a structure’s Glu and Asp terminal oxygen atoms as the ratio of the area either side of the median of the (overall) *B*<sub>Damage</sub> distribution.
+The *B*<sub>net</sub> metric is a derivative of the (per-atom) *B*<sub>Damage</sub> metric that summarises in a single value the overall extent of specific radiation damage suffered by an MX structure. One of the best-characterised chemical changes resulting from specific radiation damage that occurs within proteins\* is the decarboxylation of Glu and Asp residues; the *B*<sub>net</sub> metric is calculated from a kernel density plot of the *B*<sub>Damage</sub> values of a structure’s Glu and Asp terminal oxygen atoms as the ratio of the area under the curve either side of the median of the (overall) *B*<sub>Damage</sub> distribution.
 
 (\* An equivalent of this protein-specific *B*<sub>net</sub> metric for nucleic acids is currently being developed - see program description.)
 
@@ -61,6 +61,17 @@ RABDAM calculates the values of the *B*<sub>Damage</sub> and *B*<sub>net</sub> m
 
 ## Usage
 #### System requirements
+RABDAM is written in Python 2.7. In addition, it is dependent upon the following packages / programs that are not included in the [Anaconda Python 2.7 distribution](https://www.continuum.io/downloads):
+
+-	The [seaborn](https://seaborn.pydata.org/) Python plotting library (version 0.7.1 or later)
+-	The [CCP4 software suite](http://www.ccp4.ac.uk/) (RABDAM has a dependency on the CCP4 suite program PDBCUR)
+
+To check whether your computer is missing any of the packages / programs required to run RABDAM, execute:
+
+`python rabdam.py --dependencies`
+
+\*\***NOTE:** Owing to its PDBCUR dependence, RABDAM can only be run in a terminal / command prompt in which CCP4 programs can also be run (*e.g.* the CCP4 console).\*\*
+
 ___
 #### Running RABDAM from the command line
 ___
@@ -78,7 +89,7 @@ Please email kathryn.shelley@queens.ox.ac.uk.
 - Jonny Brooks-Bartlett
 
 ## Citing RABDAM
-The initial development and testing of the BDamage metric is described in:
+The initial development and testing of the *B*<sub>Damage</sub> metric is described in:
 
 - Gerstel M, Deane CM, Garman EF (2015) Identifying and quantifying radiation damage at the atomic level. *J Synchrotron Radiat* **22**: 201-212. [http://dx.doi.org/doi:10.1107/S1600577515002131](http://dx.doi.org/doi:10.1107/S1600577515002131)
 
