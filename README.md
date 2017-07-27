@@ -55,6 +55,7 @@ ___
 
 ![Images/Bnet_calculation.png](Images/Bnet_calculation.png)
 The *B*<sub>net</sub> metric is calculated as the ratio of the area either side of the median (of the overall *B*<sub>Damage</sub> distribution) underneath a kernel density estimate of the *B*<sub>Damage</sub> values of the terminal oxygen atoms of Glu and Asp residues.
+
 ___
 
 RABDAM calculates the values of the *B*<sub>Damage</sub> and *B*<sub>net</sub> metrics for a standard format PDB file, as detailed in the following sections.
@@ -71,10 +72,15 @@ To check whether your computer is missing any of the packages / programs require
 `python rabdam.py --dependencies`
 
 \*\***NOTE:** Owing to its PDBCUR dependence, RABDAM can only be run in a terminal / command prompt in which CCP4 programs can also be run (*e.g.* the CCP4 console).\*\*
-
 ___
+
+#### Data requirements
+RABDAM can be run on any standard format *B*<sub>Damage</sub> is a per-atom metric. Consequently
+____
+
 #### Running RABDAM from the command line
 ___
+
 #### Writing the RABDAM input file
 ___
 

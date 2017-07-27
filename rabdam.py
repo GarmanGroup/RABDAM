@@ -14,20 +14,7 @@ import numpy as np
 sys.path.insert(0, './Subroutines')
 
 from CalculateBdamage import rabdam
-
-# Initialises program start time
-start = time.time()
-startIndex = time.localtime()
-year = startIndex.tm_year
-month = startIndex.tm_mon
-day = startIndex.tm_mday
-hour = startIndex.tm_hour
-minute = startIndex.tm_min
-second = startIndex.tm_sec
-
-print '\nThis program was run on %d/%d/%d at %02.0f:%02.0f:%02.0f\n\n' % (
-    day, month, year, hour, minute, second
-    )
+from checkDependencies import check_RABDAM_dependencies
 
 # Reads in command line inputs. There are three recognised flags: -i, -f and
 # -o. Program inputs are specified by either the -i or the -f flag; provision
@@ -35,6 +22,10 @@ print '\nThis program was run on %d/%d/%d at %02.0f:%02.0f:%02.0f\n\n' % (
 # optional -o flag.
 parser = argparse.ArgumentParser()
 input_file_group = parser.add_mutually_exclusive_group(required=True)
+input_file_group.add_argument('--dependencies', action='store_true',
+                              help='Checks whether your system has the '
+                              'necessary packages / programs installed in '
+                              'order to be able to run RABDAM')
 input_file_group.add_argument('-i', '--input', help='Path to input file '
                               'listing program parameter values')
 input_file_group.add_argument('-f', '--pdb_file', nargs='+', help='Specifies '
@@ -51,6 +42,25 @@ parser.add_argument('-r', '--run', help='Specifies whether to run the '
 parser.add_argument('-o', '--output', nargs='+', help='Specifies the output '
                     'files to write (default = all except html summary)')
 args = parser.parse_args()
+
+# Checks system for RABDAM dependencies
+if vars(args)['dependencies']:
+    check_RABDAM_dependencies()
+    sys.exit()
+
+# Initialises program start time
+start = time.time()
+startIndex = time.localtime()
+year = startIndex.tm_year
+month = startIndex.tm_mon
+day = startIndex.tm_mday
+hour = startIndex.tm_hour
+minute = startIndex.tm_min
+second = startIndex.tm_sec
+
+print '\nThis program was run on %d/%d/%d at %02.0f:%02.0f:%02.0f\n\n' % (
+    day, month, year, hour, minute, second
+    )
 
 cwd = os.getcwd()
 # Reads in program options from input file specified by -i flag
