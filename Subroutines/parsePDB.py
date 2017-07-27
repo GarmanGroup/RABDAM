@@ -104,7 +104,7 @@ def b_damage_atom_list(clean_au_list, HETATM, protOrNA, addAtoms,
     duplicate = copy.copy
 
     bdam_list_unfiltered = duplicate(clean_au_list)
-    bdam_list_unfiltered = bdam_list_unfiltered + [None]*len(addAtoms)
+    bdam_list_unfiltered = bdam_list_unfiltered + [None]*len(bdam_list_unfiltered)
 
     for index, atm in enumerate(clean_au_list):
         # Removes hetatm if HETATM set to 'Remove' in input file.
@@ -133,12 +133,10 @@ def b_damage_atom_list(clean_au_list, HETATM, protOrNA, addAtoms,
 
         # Adds atoms whose number is in addAtoms list.
         if str(atm.atomNum) in addAtoms:
-            ext_index = addAtoms.index(str(atm.atomNum))
-            bdam_list_unfiltered[len(clean_au_list)+ext_index] = atm
+            bdam_list_unfiltered[len(clean_au_list)+index] = atm
         # Adds atoms whose residue type is in addAtoms list.
         elif atm.resiType in addAtoms:
-            ext_index = addAtoms.index(atm.atomNum)
-            bdam_list_unfiltered[len(clean_au_list)+ext_index] = atm
+            bdam_list_unfiltered[len(clean_au_list)+index] = atm
 
     bdam_list_filtered = filter(None, bdam_list_unfiltered)
     bdam_list_filtered = sorted(bdam_list_filtered, key=lambda x: x.atomNum)

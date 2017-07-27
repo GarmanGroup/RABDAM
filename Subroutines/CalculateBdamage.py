@@ -178,7 +178,7 @@ class rabdam():
             # If it doesn't already exist, new PDBdirectory is created and copy
             # of input PDB file is saved to the new directory.
             owd = os.getcwd()
-            pathToPDB = pathToPDB.replace('\\', '/')
+            pathToPDB = self.pathToPDB.replace('\\', '/')
             splitPath = pathToPDB.split('/')
             disk = '%s/' % splitPath[0]
             os.chdir('/')
