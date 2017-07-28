@@ -19,7 +19,7 @@ from checkDependencies import check_RABDAM_dependencies
 # Reads in command line inputs. There are three recognised flags: -i, -f and
 # -o. Program inputs are specified by either the -i or the -f flag; provision
 # of one of these flags is compulsory. Program outputs are specified by the
-# optional -o flag.
+# optional -r and -o flags.
 parser = argparse.ArgumentParser()
 input_file_group = parser.add_mutually_exclusive_group(required=True)
 input_file_group.add_argument('--dependencies', action='store_true',

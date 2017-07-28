@@ -72,13 +72,52 @@ To check whether your computer is missing any of the packages / programs require
 `python rabdam.py --dependencies`
 
 \*\***NOTE:** Owing to its PDBCUR dependence, RABDAM can only be run in a terminal / command prompt in which CCP4 programs can also be run (*e.g.* the CCP4 console).\*\*
+
+RABDAM will take approximately 2 minutes to run a 200 kDa structure on a single processor (as estimated from tests performed under Windows 7 on a 3.70 GHz Intel i3-4170 processor).
+
 ___
 
 #### Data requirements
-RABDAM can be run on any standard format *B*<sub>Damage</sub> is a per-atom metric. Consequently
+RABDAM can be run on any standard format PDB file of a single model of your MX structure of interest (specifically, it requires the CRYST1 line from the header information, as well as the ATOM / HETATM records). Note however that because *B*<sub>Damage</sub> is a per-atom metric, it should only be calculated for structures for which *B*<sub>factor</sub> values have been refined per-atom.
+
 ____
 
-#### Running RABDAM from the command line
+#### Running RABDAM
+RABDAM is a command line program. There are four main command line flags that control the program run:
+
+-	`-i` / `--input`
+-	`-f` / `--pdb_file`
+-	`-r` / `--run`
+-	`-o` / `--output`
+
+The `-i` and `-f` flags control the input to the program. One of these two mutually exclusive flags is required for RABDAM to run.
+
+The `-i` flag is used to specify the name of the input txt file listing your selected program parameter values (see the "*Constructing an input file*"’ section below for details of what this input file should include). If the input file is located in the same directory as the rabdam.py script, you only need provide the file name to run RABDAM:
+
+`python rabdam.py -i input_file.txt`
+
+Otherwise however you will need to provide its full file path:
+
+`python rabdam.py -i path/to/input_file.txt`
+
+Alternatively, if you wish to perform a run of RABDAM using entirely default parameter values, it is possible to run RABDAM without an input file; in this case the `-f` flag is used to provide RABDAM with either a 4 character PDB accession code (XXXX), or a file path (path/to/pdb_file.pdb), of the MX structure to be analysed:
+
+`python rabdam.py -f XXXX` / `python rabdam.py -f path/to/pdb_file.pdb`
+
+The `-r` and `-o` flags control the output from the program. Both of these flags are optional.
+
+In addition, there are two supplementary command line flags:
+
+- `-h` / `--help`
+- `--dependencies`
+
+The `-h` flag (`python rabdam.py -h`) displays a help message in the terminal / command prompt listing the different command line flags that can / must be specified when running RABDAM.
+
+The `--dependencies` flag (`python rabdam.py --dependencies`), directs the program to test whether the system it is being run on has the necessary Python packages / programs installed for RABDAM to run to completion.
+
+
+
+
 ___
 
 #### Writing the RABDAM input file

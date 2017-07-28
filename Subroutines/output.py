@@ -325,7 +325,8 @@ class generate_output_files():
                         '      <h1>'+self.pdb_code.replace('_', ' ')+' B<sub>Damage</sub> summary file</h1>\n')
         html_file.write('      <p id="file_info">Created on %02.0f/%02.0f/%04.0f at %02.0f:%02.0f:%02.0f.</p>\n'
                         % (day, month, year, hour, mins, secs))
-        html_file.write('      <p id="file_info">**NOTE: Table header abbreviations are defined in <a href="4INS_BDamage.csv">%s_Bdamage.csv</a>.**</p>\n' % self.pdb_code)
+        html_file.write('      <p id="file_info">**NOTE: Table header abbreviations are as defined in '
+                        '<a href="4INS_BDamage.csv">%s_Bdamage.csv</a>.**</p>\n' % self.pdb_code)
         html_file.write('    </div>\n')
         # Writes html file BDamage summary
         html_file.write('    <div>\n'
