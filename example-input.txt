@@ -1,11 +1,3 @@
-4ins,
+4ins, dir=, PDT=14, windowSize=0.02,
 
-dir=,
-
-PDT=14, windowSize=0.02, HETATM=Remove, proteinOrNucleicAcid=Protein,
-
-addAtoms=, removeAtoms=,
-
-threshold=0.02, highlightAtoms=12,
-
-createOrigpdb=False, createAUpdb=False, createUCpdb=False, createAUCpdb=False, createTApdb=False
+HETATM=Remove, proteinOrNucleicAcid=Both, addAtoms=, removeAtoms=, highlightAtoms=12

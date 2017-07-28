@@ -5,7 +5,8 @@ def check_RABDAM_dependencies():
 
     import imp
     import os
-    import pkg_resources
+    import pkg_resources  # Not in standard Python library, but currently I
+    # can't find an alternative method to get the version of a Python package
 
     dependencies_met = True
 
@@ -17,7 +18,10 @@ def check_RABDAM_dependencies():
             imp.find_module(package)
             if package in ['pandas', 'seaborn']:
                 version = pkg_resources.get_distribution('%s' % package).version
-                version.lstrip('0')
+                version_list = list(version)
+                count = version_list.count('.')
+                if count < 2:
+                    version = version + '.0'
                 version = int(version.replace('.', ''))
                 if package == 'pandas':
                     if version < 180:
@@ -28,7 +32,7 @@ def check_RABDAM_dependencies():
                                'RABDAM.'
                                '\nUpdate via "pip install pandas --upgrade"')
                 elif package == 'seaborn':
-                    if version < 7:
+                    if version < 70:
                         dependencies_met = False
                         print ('\nThe seaborn Python plotting library is '
                                'installed on the system,\n'
@@ -45,7 +49,7 @@ def check_RABDAM_dependencies():
     # prompt / terminal being used
     os.system('pdbcur > test.txt')
     test_file = open('test.txt', 'r')
-    test_file_lines = test_file.readlines()
+    test_file_lines = test_file.read()
     if test_file_lines == []:
         dependencies_met = False
         print ('\nCCP4 program suite not found. If you have downloaded the\n'
