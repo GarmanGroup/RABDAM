@@ -88,6 +88,8 @@ class generate_output_files():
 
         import matplotlib.pyplot as plt
         import seaborn as sns
+        # Sets figure aesthetics to seaborn defaults
+        sns.set()
 
         plt.clf()  # Prevents the kernel density estimate of all atoms
         # considered for BDamage analysis from being plotted on the same axes
@@ -128,9 +130,11 @@ class generate_output_files():
         # overall BDamage distribution).
 
         import os
+        import pandas as pd
         import matplotlib.pyplot as plt
         import seaborn as sns
-        import pandas as pd
+        # Sets figure aesthetics to seaborn defaults
+        sns.set()
 
         # Calculates median of overall BDamage distribution
         median = self.df.BDAM.median()
@@ -310,26 +314,31 @@ class generate_output_files():
         html_file.write('<!DOCTYPE html>\n'
                         '<html>\n'
                         '  <head>\n'
+                        '    <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>\n'
+                        '    <script type="text/javascript" src="../../Subroutines/HTML_stylesheet.js"></script>\n'
                         '    <link href="../../Subroutines/HTML_stylesheet.css" type="text/css" rel="stylesheet">\n'
                         '    <title>'+self.pdb_code.replace('_', ' ')+' BDamage summary file</title>\n'
                         '  </head>\n')
         # Writes html file title
         html_file.write('  <body>\n'
                         '    <div class="file_name">\n'
-                        '      <h1>'+self.pdb_code.replace('_', ' ')+' BDamage summary file</h1>\n')
-        html_file.write('      <p id="time">Created on %02.0f/%02.0f/%04.0f at %02.0f:%02.0f:%02.0f.</p>\n'
+                        '      <h1>'+self.pdb_code.replace('_', ' ')+' B<sub>Damage</sub> summary file</h1>\n')
+        html_file.write('      <p id="file_info">Created on %02.0f/%02.0f/%04.0f at %02.0f:%02.0f:%02.0f.</p>\n'
                         % (day, month, year, hour, mins, secs))
+        html_file.write('      <p id="file_info">**NOTE: Table header abbreviations are defined in <a href="4INS_BDamage.csv">%s_Bdamage.csv</a>.**</p>\n' % self.pdb_code)
         html_file.write('    </div>\n')
         # Writes html file BDamage summary
         html_file.write('    <div>\n'
                         '      <ul class="main_list">\n'
-                        '        <li><h2>BDamage distribution</h2></li>\n'
+                        '        <li><h2>B<sub>Damage</sub> distribution</h2></li>\n'
                         '        <li><img class="graphs" src="'+self.pdb_code+'_BDamage.svg" /></li>\n'
                         '        <ul class="sublist">\n')
         if len(highlightAtoms) != 0:
             html_file.write('          <li><h3>Properties of highlighted atoms</h3></li>\n'
-                            '          <li>'+sub_df_highlight.to_html(index=False)+'</li></br>\n')
-        html_file.write('          <li><h3>Properties of top 50 sites ranked by BDamage metric</h3></li>\n'
+                            '          <li>'+sub_df_highlight.to_html(index=False)+'</li></br>\n'
+                            '        </ul>\n')
+        html_file.write('        <ul class="sublist">\n'
+                        '          <li><h3>Properties of top 50 sites ranked by B<sub>Damage</sub> metric</h3></li>\n'
                         '          <li>'+sub_df_top_site.to_html(index=False)+'</li>\n'
                         '        </ul>\n'
                         '      </ul>\n'
@@ -338,10 +347,10 @@ class generate_output_files():
         if os.path.isfile('%s_Bnet_Protein.svg' % self.pdb_file_path):
             html_file.write('    <div>\n'
                             '      <ul class="main_list">\n'
-                            '        <li><h2>Bnet distribution (protein)</h2></li>\n'
+                            '        <li><h2>B<sub>net</sub> distribution (protein)</h2></li>\n'
                             '        <li><img class="graphs" src="'+self.pdb_code+'_Bnet_Protein.svg" /></li>\n'
                             '        <ul class="sublist">\n'
-                            '          <li><h3>Properties of atoms used in calculation of Bnet (protein) metric</h3></li>\n'
+                            '          <li><h3>Properties of atoms used in calculation of B<sub>net</sub> (protein) metric</h3></li>\n'
                             '          <li>'+sub_df_prot.to_html(index=False)+'</li>\n'
                             '        </ul>\n'
                             '      </ul>\n'
@@ -350,10 +359,10 @@ class generate_output_files():
         if os.path.isfile('%s_Bnet_NA.svg' % self.pdb_file_path):
             html_file.write('    <div>\n'
                             '      <ul class="main_list">\n'
-                            '        <li><h2>Bnet distribution (nucleic acid)</h2></li>\n'
+                            '        <li><h2>B<sub>net</sub> distribution (nucleic acid)</h2></li>\n'
                             '        <li><img class="graphs" src="'+self.pdb_code+'_Bnet_NA.svg" /></li>\n'
                             '        <ul class="sublist">\n'
-                            '          <li><h3>Properties of atoms used in calculation of Bnet (nucleic acid) metric</h3></li>\n'
+                            '          <li><h3>Properties of atoms used in calculation of B<sub>net</sub> (nucleic acid) metric</h3></li>\n'
                             '          <li>'+sub_df_na.to_html(index=False)+'</li>\n'
                             '        </ul>\n'
                             '      </ul>\n'
