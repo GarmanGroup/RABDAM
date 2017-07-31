@@ -107,6 +107,16 @@ Alternatively, if you wish to perform a run of RABDAM using entirely default par
 
 The `-r` and `-o` flags control the output from the program. Both of these flags are optional.
 
+The `-r` flag can be used to instruct RABDAM to run to completion (default), or to stop / start part way through its full run. RABDAM is structured such that it writes the *B*<sub>Damage</sub> values calculated for an input MX structure to a DataFrame; this DataFrame is then used to write the program output files. Through use of the `-r` flag it is possible to instruct RABDAM to stop (`-r df` / `-r dataframe`), or start (`-r analysis`), its run following DataFrame construction. This option will save time if for example you wish to change the formatting of the program output files (see the “*Constructing an input file*” section below) without changing the *B*<sub>Damage</sub> distribution itself.
+
+The `-o` flag can be used to control the selection of output files that the program writes. By default RABDAM writes 4 output files:
+
+- `kde` : a kernel density estimate of the distribution of *B*<sub>Damage</sub> values calculated for the input MX structure
+- `pdb` : a PDB file in which the *B*<sub>factor</sub> column of the ATOM / HETATM records is replaced by *B*<sub>Damage</sub> values
+- `csv` : a csv file summarising the properties (including the BDamage values) of all atoms in the input MX structure
+- `bnet` : a kernel density estimate of the *B*<sub>Damage</sub> values of the terminal oxygen atoms of Glu and Asp residues, plus the value of the (protein-specific) *B*<sub>net</sub> value calculated from this distribution (see the “*Background*” section)
+
+
 In addition, there are two supplementary command line flags:
 
 - `-h` / `--help`

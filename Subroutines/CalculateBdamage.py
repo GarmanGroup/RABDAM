@@ -409,7 +409,7 @@ class rabdam():
         # rabdam.py script is saved).
         os.chdir('%s' % cwd)
 
-    def rabdam_analysis(self, run, output_options):
+    def rabdam_analysis(self, run, output_options, count):
         # Uses values in DataFrame returned from calling the 'rabdam_dataframe'
         # function to write output analysis files.
 
@@ -539,7 +539,7 @@ class rabdam():
 
         if 'bnet' in output_options or 'summary' in output_options:
             print 'Calculating Bnet\n'
-            output.calculate_Bnet(window_name, pdt_name)
+            output.calculate_Bnet(window_name, pdt_name, count)
 
         if 'summary' in output_options:
             print 'Writing summary html file\n'

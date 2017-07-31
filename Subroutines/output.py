@@ -123,7 +123,7 @@ class generate_output_files():
         plt.title(self.pdb_code + ' BDamage kernel density plot')
         plt.savefig(self.pdb_file_path + '_BDamage.svg')
 
-    def calculate_Bnet(self, window_name, pdt_name):
+    def calculate_Bnet(self, window_name, pdt_name, count):
         # Plots a kernel density estimate of the BDamage values of Glu O and
         # Asp O atoms. The summary metric Bnet is then calculated as the ratio
         # of the areas under the curve either side of the median (of the
@@ -198,7 +198,7 @@ class generate_output_files():
                          fontsize=10)
             plt.savefig(self.pdb_file_path + '_Bnet_Protein.svg')
 
-            if not os.path.isfile('Logfiles/Bnet_Protein.csv'):
+            if count > 1 and not os.path.isfile('Logfiles/Bnet_Protein.csv'):
                 Bnet_list = open('Logfiles/Bnet_Protein.csv', 'w')
                 Bnet_list.write('PDB' + ',')
                 Bnet_list.write('Bnet' + ',')
@@ -258,7 +258,7 @@ class generate_output_files():
                          fontsize=10)
             plt.savefig(str(self.pdb_file_path)+'_Bnet_NA.svg')
 
-            if not os.path.isfile('Logfiles/Bnet_NA.csv'):
+            if count > 1 and not os.path.isfile('Logfiles/Bnet_NA.csv'):
                 Bnet_list = open('Logfiles/Bnet_NA.csv', 'w')
                 Bnet_list.write('PDB' + ',')
                 Bnet_list.write('Bnet' + ',')

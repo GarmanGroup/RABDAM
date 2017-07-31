@@ -94,7 +94,8 @@ elif vars(args)['pdb_file'] is not None:
     pathToPDBlist = vars(args)['pdb_file']
     splitArgs = []
 
-if len(pathToPDBlist) == 0:
+count = len(pathToPDBlist)
+if count == 0:
     sys.exit('No input PDB code / file provided')
 
 # Initialises default program options
@@ -315,7 +316,7 @@ for item in pathToPDBlist:
                 # Runs full program
                 pdb.rabdam_dataframe(run='rabdam')
                 pdb.rabdam_analysis(run='rabdam',
-                                    output_options=output_options)
+                                    output_options=output_options, count=count)
             elif vars(args)['run'].lower() in ['dataframe', 'df']:
                 # Runs subset of program; calculates BDamage values and writes
                 # them to a DataFrame
@@ -324,7 +325,7 @@ for item in pathToPDBlist:
                 # Runs subset of program; generates output analysis files from
                 # pre-calculated BDamage values
                 pdb.rabdam_analysis(run='rabdam_analysis',
-                                    output_options=output_options)
+                                    output_options=output_options, count=count)
 
 
 # Prints total program run time to screen
