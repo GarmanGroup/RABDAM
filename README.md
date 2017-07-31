@@ -113,9 +113,16 @@ The `-o` flag can be used to control the selection of output files that the prog
 
 - `kde` : a kernel density estimate of the distribution of *B*<sub>Damage</sub> values calculated for the input MX structure
 - `pdb` : a PDB file in which the *B*<sub>factor</sub> column of the ATOM / HETATM records is replaced by *B*<sub>Damage</sub> values
-- `csv` : a csv file summarising the properties (including the BDamage values) of all atoms in the input MX structure
+- `csv` : a csv file listing the properties (both those in the input PDB file and those calculated by RABDAM) of all atoms in the input MX structure included in the *B*<sub>Damage</sub> analysis
 - `bnet` : a kernel density estimate of the *B*<sub>Damage</sub> values of the terminal oxygen atoms of Glu and Asp residues, plus the value of the (protein-specific) *B*<sub>net</sub> value calculated from this distribution (see the “*Background*” section)
 
+It is possible to control which of these output files RABDAM writes using the `-o` flag plus the keyword names of the output files (highlighted in the list above) in any order. For example, to obtain the csv and *B*<sub>net<sub> output files, execute:
+
+`python rabdam.py –o csv bnet`
+
+You can also instruct RABDAM to write an html file summarising the program output (in addition to the 4 output files described above) using the `summary` keyword:
+
+`python rabdam.py -o summary`
 
 In addition, there are two supplementary command line flags:
 
