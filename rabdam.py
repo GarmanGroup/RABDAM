@@ -106,7 +106,6 @@ protOrNAVal = 'BOTH'
 hetatmVal = False
 addAtomsList = []
 removeAtomsList = []
-thresholdVal = float(0.02)
 highlightAtomsList = []
 origVal = False
 auVal = False
@@ -211,17 +210,6 @@ for x in xrange(0, len(splitArgs)):
                 elif len(removeAtomsRange) == 1:
                     removeAtomsList.append(removeAtomsRange[-1])
 
-    # Specifies the number of atoms (as a percentage of the total number of
-    # atoms considered for BDamage analysis) with the highest BDamage values
-    # to be listed in the program output
-    elif splitArgs[x][0:9].lower() == 'threshold':
-        thresholdArg = splitArgs[x].split('=')
-        thresholdVal = thresholdArg[len(thresholdArg)-1]
-        if '%' in thresholdVal:
-            thresholdVal = thresholdVal.replace('%', '')
-            thresholdVal = float(thresholdVal) / 100
-        thresholdVal = float(thresholdVal)
-
     # Lists atoms (via their atom numbers) whose BDamage values are to be
     # indicated on the kernel density estimate of the BDamage distribution
     # output by the program. Note that it is recommended no more than 6 atoms
@@ -307,7 +295,7 @@ for item in pathToPDBlist:
             pdb = rabdam(pathToPDB=item, outputDir=outputLoc, PDT=pdtVal,
                          windowSize=windowVal, protOrNA=protOrNAVal,
                          HETATM=hetatmVal, addAtoms=addAtomsList,
-                         removeAtoms=removeAtomsList, threshold=thresholdVal,
+                         removeAtoms=removeAtomsList,
                          highlightAtoms=highlightAtomsList,
                          createOrigpdb=origVal, createAUpdb=auVal,
                          createUCpdb=ucVal, createAUCpdb=aucVal,

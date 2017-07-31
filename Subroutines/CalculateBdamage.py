@@ -2,8 +2,8 @@
 
 class rabdam():
     def __init__(self, pathToPDB, outputDir, PDT, windowSize, protOrNA, HETATM,
-                 addAtoms, removeAtoms, threshold, highlightAtoms,
-                 createOrigpdb, createAUpdb, createUCpdb, createAUCpdb,
+                 addAtoms, removeAtoms, highlightAtoms, createOrigpdb,
+                 createAUpdb, createUCpdb, createAUCpdb,
                  createTApdb):
         self.pathToPDB = pathToPDB
         self.outputDir = outputDir
@@ -13,7 +13,6 @@ class rabdam():
         self.HETATM = HETATM
         self.addAtoms = addAtoms
         self.removeAtoms = removeAtoms
-        self.threshold = threshold
         self.highlightAtoms = highlightAtoms
         self.createOrigpdb = createOrigpdb
         self.createAUpdb = createAUpdb
@@ -535,7 +534,7 @@ class rabdam():
 
         if 'kde' in output_options or 'summary' in output_options:
             print '\nPlotting kernel density estimate\n'
-            output.make_histogram(self.threshold, self.highlightAtoms)
+            output.make_histogram(self.highlightAtoms)
 
         if 'bnet' in output_options or 'summary' in output_options:
             print 'Calculating Bnet\n'
