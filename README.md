@@ -9,7 +9,8 @@ A program to calculate the *B*<sub>Damage</sub> and *B*<sub>net</sub> metrics to
 - [Background](#background)
 -	[Usage](#usage)
     -	[System requirements](#system-requirements)
-    -	[Running RABDAM from the command line](#running-rabdam-from-the-command-line)
+    - [Data requirements](#data-requirements)
+    -	[Running RABDAM](#running-rabdam)
     -	[Writing the RABDAM input file](#writing-the-rabdam-input-file)
 - [An example RABDAM run](#an-example-rabdam-run)
 -	[Queries](#queries)
@@ -78,7 +79,7 @@ RABDAM will take approximately 2 minutes to run a 200 kDa structure on a single 
 ___
 
 #### Data requirements
-RABDAM can be run on any standard format PDB file of a single model of your MX structure of interest (specifically, it requires the CRYST1 line from the header information, as well as the ATOM / HETATM records). Note however that because *B*<sub>Damage</sub> is a per-atom metric, it should only be calculated for structures for which *B*<sub>factor</sub> values have been refined per-atom.
+RABDAM can be run on any standard format PDB file of a single model of your MX structure of interest (specifically, it requires the CRYST1 line from the header information, as well as the ATOM / HETATM records). Note however that because *B*<sub>Damage</sub> is a per-atom metric, it should only be calculated for structures for which *B*<sub>factor</sub> values have been refined per-atom. Furthermore, owing to the correlation between *B*<sub>factor</sub> and occupancy, the only main-chain (*i.e.* non-ligand) atoms subject to occupancy refinement should be those in alternate conformers (whose occupancy should sum to 1).
 
 ____
 
@@ -111,16 +112,13 @@ In addition, there are two supplementary command line flags:
 - `-h` / `--help`
 - `--dependencies`
 
-The `-h` flag (`python rabdam.py -h`) displays a help message in the terminal / command prompt listing the different command line flags that can / must be specified when running RABDAM.
-
-The `--dependencies` flag (`python rabdam.py --dependencies`), directs the program to test whether the system it is being run on has the necessary Python packages / programs installed for RABDAM to run to completion.
-
-
-
+The `-h` flag displays a help message in the terminal / command prompt listing the different command line flags that can / must be specified when running RABDAM. The `--dependencies` flag directs the program to test whether the system it is being run on has the necessary Python packages / programs installed for RABDAM to run to completion.
 
 ___
 
 #### Writing the RABDAM input file
+See example_input.txt for the basic structuring.
+
 ___
 
 ## An example RABDAM run
