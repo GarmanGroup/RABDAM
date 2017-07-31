@@ -105,6 +105,13 @@ Alternatively, if you wish to perform a run of RABDAM using entirely default par
 
 `python rabdam.py -f XXXX` / `python rabdam.py -f path/to/pdb_file.pdb`
 
+When using the `-f` flag, supplied file path(s) must not contain any spaces. (This does not apply when using the `-i` flag however.)
+
+Note that it is possible to specify more than one PDB file for analysis following the `-f` flag, *e.g.*:
+
+`python rabdam.py –f path/to/pdb_file_1.pdb path/to/pdb_file_2.pdb`
+
+
 The `-r` and `-o` flags control the output from the program. Both of these flags are optional.
 
 The `-r` flag can be used to instruct RABDAM to run to completion (default), or to stop / start part way through its full run. RABDAM is structured such that it writes the *B*<sub>Damage</sub> values calculated for an input MX structure to a DataFrame; this DataFrame is then used to write the program output files. Through use of the `-r` flag it is possible to instruct RABDAM to stop (`-r df` / `-r dataframe`), or start (`-r analysis`), its run following DataFrame construction. This option will save time if for example you wish to change the formatting of the program output files (see the “*Constructing an input file*” section below) without changing the *B*<sub>Damage</sub> distribution itself.
@@ -134,7 +141,43 @@ The `-h` flag displays a help message in the terminal / command prompt listing t
 ___
 
 #### Writing the RABDAM input file
-See example_input.txt for the basic structuring.
+If you wish to run RABDAM with non-default parameter values, you will need to provide the program with an input file specifying your selected parameter values. RABDAM takes (in any order) 14 input parameters:
+
+- The name of the PDB file(s) to be analysed
+
+Either a 4 character PDB accession code, or a file path (which may contain spaces). It is possible to run multiple structures from a single input file by listing the names of each of those structures separated by commas (see below). This is the only parameter not stipulated by a keyword, and which does not have a default value.
+
+-	The output directory, *dir*
+
+The location of the directory in which you would like the program output files to be written. If not specified, this defaults to the current working directory, *i.e.* that in which the rabdam.py script is located. Stipulated by the keyword *dir*.
+
+-	The packing density threshold, *PDT*
+
+The packing density of an atom is calculated as the number of atoms within a sphere of radius PDT Å. Its default value is 14, but it is possible to set it equal to any value (in Å). **Do not change the value of this parameter unless you know what you are doing!** Stipulated by the keyword *PDT*.
+
+- The sliding window size, *windowSize*
+
+The size (as a percentage of the total number of atoms included for *B*<sub>Damage</sub> analysis) of the sliding window used to group atoms in a similar packing density environment for *B*<sub>Damage</sub> calculation. Its default value is 0.02 (2%), however it can take any value ≤ 1. **Do not change the value of this parameter unless you know what you are doing!** Stipulated by the keyword *windowSize*.
+
+-	Option to create a copy of the original PDB file, *createOrigPDB*
+
+Writes a copy of the input PDB file provided to the program to the output directory when set to True (by default this parameter is set to False). Stipulated by the keyword *createOrigpdb*.
+
+-	Option to create a PDB file of the filtered asymmetric unit, *createAUpdb*
+
+Writes a PDB file of the filtered (to remove hydrogen atoms, 0 occupancy atoms and alternate conformers) asymmetric unit coordinates to the output directory when set to True (by default this parameter is set to False). Stipulated by the keyword *createAUpdb*.
+
+-	Option to create a PDB file of the unit cell, *createUCpdb*
+
+Writes a PDB file of the unit cell coordinates to the output directory when set to True (by default this parameter is set to False). Stipulated by the keyword *createUCpdb*.
+
+-	Option to create a PDB file of the 3x3x3 unit cell assembly, *createAUCpdb*
+
+Writes a PDB file of the 3x3x3 unit cell assembly coordinates to the output directory when set to True (by default this parameter is set to False). Stipulated by the keyword *createAUCpdb*.
+
+-	Option to create a PDB file of the trimmed unit cell assembly, *createTApdb*
+
+Writes a copy of the trimmed 3x3x3 unit cell assembly coordinates to the output directory when set to True (by default this parameter is set to False). Stipulated by the keyword *createTApdb*.
 
 ___
 

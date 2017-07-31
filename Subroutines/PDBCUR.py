@@ -9,6 +9,7 @@ def clean_pdb_file(pathToPDB, pdb_file_path):
     # retained). The header and footer lines of the input PDB file are stored
     # in lists for use in writing output PDB files later in the program.
 
+    import sys
     import math
     import pandas as pd
     from parsePDB import atom
@@ -22,7 +23,11 @@ def clean_pdb_file(pathToPDB, pdb_file_path):
     header = True
     footer = False
     for line in orig_pdb:
-        if line[0:6].strip() == 'CRYST1':
+        if line.replace(' ', '').startswith('MODEL2'):
+            sys.exit('\n\nMore than one model present in input PDB file.\n'
+                     'Please submit a PDB file containing a single model for '
+                     'BDamage analysis.\n')
+        elif line[0:6].strip() == 'CRYST1':
             params = line.split()
             a = float(params[1])
             b = float(params[2])
