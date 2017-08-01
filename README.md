@@ -47,7 +47,7 @@ The method of calculating an atom’s *B*<sub>Damage</sub> value is summarised i
 ___
 
 ![Images/BDamage_methodology.png](Images/BDamage_methodology.png)
-<span style='font-size: 10px;'>Calculation of the *B*<sub>Damage</sub> metric. From an input PDB file of the asymmetric unit of a macromolecule of interest, RABDAM **(A)** generates a copy of the unit cell, followed by **(B)** a 3x3x3 assembly of unit cells. **(C)** Atoms in the 3x3x3 unit cell assembly that lie further than 14 Å from the asymmetric unit are discounted. **(D)** The packing density of an atom *j* in the asymmetric unit is calculated as the number of atoms within a 14 Å radius. **(E)** Asymmetric unit atoms are ordered by packing density; the *B*<sub>Damage</sub> value of atom *j* is then calculated as the ratio of its *B*<sub>factor</sub> to the average of the *B*<sub>factor</sub> values of atoms grouped, via sliding window, as occupying a similar packing density environment. Note that hydrogen atoms are not considered in the calculation of *B*<sub>Damage</sub>.</span>
+Calculation of the *B*<sub>Damage</sub> metric. From an input PDB file of the asymmetric unit of a macromolecule of interest, RABDAM **(A)** generates a copy of the unit cell, followed by **(B)** a 3x3x3 assembly of unit cells. **(C)** Atoms in the 3x3x3 unit cell assembly that lie further than 14 Å from the asymmetric unit are discounted. **(D)** The packing density of an atom *j* in the asymmetric unit is calculated as the number of atoms within a 14 Å radius. **(E)** Asymmetric unit atoms are ordered by packing density; the *B*<sub>Damage</sub> value of atom *j* is then calculated as the ratio of its *B*<sub>factor</sub> to the average of the *B*<sub>factor</sub> values of atoms grouped, via sliding window, as occupying a similar packing density environment. Note that hydrogen atoms are not considered in the calculation of *B*<sub>Damage</sub>.
 
 ___
 
@@ -60,7 +60,7 @@ The method of calculating the *B*<sub>net</sub> value for a protein structure is
 ___
 
 ![Images/Bnet_calculation.png](Images/Bnet_calculation.png)
-<span style='font-size: 10px;'>The *B*<sub>net</sub> metric is calculated as the ratio of the area either side of the median (of the overall *B*<sub>Damage</sub> distribution) underneath a kernel density estimate of the *B*<sub>Damage</sub> values of the terminal oxygen atoms of Glu and Asp residues.</span>
+The *B*<sub>net</sub> metric is calculated as the ratio of the area either side of the median (of the overall *B*<sub>Damage</sub> distribution) underneath a kernel density estimate of the *B*<sub>Damage</sub> values of the terminal oxygen atoms of Glu and Asp residues.
 
 ___
 
@@ -81,7 +81,7 @@ To check whether your computer is missing any of the packages / programs require
 
 \*\***NOTE:** Owing to its PDBCUR dependence, RABDAM can only be run in a terminal / command prompt in which CCP4 programs can also be run (*e.g.* the CCP4 console).\*\*
 
-RABDAM will take approximately 2 minutes to run a 200 kDa structure on a single processor (as estimated from tests performed under Windows 7 on a 3.70 GHz Intel i3-4170 processor).
+RABDAM will take approximately 2 minutes to run a 200 kDa structure on a single processor (as estimated from tests performed under Windows 7 on a 3.70 GHz Intel i3-4170 processor). It is compatible with Windows, Mac and Linux operating systems.
 
 ___
 
@@ -98,9 +98,10 @@ RABDAM is a command line program. There are four main command line flags that co
 -	`-r` / `--run`
 -	`-o` / `--output`
 
+<br></br>
 The `-i` and `-f` flags control the input to the program. One of these two mutually exclusive flags is required for RABDAM to run.
 
-The `-i` flag is used to specify the name of the input txt file listing your selected program parameter values (see the "*Constructing an input file*"’ section below for details of what this input file should include). If the input file is located in the same directory as the rabdam.py script, you only need provide the file name to run RABDAM:
+The `-i` flag is used to specify the name of the input txt file that lists your selected program parameter values (see the "*Constructing an input file*"’ section below for details of what this input file should include). If the input file is located in the same directory as the rabdam.py script, you only need provide the file name to run RABDAM:
 
 `python rabdam.py -i input_file.txt`
 
@@ -112,13 +113,13 @@ Alternatively, if you wish to perform a run of RABDAM using entirely default par
 
 `python rabdam.py -f XXXX` / `python rabdam.py -f path/to/pdb_file.pdb`
 
-When using the `-f` flag, supplied file path(s) must not contain any spaces. (This does not apply when using the `-i` flag however.)
-
 Note that it is possible to specify more than one PDB file for analysis following the `-f` flag, *e.g.*:
 
 `python rabdam.py –f path/to/pdb_file_1.pdb path/to/pdb_file_2.pdb`
 
+When using the `-f` flag, the supplied file path(s) must not contain any spaces. (This does not apply when using the `-i` flag however.)
 
+<br></br>
 The `-r` and `-o` flags control the output from the program. Both of these flags are optional.
 
 The `-r` flag can be used to instruct RABDAM to run to completion (default), or to stop / start part way through its full run. RABDAM is structured such that it writes the *B*<sub>Damage</sub> values calculated for an input MX structure to a DataFrame; this DataFrame is then used to write the program output files. Through use of the `-r` flag it is possible to instruct RABDAM to stop (`-r df` / `-r dataframe`), or start (`-r analysis`), its run following DataFrame construction. This option will save time if for example you wish to change the formatting of the program output files (see the “*Constructing an input file*” section below) without changing the *B*<sub>Damage</sub> distribution itself.
@@ -130,20 +131,21 @@ The `-o` flag can be used to control the selection of output files that the prog
 - `csv` : a csv file listing the properties (both those in the input PDB file and those calculated by RABDAM) of all atoms in the input MX structure included in the *B*<sub>Damage</sub> analysis
 - `bnet` : a kernel density estimate of the *B*<sub>Damage</sub> values of the terminal oxygen atoms of Glu and Asp residues, plus the value of the (protein-specific) *B*<sub>net</sub> value calculated from this distribution (see the “*Background*” section)
 
-It is possible to control which of these output files RABDAM writes using the `-o` flag plus the keyword names of the output files (highlighted in the list above) in any order. For example, to obtain the csv and *B*<sub>net<sub> output files, execute:
+It is possible to control which of these output files RABDAM writes using the `-o` flag plus the keyword names of the output files (highlighted in the list above) in any order. For example, to obtain the csv and *B*<sub>net</sub> output files, execute:
 
-`python rabdam.py –o csv bnet`
+`python rabdam.py –o csv bnet` (/ `python rabdam.py -o bnet csv`)
 
 You can also instruct RABDAM to write an html file summarising the program output (in addition to the 4 output files described above) using the `summary` keyword:
 
 `python rabdam.py -o summary`
 
+<br></br>
 In addition, there are two supplementary command line flags:
 
 - `-h` / `--help`
 - `--dependencies`
 
-The `-h` flag displays a help message in the terminal / command prompt listing the different command line flags that can / must be specified when running RABDAM. The `--dependencies` flag directs the program to test whether the system it is being run on has the necessary Python packages / programs installed for RABDAM to run to completion.
+The `-h` flag displays a help message in the terminal / command prompt listing the different command line flags that can / must be specified when running RABDAM. The `--dependencies` flag directs the program to test whether the system it is being run on has the necessary programs / Python packages installed for RABDAM to run to completion.
 
 ___
 
@@ -160,21 +162,21 @@ The location of the directory in which you would like the program output files t
 
 -	The packing density threshold, *PDT*
 
-The packing density of an atom is calculated as the number of atoms within a sphere of radius PDT Å. Its default value is 14, but it is possible to set it equal to any value (in Å). **Do not change the value of this parameter unless you know what you are doing!** Stipulated by the keyword *PDT*.
+The packing density of an atom is calculated as the number of atoms within a sphere of radius *PDT* Å. Its default value is 14, but it is possible to set it equal to any value (measured in Å). **Do not change the value of this parameter unless you know what you are doing!** Stipulated by the keyword *PDT*.
 
 - The sliding window size, *windowSize*
 
-The size (as a percentage of the total number of atoms included for *B*<sub>Damage</sub> analysis) of the sliding window used to group atoms in a similar packing density environment for *B*<sub>Damage</sub> calculation. Its default value is 0.02 (2%), however it can take any value ≤ 1. **Do not change the value of this parameter unless you know what you are doing!** Stipulated by the keyword *windowSize*.
+The size (as a percentage of the total number of atoms included in *B*<sub>Damage</sub> analysis) of the sliding window used to group atoms in a similar packing density environment for *B*<sub>Damage</sub> calculation. Its default value is 0.02 (2%), however it can take any value ≤ 1 (100%). **Do not change the value of this parameter unless you know what you are doing!** Stipulated by the keyword *windowSize*.
 
 -	Option to remove HETATM, *HETATM*
 
-Specifies whether you want to include (“*Keep*”) / exclude (“*Remove*”) HETATM in / from the *B*<sub>Damage</sub> calculation. Owing to the difference in the *B*<sub>factor</sub> / packing density ratios of HETATM as compared to ATOM, by default this parameter is set to “*Remove*”. **Do not change the value of this parameter unless you know what you are doing!** Stipulated by the keyword *HETATM*.
+Specifies whether you want to include (“*Keep*”) / exclude (“*Remove*”) HETATM in / from the *B*<sub>Damage</sub> calculation. Owing to the difference in the *B*<sub>factor</sub> : packing density ratios of HETATM as compared to ATOM, by default this parameter is set to “*Remove*”. **Do not change the value of this parameter unless you know what you are doing!** Stipulated by the keyword *HETATM*.
 
 -	Option to retain only protein / nucleic acid atoms, *proteinOrNucleicAcid*
 
-Specifies whether to include protein atoms (“*Protein*”), nucleic acid atoms (“*Nucleic Acid*” / “*NA*”), or both atom types (“ ”), in the *B*<sub>Damage</sub> calculation. Owing to the difference in the *B*<sub>factor</sub> / packing density ratios of these two ATOM types, it is highly recommended that they are analysed separately. By default this parameter is set to “*Protein*”. Stipulated by the keyword *proteinOrNucleicAcid*.
+Specifies whether to include protein atoms (“*Protein*”), nucleic acid atoms (“*Nucleic Acid*” / “*NA*”), or both atom types (“ ”), in the *B*<sub>Damage</sub> calculation. Owing to the difference in the *B*<sub>factor</sub> : packing density ratios of these two ATOM types, it is highly recommended that they are analysed separately. By default this parameter is set to “*Protein*”. Stipulated by the keyword *proteinOrNucleicAcid*.
 
-**\*\*Currently RABDAM is unsuitable for running on structures containing nucleic acids, therefore this parameter should not be altered from its default value.\*\***
+**\*\*Currently RABDAM is unsuitable for running on structures either of or containing nucleic acids, and so this parameter should not be altered from its default value.\*\***
 
 -	Option to remove atoms from the *B*<sub>Damage</sub> calculation, *removeAtoms*
 
@@ -182,11 +184,11 @@ Allows the removal of individual atoms (specified either by their atom serial nu
 
 -	Option to add atoms in to the *B*<sub>Damage</sub> calculation, *addAtoms*
 
-Allows the addition of individual atoms (specified either by their atom serial number or by their residue type) to the *B*<sub>Damage</sub> calculation (by default no atoms are added). Note however that the same atom cannot be considered more than once in the *B*<sub>Damage</sub> calculation. **Do not change the value of this parameter unless you know what you are doing!** Stipulated by the keyword *addAtoms*.
+Allows the addition of individual atoms (specified either by their atom serial number or by their residue type) to the *B*<sub>Damage</sub> calculation (by default no atoms are added). (Note however that the same atom cannot be considered more than once in the *B*<sub>Damage</sub> calculation.) **Do not change the value of this parameter unless you know what you are doing!** Stipulated by the keyword *addAtoms*.
 
 -	Option to highlight atoms on the kernel density estimate of the *B*<sub>Damage</sub> distribution, *highlightAtoms*
 
-Highlights the *B*<sub>Damage</sub> values of specified atoms on the output kernel density estimate (by default no atoms are highlighted). Atoms are specified by their (unique) serial numbers as listed in the input PDB file provided to RABDAM. It is possible to highlight multiple atoms at once (see the guidelines below for providing multiple values for the same parameter); note however that it is recommended no more than 6 atoms are specified at once (beyond 6 atoms the graph colour scheme will repeat itself, furthermore the complete key might not fit onto the plot). Stipulated by the keyword *highlightAtoms*.
+Highlights the *B*<sub>Damage</sub> values of specified atoms on the output kernel density estimate (by default no atoms are highlighted). Atoms are specified by their serial numbers as listed in the input PDB file provided to RABDAM. It is possible to highlight multiple atoms at once (see the guidelines below for providing multiple values for the same parameter); note however that it is recommended no more than 6 atoms are specified at once (beyond 6 atoms the graph colour scheme will repeat itself, furthermore the complete key might not fit onto the plot). Stipulated by the keyword *highlightAtoms*.
 
 -	Option to create a copy of the original PDB file, *createOrigPDB*
 
@@ -210,12 +212,13 @@ Writes a copy of the trimmed 3x3x3 unit cell assembly coordinates to the output 
 
 **Note that if a parameter is not specified in the input file, it will take its default value in the RABDAM run.**
 
-In order for RABDAM to successfully parse in an input file, it must follow the following formatting guidelines:
+<br></br>
+In order for RABDAM to successfully parse in an input file, it must comply with the following formatting guidelines:
 
 -	Keywords and their associated values must be separated by “=”. Successive keyword / value pairs must be separated by “,”.
--	Multiple values for the same keyword must be separated by “;”. Alternatively, it is possible to specify a range of consecutive (numerical) values by providing the minimum and maximum values of the range separated by “-”. So, you could direct RABDAM to highlight atoms 2, 3 and 4 on the BDamage kernel density estimate via either *highlightAtoms=2;3;4* or *highlightAtoms=2-4*.
+-	Multiple values for the same keyword must be separated by “;”. Alternatively, it is possible to specify a range of consecutive (numerical) values by providing the minimum and maximum values of the range separated by “-”. So, you could direct RABDAM to highlight atoms 2, 3 and 4 on the output *B*<sub>Damage</sub> kernel density estimate via either *highlightAtoms=2;3;4* or *highlightAtoms=2-4*.
 
-Below is an example input file directing RABDAM to analyse the RNase structures 2BLP and 2BLZ, writing the output files to the directory C:\Users\Kathryn\Documents, and highlighting atoms 14, 15, 16 and 30 on the output *B*<sub>Damage</sub> kernel density estimate. All other parameters are set to their default values. This example input file is provided along with the RABDAM Python scripts that can be downloaded from this web page as "*example_input.txt*".
+Below is an example input file instructing RABDAM to analyse the RNase structures 2BLP and 2BLZ, writing the output files to the directory C:\Users\Kathryn\Documents, and highlighting atoms 14, 15, 16 and 30 on the output *B*<sub>Damage</sub> kernel density estimate. All other parameters are set to their default values. This example input file ("*example_input.txt*") is provided along with the RABDAM Python scripts that can be downloaded from this web page.
 
 ```
 2BLP, 2BLZ,
@@ -237,6 +240,7 @@ createTApdb=False
 ___
 
 ## An example RABDAM run
+
 
 ___
 

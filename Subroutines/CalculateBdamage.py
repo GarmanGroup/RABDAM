@@ -1,4 +1,23 @@
 
+# RABDAM
+# Copyright (C) 2017 Garman Group, University of Oxford
+
+# This file is part of RABDAM.
+
+# RABDAM is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as
+# published by the Free Software Foundation, either version 3 of
+# the License, or (at your option) any later version.
+
+# RABDAM is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
+
+# You should have received a copy of the GNU Lesser General
+# Public License along with this program.  If not, see
+# <http://www.gnu.org/licenses/>.
+
 
 class rabdam():
     def __init__(self, pathToPDB, outputDir, PDT, windowSize, protOrNA, HETATM,
@@ -195,7 +214,10 @@ class rabdam():
                 splitFilename = fileName.split('.')
                 PDBcode = splitFilename[len(splitFilename)-2].upper()
                 fileName = PDBcode + '.' + splitFilename[len(splitFilename)-1]
-                PDBdirectory = 'Logfiles/%s/' % PDBcode
+                window_name = 100*self.windowSize
+                window_name = str(window_name).replace('.', '_')
+                pdt_name = str(self.PDT).replace('.', '_')
+                PDBdirectory = 'Logfiles/%s_window_%s_pdt_%s/' % (PDBcode, window_name, pdt_name)
                 pdb_file_path = '%s%s' % (PDBdirectory, PDBcode)
                 newPathToPDB = '%s%s' % (PDBdirectory, fileName)
 
