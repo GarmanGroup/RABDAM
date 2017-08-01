@@ -3,6 +3,7 @@ A program to calculate the *B*<sub>Damage</sub> and *B*<sub>net</sub> metrics to
 
 \*\***NOTE:** These scripts are under development, and are updated regularly. The program is currently being extended to incorporate nucleic acids analysis. Whilst these new capabilities are being tested, it is strongly recommended that presently RABDAM is only used to assess damage to protein crystal structures.\*\*
 
+___
 
 ## Contents
 -	[How to run in brief](#how-to-run-in-brief)
@@ -17,6 +18,8 @@ A program to calculate the *B*<sub>Damage</sub> and *B*<sub>net</sub> metrics to
 -	[Contributors](#contributors)
 -	[Citing RABDAM](#citing-rabdam)
 
+___
+
 ## How to run in brief
 RABDAM is a command line program. To run the program with its recommended default parameter values, execute:
 
@@ -27,6 +30,8 @@ RABDAM is a command line program. To run the program with its recommended defaul
 `python rabdam.py –f path/to/pdb_file.pdb`
 
 See the “*Usage*” section below for further details.
+
+___
 
 ## Background
 During macromolecular crystallography (MX) data collection, X-rays are also absorbed by and deposit energy within the crystal under study, causing damage. This damage can result in localised chemical changes to the crystalline macromolecule copies, for example to disulfide bond cleavage in proteins, *etc*. Such *specific radiation damage* manifestations can lead to incorrect biological conclusions being drawn from an MX structure if they are not identified and accounted for. Unfortunately, the high intensities of third generation synchrotron sources have resulted in specific radiation damage artefacts commonly being present in MX structures deposited in the Protein Data Bank (PDB) even at 100 K.
@@ -60,6 +65,8 @@ The *B*<sub>net</sub> metric is calculated as the ratio of the area either side 
 ___
 
 RABDAM calculates the values of the *B*<sub>Damage</sub> and *B*<sub>net</sub> metrics for a standard format PDB file, as detailed in the following sections.
+
+___
 
 ## Usage
 #### System requirements
@@ -159,6 +166,28 @@ The packing density of an atom is calculated as the number of atoms within a sph
 
 The size (as a percentage of the total number of atoms included for *B*<sub>Damage</sub> analysis) of the sliding window used to group atoms in a similar packing density environment for *B*<sub>Damage</sub> calculation. Its default value is 0.02 (2%), however it can take any value ≤ 1. **Do not change the value of this parameter unless you know what you are doing!** Stipulated by the keyword *windowSize*.
 
+-	Option to remove HETATM, *HETATM*
+
+Specifies whether you want to include (“*Keep*”) / exclude (“*Remove*”) HETATM in / from the *B*<sub>Damage</sub> calculation. Owing to the difference in the *B*<sub>factor</sub> / packing density ratios of HETATM as compared to ATOM, by default this parameter is set to “*Remove*”. **Do not change the value of this parameter unless you know what you are doing!** Stipulated by the keyword *HETATM*.
+
+-	Option to retain only protein / nucleic acid atoms, *proteinOrNucleicAcid*
+
+Specifies whether to include protein atoms (“*Protein*”), nucleic acid atoms (“*Nucleic Acid*” / “*NA*”), or both atom types (“ ”), in the *B*<sub>Damage</sub> calculation. Owing to the difference in the *B*<sub>factor</sub> / packing density ratios of these two ATOM types, it is highly recommended that they are analysed separately. By default this parameter is set to “*Protein*”. Stipulated by the keyword *proteinOrNucleicAcid*.
+
+**\*\*Currently RABDAM is unsuitable for running on structures containing nucleic acids, therefore this parameter should not be altered from its default value.\*\***
+
+-	Option to remove atoms from the *B*<sub>Damage</sub> calculation, *removeAtoms*
+
+Allows the removal of individual atoms (specified either by their atom serial number or by their residue type) from the *B*<sub>Damage</sub> calculation (by default no atoms are removed). **Do not change the value of this parameter unless you know what you are doing!** Stipulated by the keyword *removeAtoms*.
+
+-	Option to add atoms in to the *B*<sub>Damage</sub> calculation, *addAtoms*
+
+Allows the addition of individual atoms (specified either by their atom serial number or by their residue type) to the *B*<sub>Damage</sub> calculation (by default no atoms are added). Note however that the same atom cannot be considered more than once in the *B*<sub>Damage</sub> calculation. **Do not change the value of this parameter unless you know what you are doing!** Stipulated by the keyword *addAtoms*.
+
+-	Option to highlight atoms on the kernel density estimate of the *B*<sub>Damage</sub> distribution, *highlightAtoms*
+
+Highlights the *B*<sub>Damage</sub> values of specified atoms on the output kernel density estimate (by default no atoms are highlighted). Atoms are specified by their (unique) serial numbers as listed in the input PDB file provided to RABDAM. It is possible to highlight multiple atoms at once (see the guidelines below for providing multiple values for the same parameter); note however that it is recommended no more than 6 atoms are specified at once (beyond 6 atoms the graph colour scheme will repeat itself, furthermore the complete key might not fit onto the plot). Stipulated by the keyword *highlightAtoms*.
+
 -	Option to create a copy of the original PDB file, *createOrigPDB*
 
 Writes a copy of the input PDB file provided to the program to the output directory when set to True (by default this parameter is set to False). Stipulated by the keyword *createOrigpdb*.
@@ -179,17 +208,49 @@ Writes a PDB file of the 3x3x3 unit cell assembly coordinates to the output dire
 
 Writes a copy of the trimmed 3x3x3 unit cell assembly coordinates to the output directory when set to True (by default this parameter is set to False). Stipulated by the keyword *createTApdb*.
 
+**Note that if a parameter is not specified in the input file, it will take its default value in the RABDAM run.**
+
+In order for RABDAM to successfully parse in an input file, it must follow the following formatting guidelines:
+
+-	Keywords and their associated values must be separated by “=”. Successive keyword / value pairs must be separated by “,”.
+-	Multiple values for the same keyword must be separated by “;”. Alternatively, it is possible to specify a range of consecutive (numerical) values by providing the minimum and maximum values of the range separated by “-”. So, you could direct RABDAM to highlight atoms 2, 3 and 4 on the BDamage kernel density estimate via either *highlightAtoms=2;3;4* or *highlightAtoms=2-4*.
+
+Below is an example input file directing RABDAM to analyse the RNase structures 2BLP and 2BLZ, writing the output files to the directory C:\Users\Kathryn\Documents, and highlighting atoms 14, 15, 16 and 30 on the output *B*<sub>Damage</sub> kernel density estimate. All other parameters are set to their default values. This example input file is provided along with the RABDAM Python scripts that can be downloaded from this web page as "*example_input.txt*".
+
+```
+2BLP, 2BLZ,
+dir=C:\Users\Kathryn\Documents,
+PDT=14,
+windowSize=0.02,
+HETATM=Remove,
+proteinOrNucleicAcid=Protein,
+addAtoms=,
+removeAtoms=,
+highlightAtoms=14-16;30,
+createOrigpdb=False,
+createAUpdb=False,
+createUCpdb=False,
+createAUCpdb=False,
+createTApdb=False
+```
+
 ___
 
 ## An example RABDAM run
 
+___
+
 ## Queries
 Please email kathryn.shelley@queens.ox.ac.uk.
+
+___
 
 ## Contributors
 - Kathryn Shelley
 - Tom Dixon
 - Jonny Brooks-Bartlett
+
+___
 
 ## Citing RABDAM
 The initial development and testing of the *B*<sub>Damage</sub> metric is described in:

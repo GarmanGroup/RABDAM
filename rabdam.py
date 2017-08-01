@@ -102,7 +102,7 @@ if count == 0:
 outputLoc = cwd
 pdtList = [14.0]
 windowList = [0.02]
-protOrNAVal = 'BOTH'
+protOrNAVal = 'protein'
 hetatmVal = False
 addAtomsList = []
 removeAtomsList = []
