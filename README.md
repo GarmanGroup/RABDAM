@@ -180,11 +180,11 @@ Specifies whether to include protein atoms (“*Protein*”), nucleic acid atoms
 
 -	Option to remove atoms from the *B*<sub>Damage</sub> calculation, *removeAtoms*
 
-Allows the removal of individual atoms (specified either by their atom serial number or by their residue type) from the *B*<sub>Damage</sub> calculation (by default no atoms are removed). **Do not change the value of this parameter unless you know what you are doing!** Stipulated by the keyword *removeAtoms*.
+Allows the removal of individual atoms (specified either by their atom serial number or by their residue type) from the *B*<sub>Damage</sub> calculation (by default no atoms are removed). It is possible to specify multiple atoms at once (see the guidelines below for providing multiple values for the same parameter). **Do not change the value of this parameter unless you know what you are doing!** Stipulated by the keyword *removeAtoms*.
 
 -	Option to add atoms in to the *B*<sub>Damage</sub> calculation, *addAtoms*
 
-Allows the addition of individual atoms (specified either by their atom serial number or by their residue type) to the *B*<sub>Damage</sub> calculation (by default no atoms are added). (Note however that the same atom cannot be considered more than once in the *B*<sub>Damage</sub> calculation.) **Do not change the value of this parameter unless you know what you are doing!** Stipulated by the keyword *addAtoms*.
+Allows the addition of individual atoms (specified either by their atom serial number or by their residue type) to the *B*<sub>Damage</sub> calculation (by default no atoms are added). (Note however that the same atom cannot be considered more than once in the *B*<sub>Damage</sub> calculation.) It is possible to specify multiple atoms at once (see the guidelines below for providing multiple values for the same parameter). **Do not change the value of this parameter unless you know what you are doing!** Stipulated by the keyword *addAtoms*.
 
 -	Option to highlight atoms on the kernel density estimate of the *B*<sub>Damage</sub> distribution, *highlightAtoms*
 
@@ -208,7 +208,7 @@ Writes a PDB file of the 3x3x3 unit cell assembly coordinates to the output dire
 
 -	Option to create a PDB file of the trimmed unit cell assembly, *createTApdb*
 
-Writes a copy of the trimmed 3x3x3 unit cell assembly coordinates to the output directory when set to True (by default this parameter is set to False). Stipulated by the keyword *createTApdb*.
+Writes a PDB file of the trimmed 3x3x3 unit cell assembly coordinates to the output directory when set to True (by default this parameter is set to False). Stipulated by the keyword *createTApdb*.
 
 **Note that if a parameter is not specified in the input file, it will take its default value in the RABDAM run.**
 

@@ -564,7 +564,7 @@ class rabdam():
 
         if 'summary' in output_options:
             print 'Writing summary html file\n'
-            output.write_html_summary(self.highlightAtoms)
+            output.write_html_summary(cwd, self.highlightAtoms)
 
         print('************** End of Writing Output Files Section *************\n'
               '****************************************************************\n')
