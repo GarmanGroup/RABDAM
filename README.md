@@ -1,7 +1,7 @@
 # RABDAM – identifying specific radiation damage in MX structures
 A program to calculate the *B*<sub>Damage</sub> and *B*<sub>net</sub> metrics to quantify the extent of specific radiation damage present within an individual MX structure. Suitable for running on any standard format PDB file.
 
-\*\***NOTE:** These scripts are under development, and are updated regularly. The program is currently being extended to incorporate nucleic acids analysis. Whilst these new capabilities are being tested, it is strongly recommended that presently RABDAM is only used to assess damage to protein crystal structures.\*\*
+\*\***NOTE:** These scripts are under development, and are updated regularly. The program is currently being extended to incorporate nucleic acids analysis. Whilst these new capabilities are being tested, it is strongly recommended that presently RABDAM is restricted to assessing damage to (i) protein crystal structures and (ii) the protein component of protein / nucleic acid crystal structures.\*\*
 
 ___
 
@@ -176,7 +176,7 @@ Specifies whether you want to include (“*Keep*”) / exclude (“*Remove*”) 
 
 Specifies whether to include protein atoms (“*Protein*”), nucleic acid atoms (“*Nucleic Acid*” / “*NA*”), or both atom types (“ ”), in the *B*<sub>Damage</sub> calculation. Owing to the difference in the *B*<sub>factor</sub> : packing density ratios of these two ATOM types, it is highly recommended that they are analysed separately. By default this parameter is set to “*Protein*”. Stipulated by the keyword *proteinOrNucleicAcid*.
 
-**\*\*Currently RABDAM is unsuitable for running on structures either of or containing nucleic acids, and so this parameter should not be altered from its default value.\*\***
+**\*\*Currently RABDAM is unsuitable for running on nucleic acids (although it can be used to analyse damage to the protein component of protein / nucleic acid complexes), and so this parameter should not be altered from its default value.\*\***
 
 -	Option to remove atoms from the *B*<sub>Damage</sub> calculation, *removeAtoms*
 
