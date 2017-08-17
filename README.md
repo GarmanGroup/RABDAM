@@ -25,7 +25,7 @@ RABDAM is a command line program. To run the program with its recommended defaul
 
 `python rabdam.py –f XXXX`
 
-, where XXXX is the 4 character PDB accession code of the MX structure under study. Alternatively, you can provide RABDAM with a file path to a locally saved PDB file:
+, where XXXX is the 4 character PDB accession code of the MX structure under study. Alternatively, you can provide RABDAM with an absolute file path to a locally saved PDB file:
 
 `python rabdam.py –f path/to/pdb_file.pdb`
 
@@ -47,7 +47,7 @@ The method of calculating an atom’s *B*<sub>Damage</sub> value is summarised i
 ___
 
 ![Images/BDamage_methodology.png](Images/BDamage_methodology.png)
-Calculation of the *B*<sub>Damage</sub> metric. From an input PDB file of the asymmetric unit of a macromolecule of interest, RABDAM **(A)** generates a copy of the unit cell, followed by **(B)** a 3x3x3 assembly of unit cells. **(C)** Atoms in the 3x3x3 unit cell assembly that lie further than 14 Å from the asymmetric unit are discounted. **(D)** The packing density of an atom *j* in the asymmetric unit is calculated as the number of atoms within a 14 Å radius. **(E)** Asymmetric unit atoms are ordered by packing density; the *B*<sub>Damage</sub> value of atom *j* is then calculated as the ratio of its *B*<sub>factor</sub> to the average of the *B*<sub>factor</sub> values of atoms grouped, via sliding window, as occupying a similar packing density environment. Note that hydrogen atoms are not considered in the calculation of *B*<sub>Damage</sub>.
+Calculation of the *B*<sub>Damage</sub> metric. From an input PDB file of the asymmetric unit of a macromolecule of interest, RABDAM **(A)** generates a copy of the unit cell, followed by **(B)** a 3x3x3 assembly of unit cells. **(C)** Atoms in the 3x3x3 unit cell assembly that lie further than 7 Å from the asymmetric unit are discounted. **(D)** The packing density of an atom *j* in the asymmetric unit is calculated as the number of atoms within a 7 Å radius. **(E)** Asymmetric unit atoms are ordered by packing density; the *B*<sub>Damage</sub> value of atom *j* is then calculated as the ratio of its *B*<sub>factor</sub> to the average of the *B*<sub>factor</sub> values of atoms grouped, via sliding window, as occupying a similar packing density environment. Note that hydrogen atoms are not considered in the calculation of *B*<sub>Damage</sub>.
 
 ___
 
@@ -105,11 +105,11 @@ The `-i` flag is used to specify the name of the input txt file that lists your 
 
 `python rabdam.py -i input_file.txt`
 
-Otherwise however you will need to provide its full file path:
+Otherwise however you will need to provide its absolute file path:
 
 `python rabdam.py -i path/to/input_file.txt`
 
-Alternatively, if you wish to perform a run of RABDAM using entirely default parameter values, it is possible to run RABDAM without an input file; in this case the `-f` flag is used to provide RABDAM with either a 4 character PDB accession code (XXXX), or a file path (path/to/pdb_file.pdb), of the MX structure to be analysed:
+Alternatively, if you wish to perform a run of RABDAM using entirely default parameter values, it is possible to run RABDAM without an input file; in this case the `-f` flag is used to provide RABDAM with either a 4 character PDB accession code (XXXX), or an absolute file path (path/to/pdb_file.pdb), of the MX structure to be analysed:
 
 `python rabdam.py -f XXXX` / `python rabdam.py -f path/to/pdb_file.pdb`
 
@@ -127,7 +127,7 @@ The `-r` flag can be used to instruct RABDAM to run to completion (default), or 
 The `-o` flag can be used to control the selection of output files that the program writes. By default RABDAM writes 4 output files:
 
 - `kde` : a kernel density estimate of the distribution of *B*<sub>Damage</sub> values calculated for the input MX structure
-- `pdb` : a PDB file in which the *B*<sub>factor</sub> column of the ATOM / HETATM records is replaced by *B*<sub>Damage</sub> values
+- `pdb` : a PDB file in which the *B*<sub>factor</sub> column of the ATOM / HETATM records is replaced by ln(*B*<sub>Damage</sub>) values (thus allowing the structure to be uniformly coloured by B<sub>Damage</sub> using molecular graphics software such as PyMOL)
 - `csv` : a csv file listing the properties (both those in the input PDB file and those calculated by RABDAM) of all atoms in the input MX structure included in the *B*<sub>Damage</sub> analysis
 - `bnet` : a kernel density estimate of the *B*<sub>Damage</sub> values of the terminal oxygen atoms of Glu and Asp residues, plus the value of the (protein-specific) *B*<sub>net</sub> value calculated from this distribution (see the “*Background*” section)
 
@@ -154,7 +154,7 @@ If you wish to run RABDAM with non-default parameter values, you will need to pr
 
 - The name of the PDB file(s) to be analysed
 
-Either a 4 character PDB accession code, or a file path (which may contain spaces). It is possible to run multiple structures from a single input file by listing the names of each of those structures separated by commas (see below). This is the only parameter not stipulated by a keyword, and which does not have a default value.
+Either a 4 character PDB accession code, or an absolute file path (which may contain spaces). It is possible to run multiple structures from a single input file by listing the names of each of those structures separated by commas (see below). This is the only parameter not stipulated by a keyword, and which does not have a default value.
 
 -	The output directory, *dir*
 
@@ -162,7 +162,7 @@ The location of the directory in which you would like the program output files t
 
 -	The packing density threshold, *PDT*
 
-The packing density of an atom is calculated as the number of atoms within a sphere of radius *PDT* Å. Its default value is 14, but it is possible to set it equal to any value (measured in Å). **Do not change the value of this parameter unless you know what you are doing!** Stipulated by the keyword *PDT*.
+The packing density of an atom is calculated as the number of atoms within a sphere of radius *PDT* Å. Its default value is 7, but it is possible to set it equal to any value (measured in Å). **Do not change the value of this parameter unless you know what you are doing!** Stipulated by the keyword *PDT*.
 
 - The sliding window size, *windowSize*
 
@@ -223,7 +223,7 @@ Below is an example input file instructing RABDAM to analyse the RNase structure
 ```
 2BLP, 2BLZ,
 dir=C:\Users\Kathryn\Documents,
-PDT=14,
+PDT=7,
 windowSize=0.02,
 HETATM=Remove,
 proteinOrNucleicAcid=Protein,
@@ -236,11 +236,6 @@ createUCpdb=False,
 createAUCpdb=False,
 createTApdb=False
 ```
-
-___
-
-## An example RABDAM run
-
 
 ___
 

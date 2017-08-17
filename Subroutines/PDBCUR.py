@@ -57,7 +57,7 @@ def clean_pdb_file(pathToPDB, pdb_file_path):
             unit_cell_params.extend((a, b, c, alpha, beta, gamma))
         elif (line[0:6].strip() in ['ATOM', 'HETATM']
             and line[76:78].strip() != 'H'
-            and float(line[54:60].strip()) != 0.0
+            and float(line[54:60].strip()) > 0
              ):
             filtered_pdb_lines.append(line)
             header = False

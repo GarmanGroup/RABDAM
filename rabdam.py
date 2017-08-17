@@ -118,7 +118,7 @@ if count == 0:
 
 # Initialises default program options
 outputLoc = cwd
-pdtList = [14.0]
+pdtList = [7.0]
 windowList = [0.02]
 protOrNAVal = 'protein'
 hetatmVal = False

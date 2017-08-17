@@ -155,9 +155,6 @@ class generate_output_files():
         # Sets figure aesthetics to seaborn defaults
         sns.set()
 
-        # Calculates median of overall BDamage distribution
-        median = self.df.BDAM.median()
-
         # Selects Glu / Asp terminal oxygen atoms from complete DataFrame.
         a = self.df[(self.df.RESNAME.isin(['GLU']))
                     & (self.df.ATMNAME.isin(['OE1', 'OE2']))]
@@ -172,6 +169,9 @@ class generate_output_files():
             print('\nNo sites used for Bnet calculation present in structure\n')
 
         if not prot.empty:
+            # Calculates median of protein BDamage distribution
+            median = prot.BDAM.median()
+
             plt.clf()  # Prevents the kernel density estimate of the atoms
             # considered for calculation of the Bnet summary metric from being
             # plotted on the same axes as the kernel density estimate of all
@@ -233,6 +233,9 @@ class generate_output_files():
                 Bnet_list.close()
 
         if not na.empty:
+            # Calculates median of nucleic acid BDamage distribution
+            median = na.BDAM.median()
+
             plt.clf()  # Prevents the kernel density estimate of the atoms
             # considered for calculation of the Bnet summary metric from being
             # plotted on the same axes as the kernel density estimate of all

@@ -81,8 +81,8 @@ class rabdam():
         # RABDAM run
         print 'Calculating BDamage for %s' % self.pathToPDB
         print 'Writing output files to %s' % self.outputDir
-        if self.PDT == 14:
-            print 'Using default packing density threshold of 14 Angstroms'
+        if self.PDT == 7:
+            print 'Using default packing density threshold of 7 Angstroms'
         else:
             print 'Packing density threshold defined by user as %s Angstroms' % self.PDT
         if self.windowSize == 0.02:

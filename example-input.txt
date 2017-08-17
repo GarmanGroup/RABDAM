@@ -1,6 +1,6 @@
 2BLP, 2BLZ,
 dir=C:\Users\Kathryn\Documents,
-PDT=14,
+PDT=7,
 windowSize=0.02,
 HETATM=Remove,
 proteinOrNucleicAcid=Protein,
