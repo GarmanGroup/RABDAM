@@ -88,7 +88,7 @@ class rabdam():
         if self.windowSize == 0.02:
             print 'Using default window size of 2%'
         else:
-            print 'Window size defined by user as %s%' % (self.windowSize)*100
+            print 'Window size defined by user as %s%%' % (self.windowSize*100)
         if self.HETATM is True:
             print 'Keeping HETATM'
         elif self.HETATM is False:
