@@ -99,7 +99,7 @@ if vars(args)['input'] is not None:
     os.chdir(cwd)
     splitArgs = functionArgs.split(',')
     pathToPDBlist = [item.strip() for item in splitArgs if '=' not in item
-                     and item is not None]
+                     and item.strip() != '']
     # Reads in remaining program options specified in input file
     functionArgs = functionArgs.replace(' ', '')
     functionArgs = functionArgs.replace('\n', '')
