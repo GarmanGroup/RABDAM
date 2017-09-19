@@ -142,7 +142,7 @@ class generate_output_files():
         plt.title(self.pdb_code + ' BDamage kernel density plot')
         plt.savefig(self.pdb_file_path + '_BDamage.svg')
 
-    def calculate_Bnet(self, window_name, pdt_name, count):
+    def calculate_Bnet(self, window_name, pdt_name, count, window):
         # Plots a kernel density estimate of the BDamage values of Glu O and
         # Asp O atoms. The summary metric Bnet is then calculated as the ratio
         # of the areas under the curve either side of the median (of the
@@ -177,8 +177,8 @@ class generate_output_files():
             # plotted on the same axes as the kernel density estimate of all
             # atoms considered for BDamage analysis.
             plot = sns.distplot(prot.BDAM.values, hist=False, rug=True)
-            plt.xlabel("B Damage")
-            plt.ylabel("Normalised Frequency")
+            plt.xlabel('B Damage')
+            plt.ylabel('Normalised Frequency')
             plt.title(self.pdb_code + ' Bnet kernel density plot')
 
             # Extracts an array of 128 (x, y) coordinate pairs evenly spaced
@@ -222,12 +222,14 @@ class generate_output_files():
                     Bnet_list = open('Logfiles/Bnet_Protein.csv', 'w')
                     Bnet_list.write('PDB' + ',')
                     Bnet_list.write('Bnet' + ',')
+                    Bnet_list.write('Window_size' + ',')
                     Bnet_list.write('Window_size (%)' + ',')
                     Bnet_list.write('PDT' + ',')
                     Bnet_list.close()
                 Bnet_list = open('Logfiles/Bnet_Protein.csv', 'a')
                 Bnet_list.write('\n%s' % self.pdb_code + ',')
                 Bnet_list.write('%s' % ratio + ',')
+                Bnet_list.write('%s' % window + ',')
                 Bnet_list.write('%s' % window_name + ',')
                 Bnet_list.write('%s' % pdt_name + ',')
                 Bnet_list.close()
@@ -241,8 +243,8 @@ class generate_output_files():
             # plotted on the same axes as the kernel density estimate of all
             # atoms considered for BDamage analysis.
             plot = sns.distplot(na.BDAM.values, hist=False, rug=True)
-            plt.xlabel("B Damage")
-            plt.ylabel("Normalised Frequency")
+            plt.xlabel('B Damage')
+            plt.ylabel('Normalised Frequency')
             plt.title(self.pdb_code + ' Bnet kernel density plot')
 
             # Extracts an array of 128 (x, y) coordinate pairs evenly spaced
@@ -286,12 +288,14 @@ class generate_output_files():
                     Bnet_list = open('Logfiles/Bnet_NA.csv', 'w')
                     Bnet_list.write('PDB' + ',')
                     Bnet_list.write('Bnet' + ',')
+                    Bnet_list.write('Window_size' + ',')
                     Bnet_list.write('Window_size (%)' + ',')
                     Bnet_list.write('PDT' + ',')
                     Bnet_list.close()
                 Bnet_list = open('Logfiles/Bnet_NA.csv', 'a')
                 Bnet_list.write('\n%s' % self.pdb_code + ',')
                 Bnet_list.write('%s' % ratio + ',')
+                Bnet_list.write('%s' % window + ',')
                 Bnet_list.write('%s' % window_name + ',')
                 Bnet_list.write('%s' % pdt_name + ',')
                 Bnet_list.close()

@@ -560,7 +560,7 @@ class rabdam():
 
         if 'bnet' in output_options or 'summary' in output_options:
             print 'Calculating Bnet\n'
-            output.calculate_Bnet(window_name, pdt_name, count)
+            output.calculate_Bnet(window_name, pdt_name, count, window)
 
         if 'summary' in output_options:
             print 'Writing summary html file\n'

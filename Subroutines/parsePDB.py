@@ -129,7 +129,8 @@ def b_damage_atom_list(clean_au_list, HETATM, protOrNA, addAtoms,
         # Removes hetatm if HETATM set to 'Remove' in input file.
         if atm.lineID == 'HETATM':
             if HETATM is False:
-                bdam_list_unfiltered[index] = None
+                if atm.resiType != 'MSE':
+                    bdam_list_unfiltered[index] = None
 
         elif atm.lineID == 'ATOM':
             # Removes nucleic acid atoms if proteinOrNucleicAcid set to
