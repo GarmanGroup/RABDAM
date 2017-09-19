@@ -58,7 +58,7 @@ parser.add_argument('-r', '--run', help='Specifies whether to run the '
                     'values only ("df" / "dataframe"), or to analyse '
                     'pre-calculated BDamage values only ("analysis")')
 parser.add_argument('-o', '--output', nargs='+', help='Specifies the output '
-                    'files to write (default = all except html summary)')
+                    'files to write (default = all files written)')
 args = parser.parse_args()
 
 # Checks system for RABDAM dependencies
@@ -302,7 +302,7 @@ for x in xrange(0, len(splitArgs)):
 # Sets default option for -o flag (default = generate all output files bar the
 # summary file)
 if vars(args)['output'] is None:
-    vars(args)['output'] = ['csv', 'pdb', 'kde', 'bnet']
+    vars(args)['output'] = ['csv', 'pdb', 'kde', 'bnet', 'summary']
 output_options = [item.lower() for item in vars(args)['output']]
 
 # Runs the BDamage calculation for every specified PDB file
