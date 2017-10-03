@@ -554,17 +554,17 @@ class rabdam():
             makePDB(header_lines, bdamAtomList, footer_lines, pdb_file_name,
                     'BDamage')
 
-        if 'kde' in output_options:
+        if 'kde' in output_options or 'summary' in output_options:
             print '\nPlotting kernel density estimate\n'
             output.make_histogram(self.highlightAtoms)
 
-        if 'bnet' in output_options:
+        if 'bnet' in output_options or 'summary' in output_options:
             print 'Calculating Bnet\n'
             output.calculate_Bnet(window_name, pdt_name, count, window)
 
-        if 'summary' in output_options and 'kde' in output_options and 'bnet' in output_options:
+        if 'summary' in output_options:
             print 'Writing summary html file\n'
-            output.write_html_summary(cwd, self.highlightAtoms)
+            output.write_html_summary(cwd, output_options, self.highlightAtoms)
 
         print('************** End of Writing Output Files Section *************\n'
               '****************************************************************\n')
