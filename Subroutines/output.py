@@ -170,7 +170,7 @@ class generate_output_files():
 
         if not prot.empty:
             # Calculates median of protein BDamage distribution
-            median = prot.BDAM.median()
+            median = self.df.BDAM.median()
 
             plt.clf()  # Prevents the kernel density estimate of the atoms
             # considered for calculation of the Bnet summary metric from being
@@ -236,7 +236,7 @@ class generate_output_files():
 
         if not na.empty:
             # Calculates median of nucleic acid BDamage distribution
-            median = na.BDAM.median()
+            median = self.na.BDAM.median()
 
             plt.clf()  # Prevents the kernel density estimate of the atoms
             # considered for calculation of the Bnet summary metric from being
