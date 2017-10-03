@@ -135,12 +135,12 @@ def b_damage_atom_list(clean_au_list, HETATM, protOrNA, addAtoms,
         elif atm.lineID == 'ATOM':
             # Removes nucleic acid atoms if proteinOrNucleicAcid set to
             # 'Protein' in input file.
-            if protOrNA == 'PROTEIN':
+            if protOrNA == 'protein':
                 if len(atm.resiType) != 3:
                     bdam_list_unfiltered[index] = None
             # Removes protein atoms if proteinOrNucleicAcid set to
             # 'Nucleic Acid' / 'NA' in input file.
-            elif protOrNA in ['NUCLEICACID', 'NA']:
+        elif protOrNA in ['nucleicacid', 'na']:
                 if len(atm.resiType) == 3:
                     bdam_list_unfiltered[index] = None
 

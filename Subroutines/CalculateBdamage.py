@@ -93,9 +93,9 @@ class rabdam():
             print 'Keeping HETATM'
         elif self.HETATM is False:
             print 'Removing HETATM'
-        if self.protOrNA == 'PROTEIN':
+        if self.protOrNA == 'protein':
             print 'Retaining protein atoms, discarding nucleic acid atoms'
-        elif self.protOrNA in ['NUCLEICACID', 'NA']:
+        elif self.protOrNA in ['nucleicacid', 'na']:
             print 'Retaining nucleic acid atoms, discarding protein atoms'
         if len(self.addAtoms) == 0:
             print 'No atoms to be added'

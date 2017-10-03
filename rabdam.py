@@ -174,7 +174,7 @@ for x in xrange(0, len(splitArgs)):
     # or both atom types (if present) in the BDamage calculation
     elif splitArgs[x][0:20].lower() == 'proteinornucleicacid':
         protOrNAArg = splitArgs[x].split('=')
-        protOrNAVal = protOrNAArg[len(protOrNAArg)-1].upper()
+        protOrNAVal = protOrNAArg[len(protOrNAArg)-1].lower()
 
     # Specifies whether to remove HETATM from the BDamage calculation or to
     # retain them
