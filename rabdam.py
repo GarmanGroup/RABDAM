@@ -175,6 +175,17 @@ for x in xrange(0, len(splitArgs)):
     elif splitArgs[x][0:20].lower() == 'proteinornucleicacid':
         protOrNAArg = splitArgs[x].split('=')
         protOrNAVal = protOrNAArg[len(protOrNAArg)-1].lower()
+        # Temporary variable reassignment to prevent nucleic acid analysis with
+        # RABDAM before the complete functionality has been introduced
+        if protOrNAVal in ['na', 'nucleicacid']:
+            sys.exit('RABDAM is currently only suitable for assessing '
+                     'radiation damage\n'
+                     'to the protein component of macromolecular structures.\n'
+                     'We hope to extend the program to incorporate nucleic acid'
+                     ' analysis\n'
+                     'shortly - in the meantime, please restrict your RABDAM '
+                     'analysis to\n'
+                     'protein atoms only.')
 
     # Specifies whether to remove HETATM from the BDamage calculation or to
     # retain them

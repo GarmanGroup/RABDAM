@@ -47,6 +47,7 @@ class rabdam():
         import sys
         import os
         import shutil
+        import requests
         import copy
         duplicate = copy.copy
         import pickle
@@ -142,6 +143,15 @@ class rabdam():
             PDBdirectory = 'Logfiles/%s_window_%s_pdt_%s/' % (PDBcode, window_name, pdt_name)
             pdb_file_path = '%s%s' % (PDBdirectory, PDBcode)
             pathToPDB = '%s%s.pdb' % (PDBdirectory, PDBcode)
+
+            # Checks whether PDB accession code exists - if not, exit program
+            # with error message
+            url = 'http://www.rcsb.org/pdb/files/%s.pdb' % PDBcode
+            header = requests.get(url)
+            if header.status_code >= 300:
+                sys.exit('ERROR: Failed to download PDB file with accession '
+                         'code %s:\n'
+                         'check that this PDB accession code exists.' % PDBcode)
 
             # If directory with same name as PDBdirectory already exists in
             # 'Logfiles' directory, user input is requested ('Do you want to
@@ -300,6 +310,10 @@ class rabdam():
         print 'Reading in unit cell coordinates'
         ucAtomList = full_atom_list(unit_cell_pdb)
 
+        # Halts program if no atoms selected for BDamage analysis
+        if len(ucAtomList) < 1:
+            sys.exit('ERROR: No atoms selected for BDamage calculation')
+
         if self.createUCpdb is False:
             os.remove(unit_cell_pdb)
 
@@ -347,6 +361,10 @@ class rabdam():
         bdamAtomList = b_damage_atom_list(clean_au_list, self.HETATM,
                                           self.protOrNA, self.addAtoms,
                                           self.removeAtoms)
+
+        # Halts program if no atoms selected for BDamage analysis
+        if len(bdamAtomList) < 1:
+            sys.exit('ERROR: No atoms selected for BDamage calculation')
 
         if self.createAUpdb is False:
             os.remove(clean_au_file)
@@ -413,23 +431,6 @@ class rabdam():
 
         print 'Writing BDamage data to DataFrame\n'
         df = writeDataFrame(bdamAtomList)
-        # Temporary script to prevent nucleic acid analysis with RABDAM
-        # before the complete functionality has been introduced
-        na_df = df[df.RESNAME.apply(lambda x: len(x)<3)]
-        print('RABDAM is currently only suitable for assessing radiation'
-              ' damage\n'
-              'to the protein component of macromolecular structures.\n'
-              'We hope to extend the program to incorporate nucleic acid'
-              ' analysis\n'
-              'shortly - in the meantime, please restrict your RABDAM analysis'
-              ' to\n'
-              'protein atoms only.' )
-        pdb_dir_path = pdb_file_path.split('/')
-        pdb_dir_path = pdb_dir_path[0:-1]
-        pdb_dir_path = '/'.join(pdb_dir_path)
-        shutil.rmtree('%s' % pdb_dir_path)
-        sys.exit()
-
         print 'Saving DataFrame\n'
         storage = '%s/DataFrame' % PDBdirectory
         os.makedirs(storage)
