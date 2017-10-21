@@ -19,7 +19,7 @@
 # <http://www.gnu.org/licenses/>.
 
 
-def clean_pdb_file(pathToPDB, pdb_file_path):
+def clean_pdb_file(pathToPDB, PDBdirectory, pdb_file_path):
     # Filters the input PDB file ATOM / HETATM records to remove anisotropic
     # Bfactor records, hydrogen atoms and 0 occupancy atoms, as well as
     # retaining only the most probable alternate conformers (in the case
@@ -29,6 +29,7 @@ def clean_pdb_file(pathToPDB, pdb_file_path):
     # in lists for use in writing output PDB files later in the program.
 
     import sys
+    import shutil
     import math
     import pandas as pd
     from parsePDB import atom
@@ -43,6 +44,7 @@ def clean_pdb_file(pathToPDB, pdb_file_path):
     footer = False
     for line in orig_pdb:
         if line.replace(' ', '').startswith('MODEL2'):
+            shutil.rmtree('%s' % PDBdirectory)
             sys.exit('\n\nMore than one model present in input PDB file.\n'
                      'Please submit a PDB file containing a single model for '
                      'BDamage analysis.\n')

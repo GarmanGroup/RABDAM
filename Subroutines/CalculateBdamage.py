@@ -179,9 +179,8 @@ class rabdam():
                         downloadPDB(PDBcode, PDBdirectory, pathToPDB)
                         break
                     elif owChoice == 'no' or owChoice == 'n':
-                        print('\nKeeping original folder\n'
-                              'Exiting RABDAM')
-                        sys.exit()
+                        sys.exit('\nKeeping original folder\n'
+                                 'Exiting RABDAM')
                         break
                     else:
                         print 'Unrecognised input - please answer "yes" or "no"'
@@ -191,6 +190,7 @@ class rabdam():
             # Checks that PDB file has been successfully downloaded and saved to
             # the 'Logfiles' directory
             if not os.path.exists(pathToPDB):
+                shutil.rmtree('%s' % PDBdirectory)
                 sys.exit('ERROR: Failed to download and save PDB file - cause unknown')
 
         # If filepath to PDB has been supplied:
@@ -247,9 +247,8 @@ class rabdam():
                             copyPDB(pathToPDB, disk, newPathToPDB, PDBdirectory)
                             break
                         elif owChoice == 'no' or owChoice == 'n':
-                            print('\nKeeping original folder\n'
-                                  'Exiting RABDAM')
-                            sys.exit()
+                            sys.exit('\nKeeping original folder\n'
+                                     'Exiting RABDAM')
                             break
                         else:
                             print 'Unrecognised input - please answer "yes" or "no"'
@@ -259,6 +258,7 @@ class rabdam():
                 # Checks that PDB file has been successfully copied to the
                 # 'Logfiles' directory
                 if not os.path.exists(newPathToPDB):
+                    shutil.rmtree('%s' % PDBdirectory)
                     sys.exit('ERROR: Failed to copy PDB file to Logfiles '
                              'directory.\nCheck that supplied PDB file is not '
                              'in use by another program')
@@ -280,7 +280,7 @@ class rabdam():
                '\nretaining only the most probable alternate conformations')
 
         (clean_au_file, clean_au_list, header_lines, footer_lines,
-         unit_cell_params) = clean_pdb_file(pathToPDB, pdb_file_path)
+         unit_cell_params) = clean_pdb_file(pathToPDB, PDBdirectory, pdb_file_path)
 
         # Deletes input PDB file fed into the program unless createOrigpdb
         # is set equal to True in the input file (default=False).
@@ -295,6 +295,7 @@ class rabdam():
         runPDBCUR(clean_au_file, unit_cell_pdb, PDBCURinputFile, PDBCURlog)
 
         if not os.path.exists(unit_cell_pdb):
+            shutil.rmtree('%s' % PDBdirectory)
             sys.exit('ERROR: Error in running PDBCUR, failed to generate Unit'
                      'Cell PDB file')
 
@@ -312,6 +313,7 @@ class rabdam():
 
         # Halts program if no atoms selected for BDamage analysis
         if len(ucAtomList) < 1:
+            shutil.rmtree('%s' % PDBdirectory)
             sys.exit('ERROR: No atoms selected for BDamage calculation')
 
         if self.createUCpdb is False:
@@ -364,6 +366,7 @@ class rabdam():
 
         # Halts program if no atoms selected for BDamage analysis
         if len(bdamAtomList) < 1:
+            shutil.rmtree('%s' % PDBdirectory)
             sys.exit('ERROR: No atoms selected for BDamage calculation')
 
         if self.createAUpdb is False:
@@ -500,9 +503,8 @@ class rabdam():
         storage_file = '%s/%s' % (storage_directory, PDBcode)
 
         if not os.path.isdir(storage_directory):
-            print 'Folder %s not found' % (storage_directory)
-            print 'Exiting RABDAM analysis'
-            sys.exit()
+            sys.exit('Folder %s not found\n'
+                     'Exiting RABDAM analysis' % storage_directory)
 
         potential_analysis_files = ['_BDamage.csv', '_BDamage.html',
                                     '_BDamage.pdb', '_BDamage.svg',
@@ -527,9 +529,8 @@ class rabdam():
                         os.remove(name)
                     break
                 elif owChoice == 'no' or owChoice == 'n':
-                    print('Keeping original analysis files\n'
-                          'Exiting RABDAM')
-                    sys.exit()
+                    sys.exit('Keeping original analysis files\n'
+                             'Exiting RABDAM')
                     break
                 else:
                     print 'Unrecognised input - please answer "yes" or "no"'
