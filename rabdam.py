@@ -130,6 +130,7 @@ auVal = False
 ucVal = False
 aucVal = False
 taVal = False
+batchVal = False
 run = 'rabdam'
 
 # If input file is provided, program options are updated to the values it
@@ -310,6 +311,17 @@ for x in xrange(0, len(splitArgs)):
         elif taVal in ['false', 'no', 'f', 'n']:
             taVal = False
 
+    # Specifies if an error is encountered when analysing the current structure
+    # whether to exit the program (default) or to continue to analyse the next
+    # listed structure
+    if splitArgs[x][0:8].lower() == 'batchrun':
+        batchArg = splitArgs[x].split('=')
+        batchVal = batchArg[len(batchArg)-1].lower()
+        if batchVal in ['true', 'yes', 't', 'y']:
+            batchVal = True
+        elif batchVal in ['false', 'no', 'f', 'n']:
+            batchVal = False
+
 # Sets default option for -o flag (default = generate all output files bar the
 # summary file)
 if vars(args)['output'] is None:
@@ -328,7 +340,7 @@ for item in pathToPDBlist:
                          highlightAtoms=highlightAtomsList,
                          createOrigpdb=origVal, createAUpdb=auVal,
                          createUCpdb=ucVal, createAUCpdb=aucVal,
-                         createTApdb=taVal)
+                         createTApdb=taVal, batchRun=batchVal)
             if vars(args)['run'] is None:
                 # Runs full program
                 pdb.rabdam_dataframe(run='rabdam')

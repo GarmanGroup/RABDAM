@@ -23,7 +23,7 @@ class rabdam():
     def __init__(self, pathToPDB, outputDir, PDT, windowSize, protOrNA, HETATM,
                  addAtoms, removeAtoms, highlightAtoms, createOrigpdb,
                  createAUpdb, createUCpdb, createAUCpdb,
-                 createTApdb):
+                 createTApdb, batchRun):
         self.pathToPDB = pathToPDB
         self.outputDir = outputDir
         self.PDT = PDT
@@ -38,6 +38,7 @@ class rabdam():
         self.createUCpdb = createUCpdb
         self.createAUCpdb = createAUCpdb
         self.createTApdb = createTApdb
+        self.batchRun = batchRun
 
     def rabdam_dataframe(self, run):
         # Calculates BDamage for selected atoms within input PDB file and
@@ -149,9 +150,13 @@ class rabdam():
             url = 'http://www.rcsb.org/pdb/files/%s.pdb' % PDBcode
             header = requests.get(url)
             if header.status_code >= 300:
-                sys.exit('ERROR: Failed to download PDB file with accession '
-                         'code %s:\n'
-                         'check that this PDB accession code exists.' % PDBcode)
+                if self.batchRun is False:
+                    sys.exit('ERROR: Failed to download PDB file with '
+                             'accession code %s:\n'
+                             'check that this PDB accession code exists.'
+                             % PDBcode)
+                elif self.batchRun is True:
+                    return
 
             # If directory with same name as PDBdirectory already exists in
             # 'Logfiles' directory, user input is requested ('Do you want to
@@ -179,8 +184,11 @@ class rabdam():
                         downloadPDB(PDBcode, PDBdirectory, pathToPDB)
                         break
                     elif owChoice == 'no' or owChoice == 'n':
-                        sys.exit('\nKeeping original folder\n'
-                                 'Exiting RABDAM')
+                        if self.batchRun is False:
+                            sys.exit('\nKeeping original folder\n'
+                                     'Exiting RABDAM')
+                        elif self.batchRun is True:
+                            return
                         break
                     else:
                         print 'Unrecognised input - please answer "yes" or "no"'
@@ -191,7 +199,10 @@ class rabdam():
             # the 'Logfiles' directory
             if not os.path.exists(pathToPDB):
                 shutil.rmtree('%s' % PDBdirectory)
-                sys.exit('ERROR: Failed to download and save PDB file - cause unknown')
+                if self.batchRun is False:
+                    sys.exit('ERROR: Failed to download and save PDB file - cause unknown')
+                elif self.batchRun is True:
+                    return
 
         # If filepath to PDB has been supplied:
         else:
@@ -212,12 +223,18 @@ class rabdam():
             os.chdir('/')
             os.chdir(disk)
             if not os.path.exists(pathToPDB):
-                sys.exit('ERROR: Supplied filepath not recognised')
+                if self.batchRun is False:
+                    sys.exit('ERROR: Supplied filepath not recognised')
+                elif self.batchRun is True:
+                    return
             os.chdir(owd)
 
             if pathToPDB[-4:] not in ['.pdb', '.txt']:
-                sys.exit('ERROR: Supplied filepath to PDB is not a .pdb or'
-                         '.txt file')
+                if self.batchRun is False:
+                    sys.exit('ERROR: Supplied filepath to PDB is not a .pdb or'
+                             '.txt file')
+                elif self.batchRun is True:
+                    return
             else:
                 print 'Filepath to .pdb or .txt file supplied\n'
                 fileName = splitPath[len(splitPath)-1]
@@ -247,8 +264,11 @@ class rabdam():
                             copyPDB(pathToPDB, disk, newPathToPDB, PDBdirectory)
                             break
                         elif owChoice == 'no' or owChoice == 'n':
-                            sys.exit('\nKeeping original folder\n'
-                                     'Exiting RABDAM')
+                            if self.batchRun is False:
+                                sys.exit('\nKeeping original folder\n'
+                                         'Exiting RABDAM')
+                            elif self.batchRun is True:
+                                return
                             break
                         else:
                             print 'Unrecognised input - please answer "yes" or "no"'
@@ -259,9 +279,12 @@ class rabdam():
                 # 'Logfiles' directory
                 if not os.path.exists(newPathToPDB):
                     shutil.rmtree('%s' % PDBdirectory)
-                    sys.exit('ERROR: Failed to copy PDB file to Logfiles '
-                             'directory.\nCheck that supplied PDB file is not '
-                             'in use by another program')
+                    if self.batchRun is False:
+                        sys.exit('ERROR: Failed to copy PDB file to Logfiles '
+                                 'directory.\nCheck that supplied PDB file is '
+                                 'not in use by another program')
+                    elif self.batchRun is True:
+                        return
 
                 pathToPDB = newPathToPDB
 
@@ -279,8 +302,12 @@ class rabdam():
                '\nB factor records, and atoms with zero occupancy, as well as '
                '\nretaining only the most probable alternate conformations')
 
-        (clean_au_file, clean_au_list, header_lines, footer_lines,
-         unit_cell_params) = clean_pdb_file(pathToPDB, PDBdirectory, pdb_file_path)
+        (multi_model, clean_au_file, clean_au_list, header_lines, footer_lines,
+         unit_cell_params) = clean_pdb_file(pathToPDB, PDBdirectory,
+                                            self.batchRun, pdb_file_path)
+        if multi_model is True:
+            shutil.rmtree('%s' % PDBdirectory)
+            return
 
         # Deletes input PDB file fed into the program unless createOrigpdb
         # is set equal to True in the input file (default=False).
@@ -296,8 +323,11 @@ class rabdam():
 
         if not os.path.exists(unit_cell_pdb):
             shutil.rmtree('%s' % PDBdirectory)
-            sys.exit('ERROR: Error in running PDBCUR, failed to generate Unit'
-                     'Cell PDB file')
+            if self.batchRun is False:
+                sys.exit('ERROR: Error in running PDBCUR, failed to generate Unit'
+                         'Cell PDB file')
+            elif self.batchRun is True:
+                return
 
         print('****************** End of Process PDB Section ******************\n'
               '****************************************************************\n')
@@ -314,7 +344,10 @@ class rabdam():
         # Halts program if no atoms selected for BDamage analysis
         if len(ucAtomList) < 1:
             shutil.rmtree('%s' % PDBdirectory)
-            sys.exit('ERROR: No atoms selected for BDamage calculation')
+            if self.batchRun is False:
+                sys.exit('ERROR: No atoms selected for BDamage calculation')
+            elif self.batchRun is True:
+                return
 
         if self.createUCpdb is False:
             os.remove(unit_cell_pdb)
@@ -367,7 +400,10 @@ class rabdam():
         # Halts program if no atoms selected for BDamage analysis
         if len(bdamAtomList) < 1:
             shutil.rmtree('%s' % PDBdirectory)
-            sys.exit('ERROR: No atoms selected for BDamage calculation')
+            if self.batchRun is False:
+                sys.exit('ERROR: No atoms selected for BDamage calculation')
+            elif self.batchRun is True:
+                return
 
         if self.createAUpdb is False:
             os.remove(clean_au_file)
@@ -503,8 +539,11 @@ class rabdam():
         storage_file = '%s/%s' % (storage_directory, PDBcode)
 
         if not os.path.isdir(storage_directory):
-            sys.exit('Folder %s not found\n'
-                     'Exiting RABDAM analysis' % storage_directory)
+            if self.batchRun is False:
+                sys.exit('Folder %s not found\n'
+                         'Exiting RABDAM analysis' % storage_directory)
+            elif self.batchRun is True:
+                return
 
         potential_analysis_files = ['_BDamage.csv', '_BDamage.html',
                                     '_BDamage.pdb', '_BDamage.svg',
@@ -529,8 +568,11 @@ class rabdam():
                         os.remove(name)
                     break
                 elif owChoice == 'no' or owChoice == 'n':
-                    sys.exit('Keeping original analysis files\n'
-                             'Exiting RABDAM')
+                    if self.batchRun is False:
+                        sys.exit('Keeping original analysis files\n'
+                                 'Exiting RABDAM')
+                    elif self.batchRun is True:
+                        return
                     break
                 else:
                     print 'Unrecognised input - please answer "yes" or "no"'

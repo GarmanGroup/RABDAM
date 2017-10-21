@@ -19,7 +19,7 @@
 # <http://www.gnu.org/licenses/>.
 
 
-def clean_pdb_file(pathToPDB, PDBdirectory, pdb_file_path):
+def clean_pdb_file(pathToPDB, PDBdirectory, batchRun, pdb_file_path):
     # Filters the input PDB file ATOM / HETATM records to remove anisotropic
     # Bfactor records, hydrogen atoms and 0 occupancy atoms, as well as
     # retaining only the most probable alternate conformers (in the case
@@ -35,6 +35,7 @@ def clean_pdb_file(pathToPDB, PDBdirectory, pdb_file_path):
     from parsePDB import atom
 
     # Removes anisotropic Bfactors, hydrogen atoms and 0 occupancy atoms
+    multi_model = False
     filtered_pdb_lines = []
     header_lines = []
     footer_lines = []
@@ -44,10 +45,12 @@ def clean_pdb_file(pathToPDB, PDBdirectory, pdb_file_path):
     footer = False
     for line in orig_pdb:
         if line.replace(' ', '').startswith('MODEL2'):
-            shutil.rmtree('%s' % PDBdirectory)
-            sys.exit('\n\nMore than one model present in input PDB file.\n'
-                     'Please submit a PDB file containing a single model for '
-                     'BDamage analysis.\n')
+            multi_model = True
+            if batchRun is False:
+                shutil.rmtree('%s' % PDBdirectory)
+                sys.exit('\n\nMore than one model present in input PDB file.\n'
+                         'Please submit a PDB file containing a single model '
+                         'for BDamage analysis.\n')
         elif line[0:6].strip() == 'CRYST1':
             params = line.split()
             a = float(params[1])
@@ -144,8 +147,8 @@ def clean_pdb_file(pathToPDB, PDBdirectory, pdb_file_path):
 
     clean_au_file.close()
 
-    return (clean_au_file_name, clean_au_list, header_lines, footer_lines,
-            unit_cell_params)
+    return (multi_model, clean_au_file_name, clean_au_list, header_lines,
+            footer_lines, unit_cell_params)
 
 
 def genPDBCURinputs(PDBCURinputFile):
