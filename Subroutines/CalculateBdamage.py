@@ -413,6 +413,22 @@ class rabdam():
 
         print 'Writing BDamage data to DataFrame\n'
         df = writeDataFrame(bdamAtomList)
+        # Temporary script to prevent nucleic acid analysis with RABDAM
+        # before the complete functionality has been introduced
+        na_df = df[df.RESNAME.apply(lambda x: len(x)<3)]
+        print('RABDAM is currently only suitable for assessing radiation'
+              ' damage\n'
+              'to the protein component of macromolecular structures.\n'
+              'We hope to extend the program to incorporate nucleic acid'
+              ' analysis\n'
+              'shortly - in the meantime, please restrict your RABDAM analysis'
+              ' to\n'
+              'protein atoms only.' )
+        pdb_dir_path = pdb_file_path.split('/')
+        pdb_dir_path = pdb_dir_path[0:-1]
+        pdb_dir_path = '/'.join(pdb_dir_path)
+        shutil.rmtree('%s' % pdb_dir_path)
+        sys.exit()
 
         print 'Saving DataFrame\n'
         storage = '%s/DataFrame' % PDBdirectory
