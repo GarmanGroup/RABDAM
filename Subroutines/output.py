@@ -330,12 +330,10 @@ class generate_output_files():
         mean = np.mean(ln_b_dam_values)
         std_dev = np.std(ln_b_dam_values)
         cut = mean + (1.96*std_dev)
-        print cut
         cut_index = 0
         for index, value in enumerate(ln_b_dam_values.tolist()):
             if value > cut:
                 cut_index = index
-        print cut_index
         sub_df_top_site = sorted_df.drop(sorted_df.index[cut_index+1:])
 
         # Filters the complete DataFrame to retain only Glu and Asp terminal
@@ -385,7 +383,7 @@ class generate_output_files():
                             '        </div>\n')
         html_file.write('        <div>\n'
                         '          <ul class="sublist">\n'
-                        '            <li><h3>Properties of top 50 sites ranked by B<sub>Damage</sub> metric</h3></li>\n'
+                        '            <li><h3>Properties of sites with B<sub>Damage</sub> values larger than the 95% confidence limit (2-tailed) threshold</h3></li>\n'
                         '            <li>'+sub_df_top_site.to_html(index=False)+'</li>\n'
                         '          </ul>\n'
                         '        </div>\n'
