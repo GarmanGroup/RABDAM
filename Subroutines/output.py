@@ -305,6 +305,7 @@ class generate_output_files():
         import os
         import time
         import pandas as pd
+        import numpy as np
 
         # Records time (for reporting in summary html file)
         tm = time.localtime()
@@ -320,10 +321,23 @@ class generate_output_files():
         if len(highlightAtoms) != 0:
             highlightAtoms = [int(number) for number in highlightAtoms]
             sub_df_highlight = self.df[(self.df.ATMNUM.isin(highlightAtoms))]
-        # Filters the complete DataFrame to retain the 50 atoms with highest
-        # BDamage values
-        sub_df_top_site = self.df.sort_values(by='BDAM', ascending=False)
-        sub_df_top_site = sub_df_top_site.drop(sub_df_top_site.index[50:])
+
+        # Filter the complete DataFrame to retain the atoms with highest
+        # BDamage values (> 1.96o = 2-tailed 95% confidence interval)
+        sorted_df = self.df.sort_values(by='BDAM', ascending=False)
+        b_dam_values = sorted_df['BDAM']
+        ln_b_dam_values = np.log(b_dam_values)
+        mean = np.mean(ln_b_dam_values)
+        std_dev = np.std(ln_b_dam_values)
+        cut = mean + (1.96*std_dev)
+        print cut
+        cut_index = 0
+        for index, value in enumerate(ln_b_dam_values.tolist()):
+            if value > cut:
+                cut_index = index
+        print cut_index
+        sub_df_top_site = sorted_df.drop(sorted_df.index[cut_index+1:])
+
         # Filters the complete DataFrame to retain only Glu and Asp terminal
         # oxygen atoms.
         a = self.df[(self.df.RESNAME.isin(['GLU']))
