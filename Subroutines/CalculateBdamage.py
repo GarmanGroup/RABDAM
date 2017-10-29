@@ -23,7 +23,7 @@ class rabdam():
     def __init__(self, pathToPDB, outputDir, PDT, windowSize, protOrNA, HETATM,
                  addAtoms, removeAtoms, highlightAtoms, createOrigpdb,
                  createAUpdb, createUCpdb, createAUCpdb,
-                 createTApdb, batchRun):
+                 createTApdb, batchRun, overwrite):
         self.pathToPDB = pathToPDB
         self.outputDir = outputDir
         self.PDT = PDT
@@ -39,6 +39,7 @@ class rabdam():
         self.createAUCpdb = createAUCpdb
         self.createTApdb = createTApdb
         self.batchRun = batchRun
+        self.overwrite = overwrite
 
     def rabdam_dataframe(self, run):
         # Calculates BDamage for selected atoms within input PDB file and
@@ -177,7 +178,11 @@ class rabdam():
                       'no = do not overwrite this folder\n')
                 owChoice = None
                 while owChoice not in ['yes', 'no', 'y', 'n']:
-                    owChoice = raw_input(prompt).lower()
+                    if self.overwrite is True:
+                        owChoice = 'yes'
+                    elif self.overwrite is False:
+                        owChoice = raw_input(prompt).lower()
+
                     if owChoice == 'yes' or owChoice == 'y':
                         print '\nOverwriting existing folder'
                         shutil.rmtree(PDBdirectory)
@@ -229,10 +234,10 @@ class rabdam():
                     return
             os.chdir(owd)
 
-            if pathToPDB[-4:] not in ['.pdb', '.txt']:
+            if pathToPDB[-4:] != '.pdb':
                 if self.batchRun is False:
-                    sys.exit('ERROR: Supplied filepath to PDB is not a .pdb or'
-                             '.txt file')
+                    sys.exit('ERROR: Supplied filepath to PDB is not a .pdb '
+                             'file')
                 elif self.batchRun is True:
                     return
             else:
@@ -257,7 +262,11 @@ class rabdam():
                           'no = do not overwrite this folder\n')
                     owChoice = None
                     while owChoice not in ['yes', 'no', 'y', 'n']:
-                        owChoice = raw_input(prompt).lower()
+                        if self.overwrite is True:
+                            owChoice = 'yes'
+                        elif self.overwrite is False:
+                            owChoice = raw_input(prompt).lower()
+
                         if owChoice == 'yes' or owChoice == 'y':
                             print '\nOverwriting existing folder'
                             shutil.rmtree(PDBdirectory)

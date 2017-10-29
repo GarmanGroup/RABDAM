@@ -131,6 +131,7 @@ ucVal = False
 aucVal = False
 taVal = False
 batchVal = False
+overwriteVal = False
 run = 'rabdam'
 
 # If input file is provided, program options are updated to the values it
@@ -322,6 +323,16 @@ for x in xrange(0, len(splitArgs)):
         elif batchVal in ['false', 'no', 'f', 'n']:
             batchVal = False
 
+    # Specifies whether or not to overwrite files of the same name as the new
+    # output files to be created
+    if splitArgs[x][0:9].lower() == 'overwrite':
+        overwriteArg = splitArgs[x].split('=')
+        overwriteVal = overwriteArg[len(overwriteArg)-1].lower()
+        if overwriteVal in ['true', 'yes', 't', 'y']:
+            overwriteVal = True
+        elif overwriteVal in ['false', 'no', 'f', 'n']:
+            overwriteVal = False
+
 # Sets default option for -o flag (default = generate all output files bar the
 # summary file)
 if vars(args)['output'] is None:
@@ -340,7 +351,8 @@ for item in pathToPDBlist:
                          highlightAtoms=highlightAtomsList,
                          createOrigpdb=origVal, createAUpdb=auVal,
                          createUCpdb=ucVal, createAUCpdb=aucVal,
-                         createTApdb=taVal, batchRun=batchVal)
+                         createTApdb=taVal, batchRun=batchVal,
+                         overwrite=overwriteVal)
             if vars(args)['run'] is None:
                 # Runs full program
                 pdb.rabdam_dataframe(run='rabdam')
