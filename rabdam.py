@@ -118,6 +118,8 @@ if count == 0:
 
 # Initialises default program options
 outputLoc = cwd
+batchVal = False
+overwriteVal = False
 pdtList = [7.0]
 windowList = [0.02]
 protOrNAVal = 'protein'
@@ -130,8 +132,6 @@ auVal = False
 ucVal = False
 aucVal = False
 taVal = False
-batchVal = False
-overwriteVal = False
 run = 'rabdam'
 
 # If input file is provided, program options are updated to the values it
@@ -144,6 +144,27 @@ for x in xrange(0, len(splitArgs)):
         if outputLoc == '':
             outputLoc = cwd
         outputLoc = outputLoc.replace('\\', '/')
+
+    # Specifies if an error is encountered when analysing the current structure
+    # whether to exit the program (default) or to continue to analyse the next
+    # listed structure
+    elif splitArgs[x][0:8].lower() == 'batchtermination':
+        batchArg = splitArgs[x].split('=')
+        batchVal = batchArg[len(batchArg)-1].lower()
+        if batchVal in ['true', 'yes', 't', 'y']:
+            batchVal = True
+        elif batchVal in ['false', 'no', 'f', 'n']:
+            batchVal = False
+
+    # Specifies whether or not to overwrite files of the same name as the new
+    # output files to be created
+    elif splitArgs[x][0:9].lower() == 'overwrite':
+        overwriteArg = splitArgs[x].split('=')
+        overwriteVal = overwriteArg[len(overwriteArg)-1].lower()
+        if overwriteVal in ['true', 'yes', 't', 'y']:
+            overwriteVal = True
+        elif overwriteVal in ['false', 'no', 'f', 'n']:
+            overwriteVal = False
 
     # Specifies packing density threshold
     elif splitArgs[x][0:3].lower() == 'pdt':
@@ -311,27 +332,6 @@ for x in xrange(0, len(splitArgs)):
             taVal = True
         elif taVal in ['false', 'no', 'f', 'n']:
             taVal = False
-
-    # Specifies if an error is encountered when analysing the current structure
-    # whether to exit the program (default) or to continue to analyse the next
-    # listed structure
-    if splitArgs[x][0:8].lower() == 'batchrun':
-        batchArg = splitArgs[x].split('=')
-        batchVal = batchArg[len(batchArg)-1].lower()
-        if batchVal in ['true', 'yes', 't', 'y']:
-            batchVal = True
-        elif batchVal in ['false', 'no', 'f', 'n']:
-            batchVal = False
-
-    # Specifies whether or not to overwrite files of the same name as the new
-    # output files to be created
-    if splitArgs[x][0:9].lower() == 'overwrite':
-        overwriteArg = splitArgs[x].split('=')
-        overwriteVal = overwriteArg[len(overwriteArg)-1].lower()
-        if overwriteVal in ['true', 'yes', 't', 'y']:
-            overwriteVal = True
-        elif overwriteVal in ['false', 'no', 'f', 'n']:
-            overwriteVal = False
 
 # Sets default option for -o flag (default = generate all output files bar the
 # summary file)
