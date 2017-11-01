@@ -148,7 +148,7 @@ for x in xrange(0, len(splitArgs)):
     # Specifies if an error is encountered when analysing the current structure
     # whether to exit the program (default) or to continue to analyse the next
     # listed structure
-    elif splitArgs[x][0:8].lower() == 'batchtermination':
+elif splitArgs[x][0:16].lower() == 'batchtermination':
         batchArg = splitArgs[x].split('=')
         batchVal = batchArg[len(batchArg)-1].lower()
         if batchVal in ['true', 'yes', 't', 'y']:
