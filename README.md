@@ -99,7 +99,7 @@ RABDAM is a command line program. There are four main command line flags that co
 <br></br>
 The `-i` and `-f` flags control the input to the program. One of these two mutually exclusive flags is required for RABDAM to run.
 
-The `-i` flag is used to specify the name of the input txt file that lists your selected program parameter values (see the "*Constructing an input file*"’ section below for details of what this input file should include). If the input file is located in the same directory as the rabdam.py script, you only need provide the file name to run RABDAM:
+The `-i` flag is used to specify the name of the input txt file that lists your selected program parameter values (see the "*Constructing an input file*" section below for details of what this input file should include). If the input file is located in the same directory as the rabdam.py script, you only need provide the file name to run RABDAM:
 
 `python rabdam.py -i input_file.txt`
 
