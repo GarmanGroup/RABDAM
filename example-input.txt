@@ -1,6 +1,6 @@
 2BLP, 2BLZ,
 dir=C:\Users\UserName\Documents\RABDAM_test_output,
-batchTermination=False,
+batchContinue=False,
 overwrite=False,
 PDT=7,
 windowSize=0.02,

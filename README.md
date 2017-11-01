@@ -157,7 +157,7 @@ Either a 4 character PDB accession code, or an absolute file path (which may con
 
 The location of the directory (specified by its absolute file path) in which you would like the program output files to be written. If not specified, this defaults to the current working directory, *i.e.* that in which the rabdam.py script is located.
 
-- Option to ignore errors encountered during batch runs, *batchTermination*
+- Option to ignore errors encountered during batch runs, *batchContinue*
 
 Directs the program, if it encounters a recognised program error during a batch run, to either skip to the next structure in the list ("*True*") or to terminate ("*False*", default behaviour).
 
@@ -226,7 +226,7 @@ Below is an example input file instructing RABDAM to analyse the RNase structure
 ```
 2BLP, 2BLZ,
 dir=C:\Users\UserName\Documents\RABDAM_test_output,
-batchTermination=False,
+batchContinue=False,
 overwrite=False,
 PDT=7,
 windowSize=0.02,
