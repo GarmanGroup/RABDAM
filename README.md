@@ -163,7 +163,7 @@ Directs the program, if it encounters a recognised program error during a batch 
 
 - Option to overwrite pre-existing files with the same name as the new output files, *overwrite*
 
-Directs the program, if it encounters files of the same name as the output files it is going to write already present in the output directory, to always overwrite these pre-exisiting files ("*True*"), or to ask the user for a decision for each case encountered ("*False*", default behaviour).
+Directs the program, if it encounters files of the same name as the output files it is going to write already present in the output directory, to always overwrite these pre-existing files ("*True*"), or to ask the user for a decision for each case encountered ("*False*", default behaviour).
 
 -	The packing density threshold, *PDT*
 
@@ -183,7 +183,7 @@ Specifies whether to include protein atoms (“*Protein*”) or nucleic acid ato
 
 -	Option to remove atoms from the *B*<sub>Damage</sub> calculation, *removeAtoms*
 
-Allows the removal of individual atoms (specified either by their atom serial number or by their residue type) from the *B*<sub>Damage</sub> calculation (by default no atoms are removed using this parameter). For convenience when writing the input file, it is possible to specify multiple atoms at once (see the guidelines below for providing multiple values for the same parameter). This parameter is useful to allow removal of atoms with anomalously high / low *B*<sub>factors</sub>, as for example occurs when amino acid side chains are modelled in the absence of electron density **Do not change the value of this parameter unless you know what you are doing!**
+Allows the removal of individual atoms (specified either by their atom serial number or by their residue type) from the *B*<sub>Damage</sub> calculation (by default no atoms are removed using this parameter). For convenience when writing the input file, it is possible to specify multiple atoms at once (see the guidelines below for providing multiple values for the same parameter). This parameter is useful to allow removal of atoms with anomalously high / low *B*<sub>factors</sub>, as for example occurs when amino acid side chains are modelled in the absence of electron density. **Do not change the value of this parameter unless you know what you are doing!**
 
 -	Option to add atoms in to the *B*<sub>Damage</sub> calculation, *addAtoms*
 
@@ -193,7 +193,7 @@ Allows the addition of individual atoms (specified either by their atom serial n
 
 Highlights the *B*<sub>Damage</sub> values of specified atoms on the output kernel density estimate (by default no atoms are highlighted). Atoms are specified by their serial numbers as listed in the input PDB file provided to RABDAM. It is possible to highlight multiple atoms at once (see the guidelines below for providing multiple values for the same parameter); note however that it is recommended no more than 6 atoms are specified at once (beyond 6 atoms the graph colour scheme will repeat itself, furthermore the complete key might not fit onto the plot).
 
--	Option to create a copy of the original PDB file, *createOrigPDB*
+-	Option to create a copy of the original PDB file, *createOrigpdb*
 
 Writes a copy of the input PDB file provided to the program to the output directory when set to "*True*" (by default this parameter is set to "*False*").
 
