@@ -321,6 +321,7 @@ class generate_output_files():
         if len(highlightAtoms) != 0:
             highlightAtoms = [int(number) for number in highlightAtoms]
             sub_df_highlight = self.df[(self.df.ATMNUM.isin(highlightAtoms))]
+            sub_df_highlight = sub_df_highlight.round({'AVRG BF': 2, 'BDAM': 2})
 
         # Filter the complete DataFrame to retain the atoms with highest
         # BDamage values (> 1.96o = 2-tailed 95% confidence interval)
@@ -335,6 +336,7 @@ class generate_output_files():
             if value > cut:
                 cut_index = index
         sub_df_top_site = sorted_df.drop(sorted_df.index[cut_index+1:])
+        sub_df_top_site = sub_df_top_site.round({'AVRG BF': 2, 'BDAM': 2})
 
         # Filters the complete DataFrame to retain only Glu and Asp terminal
         # oxygen atoms.
@@ -344,9 +346,11 @@ class generate_output_files():
                     & (self.df.ATMNAME.isin(['OD1', 'OD2']))]
         dataframes = [a, b]
         sub_df_prot = pd.concat(dataframes)
+        sub_df_prot = sub_df_prot.round({'AVRG BF': 2, 'BDAM': 2})
         # Filters the complete DataFrame to retain only atoms of
         # sugar-phosphate C-O bonds
         sub_df_na = self.df[self.df.ATMNAME.isin(["O3'", "O5'", "C3'", "C5'"])]
+        sub_df_na = sub_df_na.round({'AVRG BF': 2, 'BDAM': 2})
 
         # Opens summary html file
         html_file = open(self.pdb_file_path + '_BDamage.html', 'w')
