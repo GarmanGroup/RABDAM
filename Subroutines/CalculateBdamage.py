@@ -22,9 +22,10 @@
 class rabdam():
     def __init__(self, pathToPDB, outputDir, PDT, windowSize, protOrNA, HETATM,
                  addAtoms, removeAtoms, highlightAtoms, createOrigpdb,
-                 createAUpdb, createUCpdb, createAUCpdb,
-                 createTApdb, batchRun, overwrite):
+                 createAUpdb, createUCpdb, createAUCpdb, createTApdb,
+                 batchRun, overwrite):
         self.pathToPDB = pathToPDB
+        self.origPathToPDB = pathToPDB
         self.outputDir = outputDir
         self.PDT = PDT
         self.windowSize = windowSize
@@ -229,7 +230,7 @@ class rabdam():
             os.chdir(disk)
             if not os.path.exists(pathToPDB):
                 if self.batchRun is False:
-                    sys.exit('ERROR: Supplied filepath not recognised')
+                    sys.exit('ERROR: Supplied pdb filepath not recognised')
                 elif self.batchRun is True:
                     return
             os.chdir(owd)
@@ -485,8 +486,8 @@ class rabdam():
         storage_file = '%s/%s' % (storage, PDBcode)
         df.to_pickle(storage_file + '_dataframe.pkl')
         with open(storage_file + '_variables.pkl', 'wb') as f:
-            pickle.dump((pdb_file_path, PDBcode, bdamAtomList, header_lines,
-                         footer_lines, window), f)
+            pickle.dump((pdb_file_path, self.origPathToPDB, PDBcode,
+                         bdamAtomList, header_lines, footer_lines, window), f)
 
         print('****************************************************************\n'
               '*************** End Of Writing DataFrame Section ***************\n')
@@ -503,7 +504,9 @@ class rabdam():
         import sys
         prompt = '> '
         import pickle
+        import requests
         import pandas as pd
+        from parsePDB import download_cif, copy_cif
         from output import generate_output_files
         from makeDataFrame import makePDB
 
@@ -589,8 +592,8 @@ class rabdam():
         # Pkl files unpickled
         print 'Unpickling DataFrame and variables\n'
         with open(storage_file + '_variables.pkl', 'rb') as f:
-            (pdb_file_path, PDBcode, bdamAtomList, header_lines, footer_lines,
-             window) = pickle.load(f)
+            (pdb_file_path, origPathToPDB, PDBcode, bdamAtomList, header_lines,
+             footer_lines, window) = pickle.load(f)
         df = pd.read_pickle(storage_file + '_dataframe.pkl')
 
         print('************** End Of Processing DataFrame Section *************\n'
@@ -622,6 +625,45 @@ class rabdam():
             pdb_file_name = pdb_file_path + '_BDamage.pdb'
             makePDB(header_lines, bdamAtomList, footer_lines, pdb_file_name,
                     'BDamage')
+
+        if 'cif' in output_options:
+            if len(origPathToPDB) == 4:
+                # Checks whether cif url exists
+                url = 'http://www.rcsb.org/pdb/files/%s.pdb' % PDBcode
+                header = requests.get(url)
+                if header.status_code >= 300:
+                   if self.batchRun is False:
+                       sys.exit('ERROR: Failed to download cif file with '
+                                'accession code %s:\n'
+                                'check that this PDB accession code exists.'
+                                % PDBcode)
+                   elif self.batchRun is True:
+                       return
+
+                print '\nDownloading cif file from RCSB website'
+                orig_cif_lines = download_cif(PDBcode)
+                print 'Writing cif file with BDamage column'
+                output.write_output_cif(orig_cif_lines)
+
+            else:
+                print '\nPath to cif file supplied'
+                splitPath = origPathToPDB.split('/')
+                disk = '%s/' % splitPath[0]
+                owd = os.getcwd()
+                os.chdir('/')
+                os.chdir(disk)
+                pathTocif = origPathToPDB.replace('.pdb', '.cif')
+                if not os.path.exists(pathTocif):
+                    if self.batchRun is False:
+                        sys.exit('\nERROR: Supplied cif filepath not recognised')
+                    elif self.batchRun is True:
+                        return
+                os.chdir(owd)
+
+                pathTocif = origPathToPDB.replace('.pdb', '.cif')
+                orig_cif_lines = copy_cif(pathTocif, disk)
+                print 'Writing cif file with BDamage column'
+                output.write_output_cif(orig_cif_lines)
 
         if 'kde' in output_options or 'summary' in output_options:
             print '\nPlotting kernel density estimate\n'

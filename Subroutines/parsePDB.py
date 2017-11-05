@@ -61,10 +61,22 @@ def downloadPDB(PDBcode, PDBdirectory, pathToPDB):
     print 'PDB file saved to %s' % pathToPDB
     localFile.close()
 
+def download_cif(PDBcode):
+    # Downloads and saves cif file from the RSCB PDB website.
+
+    import requests
+
+    urlText = 'http://www.rcsb.org/pdb/files/%s.cif' % PDBcode
+    orig_cif = requests.get(urlText)
+    orig_cif = orig_cif.text.split('\n')
+    orig_cif_lines = [line.replace('\r', '') for line in orig_cif]
+    orig_cif_lines = [line.replace('\n', '') for line in orig_cif_lines]
+
+    return orig_cif_lines
+
 
 def copyPDB(pathToPDB, disk, newPathToPDB, PDBdirectory):
-    # Copies .pdb / .txt file from any provided file path to Logfiles
-    # directory.
+    # Copies .pdb file from any provided file path to Logfiles directory.
 
     import os
 
@@ -79,6 +91,23 @@ def copyPDB(pathToPDB, disk, newPathToPDB, PDBdirectory):
     print 'PDB file copied to %s' % newPathToPDB
     localFile.close()
     origPDB.close()
+
+
+def copy_cif(pathTocif, disk):
+    # Copies .cif file from any provided file path to Logfiles directory.
+
+    import os
+
+    owd = os.getcwd()
+    os.chdir('/')  # Changes directory to root directory
+    os.chdir(disk)
+    orig_cif = open(pathTocif, 'r')
+    os.chdir(owd)
+    orig_cif_lines = [line.replace('\r', '') for line in orig_cif]
+    orig_cif_lines = [line.replace('\n', '') for line in orig_cif_lines]
+    orig_cif.close()
+
+    return orig_cif_lines
 
 
 def full_atom_list(fileName):

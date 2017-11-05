@@ -336,7 +336,7 @@ for x in xrange(0, len(splitArgs)):
 # Sets default option for -o flag (default = generate all output files bar the
 # summary file)
 if vars(args)['output'] is None:
-    vars(args)['output'] = ['csv', 'pdb', 'kde', 'bnet', 'summary']
+    vars(args)['output'] = ['csv', 'pdb', 'cif', 'kde', 'bnet', 'summary']
 output_options = [item.lower() for item in vars(args)['output']]
 
 # Runs the BDamage calculation for every specified PDB file
@@ -344,10 +344,10 @@ for item in pathToPDBlist:
     for windowVal in windowList:
         for pdtVal in pdtList:
             # Initialises rabdam object
-            pdb = rabdam(pathToPDB=item, outputDir=outputLoc, PDT=pdtVal,
-                         windowSize=windowVal, protOrNA=protOrNAVal,
-                         HETATM=hetatmVal, addAtoms=addAtomsList,
-                         removeAtoms=removeAtomsList,
+            pdb = rabdam(pathToPDB=item,
+                         outputDir=outputLoc, PDT=pdtVal, windowSize=windowVal,
+                         protOrNA=protOrNAVal, HETATM=hetatmVal,
+                         addAtoms=addAtomsList, removeAtoms=removeAtomsList,
                          highlightAtoms=highlightAtomsList,
                          createOrigpdb=origVal, createAUpdb=auVal,
                          createUCpdb=ucVal, createAUCpdb=aucVal,

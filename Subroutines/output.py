@@ -25,6 +25,62 @@ class generate_output_files():
         self.pdb_code = pdb_file_path.split('/')[-1]
         self.df = df
 
+    def write_output_cif(self, orig_cif_lines):
+        x_list = self.df.XPOS.tolist()
+        y_list = self.df.YPOS.tolist()
+        z_list = self.df.ZPOS.tolist()
+        b_dam_list= self.df.BDAM.tolist()
+
+        new_cif = open('%s_BDamage.cif' % self.pdb_file_path, 'w')
+        for line in orig_cif_lines:
+            if line.startswith('_atom_site.B_iso_or_equiv'):
+                new_cif.write('%s\n' % line)
+                new_cif.write('%s\n' % line.replace('_atom_site.B_iso_or_equiv',
+                                                    '_atom_site.B_Damage'))
+            else:
+                if not line[0:6].strip() in ['ATOM', 'HETATM']:
+                    new_cif.write('%s\n' % line)
+                elif line[0:6].strip() in ['ATOM', 'HETATM']:
+                    line_start = line[0:63]
+                    line_end = line[63:]
+
+                    x = float(line[32:38])
+                    y = float(line[39:45])
+                    z = float(line[46:52])
+                    x_indices = []
+                    y_indices = []
+                    z_indices = []
+
+                    for index, value in enumerate(x_list):
+                        if x == value:
+                            x_indices.append(index)
+                    for index, value in enumerate(y_list):
+                        if y == value:
+                            y_indices.append(index)
+                    for index, value in enumerate(z_list):
+                        if z == value:
+                            z_indices.append(index)
+
+                    index = ''
+                    for x_index in x_indices:
+                        if x_index in y_indices and x_index in z_indices:
+                            index = x_index
+                            break
+
+                    try:
+                        int(index)
+                        b_dam = b_dam_list[index]
+                        b_dam = '{:.2f}'.format(b_dam)
+                        b_dam = b_dam.ljust(4)
+                        line_middle = ' %s' % b_dam
+                    except ValueError:
+                        line_middle = ' .   '
+
+                    new_line = line_start + line_middle + line_end
+                    new_cif.write('%s\n' % new_line)
+        new_cif.close()
+
+
     def make_csv(self, bdamatomList, window):
         # Returns a csv file containing a complete set of atom information
         # (including both that provided in the input PDB file and also the
