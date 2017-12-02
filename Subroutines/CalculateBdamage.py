@@ -462,8 +462,8 @@ class rabdam(object):
         window = int(round((len(bdamAtomList)*self.windowSize), 0))
         if window % 2 == 0:
             window = window + 1  # Window size must be an odd number.
-        if window < 9:
-            window = 9  # Minimum window size is 11.
+        if window < 11:
+            window = 11  # Minimum window size is 11.
         print 'Size of sliding window --> %s atoms\n' % window
         calcBdam(bdamAtomList, window)
 
