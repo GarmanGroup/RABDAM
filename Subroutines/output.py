@@ -19,7 +19,7 @@
 # <http://www.gnu.org/licenses/>.
 
 
-class generate_output_files():
+class generate_output_files(object):
     def __init__(self, pdb_file_path, df):
         self.pdb_file_path = pdb_file_path
         self.pdb_code = pdb_file_path.split('/')[-1]
@@ -142,7 +142,7 @@ class generate_output_files():
         plt.title(self.pdb_code + ' BDamage kernel density plot')
         plt.savefig(self.pdb_file_path + '_BDamage.svg')
 
-    def calculate_Bnet(self, window_name, pdt_name, count, window):
+    def calculate_Bnet(self, window_name, pdt_name, window):
         # Plots a kernel density estimate of the BDamage values of Glu O and
         # Asp O atoms. The summary metric Bnet is then calculated as the ratio
         # of the areas under the curve either side of the median (of the
@@ -156,12 +156,8 @@ class generate_output_files():
         sns.set()
 
         # Selects Glu / Asp terminal oxygen atoms from complete DataFrame.
-        a = self.df[(self.df.RESNAME.isin(['GLU']))
-                    & (self.df.ATMNAME.isin(['OE1', 'OE2']))]
-        b = self.df[(self.df.RESNAME.isin(['ASP']))
-                    & (self.df.ATMNAME.isin(['OD1', 'OD2']))]
-        dataframes = [a, b]
-        prot = pd.concat(dataframes)
+        prot = self.df[(self.df.RESNAME.isin(['GLU', 'ASP']))
+                       & (self.df.ATMNAME.isin(['OE1', 'OE2', 'OD1', 'OD2']))]
         # Selects atoms of sugar-phosphate C-O bonds from complete DataFrame.
         na = self.df[self.df.ATMNAME.isin(["O3'", "O5'", "C3'", "C5'"])]
 
@@ -191,19 +187,20 @@ class generate_output_files():
             xy_values = plot.get_lines()[0].get_data()
             x_values = xy_values[0]
             y_values = xy_values[1]
+            height = (x_values[-1]-x_values[0]) / (len(x_values)-1)
 
             total_area_LHS = 0
             for index, value in enumerate(y_values):
                 if x_values[index] < median:
                     area_LHS = (((y_values[index] + y_values[index+1]) / 2)
-                                * ((x_values[-1]-x_values[0]) / (len(x_values)-1)))
+                                * height)
                     total_area_LHS = total_area_LHS + area_LHS
 
             total_area_RHS = 0
             for index, value in enumerate(y_values):
                 if x_values[index] >= median and index < len(y_values)-1:
                     area_RHS = (((y_values[index] + y_values[index+1]) / 2)
-                                * ((x_values[-1]-x_values[0]) / (len(x_values)-1)))
+                                * height)
                     total_area_RHS = total_area_RHS + area_RHS
 
             # Calculates area ratio (= Bnet)
@@ -217,22 +214,21 @@ class generate_output_files():
                          fontsize=10)
             plt.savefig(self.pdb_file_path + '_Bnet_Protein.svg')
 
-            if count > 1:
-                if not os.path.isfile('Logfiles/Bnet_Protein.csv'):
-                    Bnet_list = open('Logfiles/Bnet_Protein.csv', 'w')
-                    Bnet_list.write('PDB' + ',')
-                    Bnet_list.write('Bnet' + ',')
-                    Bnet_list.write('Window_size' + ',')
-                    Bnet_list.write('Window_size (%)' + ',')
-                    Bnet_list.write('PDT' + ',')
-                    Bnet_list.close()
-                Bnet_list = open('Logfiles/Bnet_Protein.csv', 'a')
-                Bnet_list.write('\n%s' % self.pdb_code + ',')
-                Bnet_list.write('%s' % ratio + ',')
-                Bnet_list.write('%s' % window + ',')
-                Bnet_list.write('%s' % window_name + ',')
-                Bnet_list.write('%s' % pdt_name + ',')
+            if not os.path.isfile('Logfiles/Bnet_Protein.csv'):
+                Bnet_list = open('Logfiles/Bnet_Protein.csv', 'w')
+                Bnet_list.write('PDB' + ',')
+                Bnet_list.write('Bnet' + ',')
+                Bnet_list.write('Window_size' + ',')
+                Bnet_list.write('Window_size (%)' + ',')
+                Bnet_list.write('PDT' + '\n')
                 Bnet_list.close()
+            Bnet_list = open('Logfiles/Bnet_Protein.csv', 'a')
+            Bnet_list.write('%s' % self.pdb_code + ',')
+            Bnet_list.write('%s' % ratio + ',')
+            Bnet_list.write('%s' % window + ',')
+            Bnet_list.write('%s' % window_name + ',')
+            Bnet_list.write('%s' % pdt_name + '\n')
+            Bnet_list.close()
 
         if not na.empty:
             # Calculates median of nucleic acid BDamage distribution
@@ -257,19 +253,20 @@ class generate_output_files():
             xy_values = plot.get_lines()[0].get_data()
             x_values = xy_values[0]
             y_values = xy_values[1]
+            height = (x_values[-1]-x_values[0]) / (len(x_values)-1)
 
             total_area_LHS = 0
             for index, value in enumerate(y_values):
                 if x_values[index] < median:
                     area_LHS = (((y_values[index] + y_values[index+1]) / 2)
-                                * ((x_values[-1]-x_values[0]) / (len(x_values)-1)))
+                                * height)
                     total_area_LHS = total_area_LHS + area_LHS
 
             total_area_RHS = 0
             for index, value in enumerate(y_values):
                 if x_values[index] >= median and index < len(y_values)-1:
                     area_RHS = (((y_values[index] + y_values[index+1]) / 2)
-                                * ((x_values[-1]-x_values[0]) / (len(x_values)-1)))
+                                * height)
                     total_area_RHS = total_area_RHS + area_RHS
 
             # Calculates area ratio (= Bnet)
@@ -283,22 +280,21 @@ class generate_output_files():
                          fontsize=10)
             plt.savefig(str(self.pdb_file_path)+'_Bnet_NA.svg')
 
-            if count > 1:
-                if not os.path.isfile('Logfiles/Bnet_NA.csv'):
-                    Bnet_list = open('Logfiles/Bnet_NA.csv', 'w')
-                    Bnet_list.write('PDB' + ',')
-                    Bnet_list.write('Bnet' + ',')
-                    Bnet_list.write('Window_size' + ',')
-                    Bnet_list.write('Window_size (%)' + ',')
-                    Bnet_list.write('PDT' + ',')
-                    Bnet_list.close()
-                Bnet_list = open('Logfiles/Bnet_NA.csv', 'a')
-                Bnet_list.write('\n%s' % self.pdb_code + ',')
-                Bnet_list.write('%s' % ratio + ',')
-                Bnet_list.write('%s' % window + ',')
-                Bnet_list.write('%s' % window_name + ',')
-                Bnet_list.write('%s' % pdt_name + ',')
+            if not os.path.isfile('Logfiles/Bnet_NA.csv'):
+                Bnet_list = open('Logfiles/Bnet_NA.csv', 'w')
+                Bnet_list.write('PDB' + ',')
+                Bnet_list.write('Bnet' + ',')
+                Bnet_list.write('Window_size' + ',')
+                Bnet_list.write('Window_size (%)' + ',')
+                Bnet_list.write('PDT' + '\n')
                 Bnet_list.close()
+            Bnet_list = open('Logfiles/Bnet_NA.csv', 'a')
+            Bnet_list.write('%s' % self.pdb_code + ',')
+            Bnet_list.write('%s' % ratio + ',')
+            Bnet_list.write('%s' % window + ',')
+            Bnet_list.write('%s' % window_name + ',')
+            Bnet_list.write('%s' % pdt_name + '\n')
+            Bnet_list.close()
 
     def write_html_summary(self, cwd, output_options, highlightAtoms):
         # Writes an html file summarising the results generated by RABDAM.
@@ -320,7 +316,7 @@ class generate_output_files():
         # be highlighted (default = none) by the user in the input file
         if len(highlightAtoms) != 0:
             highlightAtoms = [int(number) for number in highlightAtoms]
-            sub_df_highlight = self.df[(self.df.ATMNUM.isin(highlightAtoms))]
+            sub_df_highlight = self.df[self.df.ATMNUM.isin(highlightAtoms)]
             sub_df_highlight = sub_df_highlight.round({'AVRG BF': 2, 'BDAM': 2})
 
         # Filter the complete DataFrame to retain the atoms with highest
@@ -335,17 +331,15 @@ class generate_output_files():
         for index, value in enumerate(ln_b_dam_values.tolist()):
             if value > cut:
                 cut_index = index
+            else:
+                break
         sub_df_top_site = sorted_df.drop(sorted_df.index[cut_index+1:])
         sub_df_top_site = sub_df_top_site.round({'AVRG BF': 2, 'BDAM': 2})
 
         # Filters the complete DataFrame to retain only Glu and Asp terminal
         # oxygen atoms.
-        a = self.df[(self.df.RESNAME.isin(['GLU']))
-                    & (self.df.ATMNAME.isin(['OE1', 'OE2']))]
-        b = self.df[(self.df.RESNAME.isin(['ASP']))
-                    & (self.df.ATMNAME.isin(['OD1', 'OD2']))]
-        dataframes = [a, b]
-        sub_df_prot = pd.concat(dataframes)
+        sub_df_prot = self.df[(self.df.RESNAME.isin(['GLU', 'ASP']))
+                              & (self.df.ATMNAME.isin(['OE1', 'OE2', 'OD1', 'OD2']))]
         sub_df_prot = sub_df_prot.round({'AVRG BF': 2, 'BDAM': 2})
         # Filters the complete DataFrame to retain only atoms of
         # sugar-phosphate C-O bonds

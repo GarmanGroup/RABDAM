@@ -25,6 +25,7 @@ def check_RABDAM_dependencies():
 
     import imp
     import os
+    import platform
     import pkg_resources  # Not in standard Python library, but currently I
     # can't find an alternative method to get the version of a Python package
 
@@ -67,9 +68,14 @@ def check_RABDAM_dependencies():
 
     # Checks that CCP4 has been downloaded and is accessible in the command
     # prompt / terminal being used
-    os.system('pdbcur > test.txt')
+    operating_system = platform.system().strip()
+    if operating_system.lower() == 'windows':
+        os.system('pdbcur > test.txt')
+    else:
+        os.system('pdbcur > test.txt 2>&1')
+
     test_file = open('test.txt', 'r')
-    test_file_lines = test_file.read()
+    test_file_lines = test_file.readlines()
     if test_file_lines == []:
         dependencies_met = False
         print ('\nCCP4 program suite not found. If you have downloaded the\n'
@@ -77,7 +83,7 @@ def check_RABDAM_dependencies():
                'terminal / command prompt that can run CCP4 programs')
     else:
         test_file_line = test_file_lines[0]
-        if 'pdbcur:command not found' in test_file_line.replace(' ', ''):
+        if 'pdbcur:commandnotfound' in test_file_line.replace(' ', ''):
             dependencies_met = False
             print ('\nCCP4 program suite not found. If you have downloaded the\n'
                    'CCP4 suite, ensure that you are running RABDAM in a\n'

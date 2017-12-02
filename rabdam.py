@@ -44,15 +44,15 @@ input_file_group.add_argument('--dependencies', action='store_true',
                               help='Checks whether your system has the '
                               'necessary packages / programs installed in '
                               'order to be able to run RABDAM')
-input_file_group.add_argument('-i', '--input', help='Path to input file '
-                              'listing program parameter values')
+input_file_group.add_argument('-i', '--input', help='Absolute path to input '
+                              'file listing program parameter values')
 input_file_group.add_argument('-f', '--pdb_file', nargs='+', help='Specifies '
                               'input pdb file (via either a 4 character PDB '
-                              'accession code or a file path) for BDamage '
-                              'analysis - this option allows the RABDAM '
-                              'program to be run (using default program '
-                              'parameter values) without providing an input '
-                              'file listing program options')
+                              'accession code or an absolute file path) for '
+                              'BDamage analysis - this option allows the '
+                              'RABDAM program to be run (using default '
+                              'program parameter values) without providing an '
+                              'input file listing program options')
 parser.add_argument('-r', '--run', help='Specifies whether to run the '
                     'complete program (= default), to calculate BDamage '
                     'values only ("df" / "dataframe"), or to analyse '
@@ -112,8 +112,7 @@ elif vars(args)['pdb_file'] is not None:
     pathToPDBlist = vars(args)['pdb_file']
     splitArgs = []
 
-count = len(pathToPDBlist)
-if count == 0:
+if len(pathToPDBlist) == 0:
     sys.exit('No input PDB code / file provided')
 
 # Initialises default program options
@@ -124,8 +123,8 @@ pdtList = [7.0]
 windowList = [0.02]
 protOrNAVal = 'protein'
 hetatmVal = False
-addAtomsList = []
 removeAtomsList = []
+addAtomsList = []
 highlightAtomsList = []
 origVal = False
 auVal = False
@@ -174,7 +173,7 @@ for x in xrange(0, len(splitArgs)):
             pdtRange = pdtArg.split('-')
             min_pdt = float(pdtRange[0])
             max_pdt = float(pdtRange[len(pdtRange)-1])
-            pdtList = np.arange(min_pdt, max_pdt, 0.5)
+            pdtList = np.arange(min_pdt, max_pdt, 1.0)
         else:
             pdtList = [float(pdtArg)]
 
@@ -221,27 +220,6 @@ for x in xrange(0, len(splitArgs)):
             hetatmVal = False
 
     # Lists atoms (via either their atom numbers or their residue names) to be
-    # included in the BDamage calculation. (This is useful to add back in a
-    # subset of atoms of interest that has been removed by the
-    # proteinOrNucleicAcid / HETATM / removeAtoms options.)
-    elif splitArgs[x][0:8].lower() == 'addatoms':
-        addAtomsList = []
-        addAtomsArg = splitArgs[x].split('=')
-        addAtomsStr = addAtomsArg[len(addAtomsArg)-1].upper()
-        if addAtomsStr != '':
-            addAtomsSubList = addAtomsStr.split(';')
-            for item in addAtomsSubList:
-                addAtomsRange = item.split('-')
-                if len(addAtomsRange) == 2:
-                    min_val = int(addAtomsRange[-2])
-                    max_val = int(addAtomsRange[-1])
-                    addAtomsRange = xrange(min_val, (max_val+1))
-                    for number in addAtomsRange:
-                        addAtomsList.append(str(number))
-                elif len(addAtomsRange) == 1:
-                    addAtomsList.append(addAtomsRange[-1])
-
-    # Lists atoms (via either their atom numbers or their residue names) to be
     # removed from the BDamage calculation. (This is useful to remove
     # additional atoms not covered by the proteinOrNucleicAcid / HETATM
     # options.)
@@ -261,6 +239,27 @@ for x in xrange(0, len(splitArgs)):
                         removeAtomsList.append(str(number))
                 elif len(removeAtomsRange) == 1:
                     removeAtomsList.append(removeAtomsRange[-1])
+
+    # Lists atoms (via either their atom numbers or their residue names) to be
+    # included in the BDamage calculation. (This is useful to add back in a
+    # subset of atoms of interest that has been removed by the
+    # proteinOrNucleicAcid / HETATM / removeAtoms options.)
+    elif splitArgs[x][0:8].lower() == 'addatoms':
+        addAtomsList = []
+        addAtomsArg = splitArgs[x].split('=')
+        addAtomsStr = addAtomsArg[len(addAtomsArg)-1].upper()
+        if addAtomsStr != '':
+            addAtomsSubList = addAtomsStr.split(';')
+            for item in addAtomsSubList:
+                addAtomsRange = item.split('-')
+                if len(addAtomsRange) == 2:
+                    min_val = int(addAtomsRange[-2])
+                    max_val = int(addAtomsRange[-1])
+                    addAtomsRange = xrange(min_val, (max_val+1))
+                    for number in addAtomsRange:
+                        addAtomsList.append(str(number))
+                elif len(addAtomsRange) == 1:
+                    addAtomsList.append(addAtomsRange[-1])
 
     # Lists atoms (via their atom numbers) whose BDamage values are to be
     # indicated on the kernel density estimate of the BDamage distribution
@@ -344,20 +343,20 @@ for item in pathToPDBlist:
     for windowVal in windowList:
         for pdtVal in pdtList:
             # Initialises rabdam object
-            pdb = rabdam(pathToPDB=item, outputDir=outputLoc, PDT=pdtVal,
-                         windowSize=windowVal, protOrNA=protOrNAVal,
-                         HETATM=hetatmVal, addAtoms=addAtomsList,
-                         removeAtoms=removeAtomsList,
+            pdb = rabdam(pathToPDB=item, outputDir=outputLoc,
+                         batchRun=batchVal, overwrite=overwriteVal,
+                         PDT=pdtVal, windowSize=windowVal,
+                         protOrNA=protOrNAVal, HETATM=hetatmVal,
+                         addAtoms=addAtomsList, removeAtoms=removeAtomsList,
                          highlightAtoms=highlightAtomsList,
                          createOrigpdb=origVal, createAUpdb=auVal,
                          createUCpdb=ucVal, createAUCpdb=aucVal,
-                         createTApdb=taVal, batchRun=batchVal,
-                         overwrite=overwriteVal)
+                         createTApdb=taVal)
             if vars(args)['run'] is None:
                 # Runs full program
                 pdb.rabdam_dataframe(run='rabdam')
                 pdb.rabdam_analysis(run='rabdam',
-                                    output_options=output_options, count=count)
+                                    output_options=output_options)
             elif vars(args)['run'].lower() in ['dataframe', 'df']:
                 # Runs subset of program; calculates BDamage values and writes
                 # them to a DataFrame
@@ -366,7 +365,7 @@ for item in pathToPDBlist:
                 # Runs subset of program; generates output analysis files from
                 # pre-calculated BDamage values
                 pdb.rabdam_analysis(run='rabdam_analysis',
-                                    output_options=output_options, count=count)
+                                    output_options=output_options)
 
 
 # Prints total program run time to screen

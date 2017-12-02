@@ -62,7 +62,7 @@ def makePDB(header_lines, atomList, footer_lines, newPDBfilename, Bfac):
     for line in footer_lines:
         newPDBfile.write(line)
 
-    print '\nNew PDB file saved to %s' % newPDBfilename
+    print 'New PDB file saved to %s' % newPDBfilename
     newPDBfile.close()
 
 
