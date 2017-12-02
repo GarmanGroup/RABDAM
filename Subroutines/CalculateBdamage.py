@@ -20,11 +20,12 @@
 
 
 class rabdam(object):
-    def __init__(self, pathToPDB, outputDir, batchRun, overwrite, PDT,
-                 windowSize, protOrNA, HETATM, addAtoms, removeAtoms,
+    def __init__(self, pathToPDB, pathTocif, outputDir, batchRun, overwrite,
+                 PDT, windowSize, protOrNA, HETATM, addAtoms, removeAtoms,
                  highlightAtoms, createOrigpdb, createAUpdb, createUCpdb,
                  createAUCpdb, createTApdb):
         self.pathToPDB = pathToPDB
+        self.pathTocif = pathTocif
         self.outputDir = outputDir
         self.batchRun = batchRun
         self.overwrite = overwrite
@@ -227,7 +228,7 @@ class rabdam(object):
             os.chdir(disk)
             if not os.path.exists(pathToPDB):
                 if self.batchRun is False:
-                    sys.exit('ERROR: Supplied filepath not recognised')
+                    sys.exit('ERROR: Supplied pdb filepath not recognised')
                 elif self.batchRun is True:
                     return
             os.chdir(owd)
@@ -552,8 +553,9 @@ class rabdam(object):
                 return
 
         potential_analysis_files = ['_BDamage.csv', '_BDamage.html',
-                                    '_BDamage.pdb', '_BDamage.svg',
-                                    '_Bnet_Protein.svg', '_Bnet_NA.svg']
+                                    '_BDamage.pdb', '_BDamage.cif',
+                                    '_BDamage.svg', '_Bnet_Protein.svg',
+                                    '_Bnet_NA.svg']
         actual_analysis_files = []
         for name in potential_analysis_files:
             if os.path.isfile(PDB_analysis_file + name):
@@ -622,6 +624,10 @@ class rabdam(object):
             pdb_file_name = pdb_file_path + '_BDamage.pdb'
             makePDB(header_lines, bdamAtomList, footer_lines, pdb_file_name,
                     'BDamage')
+
+        if 'cif' in output_options:
+            print 'Writing cif file with BDamage column'
+            output.write_output_cif(self.pathTocif, self.batchRun)
 
         if 'kde' in output_options or 'summary' in output_options:
             print '\nPlotting kernel density estimate\n'

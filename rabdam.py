@@ -83,7 +83,7 @@ print '\nThis program was run on %d/%d/%d at %02.0f:%02.0f:%02.0f\n\n' % (
 cwd = os.getcwd()
 # Reads in program options from input file specified by -i flag
 if vars(args)['input'] is not None:
-    # Reads in PDB file name(s) listed in input file
+    # Reads in PDB and cif file name(s) listed in input file
     input_file_loc = vars(args)['input']
     input_file_loc = input_file_loc.replace('\\', '/')
     input_file_loc_list = input_file_loc.split('/')
@@ -99,7 +99,13 @@ if vars(args)['input'] is not None:
     os.chdir(cwd)
     splitArgs = functionArgs.split(',')
     pathToPDBlist = [item.strip() for item in splitArgs if '=' not in item
-                     and item.strip() != '']
+                     and '.cif' not in item and item.strip() != '']
+    pathToCifList = [item.strip() for item in splitArgs if '=' not in item
+                     and '.pdb' not in item and item.strip() != '']
+    if cif in vars(args)['output'] or vars(args)['output'] is None:
+        if len(pathToPDBlist) != len(pathToCifList):
+            sys.exit('Number of PDB files specified for BDamage analysis does\n'
+                     'not equal the number of cif files specified')
     # Reads in remaining program options specified in input file
     functionArgs = functionArgs.replace(' ', '')
     functionArgs = functionArgs.replace('\n', '')
@@ -335,15 +341,16 @@ for x in xrange(0, len(splitArgs)):
 # Sets default option for -o flag (default = generate all output files bar the
 # summary file)
 if vars(args)['output'] is None:
-    vars(args)['output'] = ['csv', 'pdb', 'kde', 'bnet', 'summary']
+    vars(args)['output'] = ['csv', 'pdb', 'cif', 'kde', 'bnet', 'summary']
 output_options = [item.lower() for item in vars(args)['output']]
 
 # Runs the BDamage calculation for every specified PDB file
-for item in pathToPDBlist:
+for index, item in enumerate(pathToPDBlist):
+    cifLoc = pathToCifList[index]
     for windowVal in windowList:
         for pdtVal in pdtList:
             # Initialises rabdam object
-            pdb = rabdam(pathToPDB=item, outputDir=outputLoc,
+            pdb = rabdam(pathToPDB=item, pathTocif=cifLoc, outputDir=outputLoc,
                          batchRun=batchVal, overwrite=overwriteVal,
                          PDT=pdtVal, windowSize=windowVal,
                          protOrNA=protOrNAVal, HETATM=hetatmVal,
