@@ -25,9 +25,9 @@ class atom(object):
     # calculation).
 
     def __init__(self, lineidentifier='', atomnum=0, atomtype='', conformer='',
-                 resitype='', chainID='', residuenum=0, xyz_coords=[],
-                 atomidentifier='', bfactor=0, occupancy=1, charge='',
-                 packingdensity=0, avrg_bfactor=0, bdamage=0):
+                 resitype='', chainID='', residuenum=0, insertioncode = '',
+                 xyz_coords=[], atomidentifier='', bfactor=0, occupancy=1,
+                 charge='', packingdensity=0, avrg_bfactor=0, bdamage=0):
         self.lineID = lineidentifier
         self.atomNum = atomnum
         self.atomType = atomtype
@@ -35,6 +35,7 @@ class atom(object):
         self.resiType = resitype
         self.chainID = chainID
         self.resiNum = residuenum
+        self.insCode = insertioncode
         self.xyzCoords = xyz_coords
         self.atomID = atomidentifier
         self.bFactor = bfactor
@@ -61,13 +62,12 @@ def downloadPDB(PDBcode, PDBdirectory, pathToPDB):
     print 'PDB file saved to %s' % pathToPDB
     localFile.close()
 
-def download_cif(PDBcode):
+def download_cif(url):
     # Downloads and saves cif file from the RSCB PDB website.
 
     import requests
 
-    urlText = 'http://www.rcsb.org/pdb/files/%s.cif' % PDBcode
-    orig_cif = requests.get(urlText)
+    orig_cif = requests.get(url)
     orig_cif = orig_cif.text.split('\n')
     orig_cif_lines = [line.replace('\r', '') for line in orig_cif]
     orig_cif_lines = [line.replace('\n', '') for line in orig_cif_lines]
@@ -127,6 +127,7 @@ def full_atom_list(fileName):
             new_atom.resiType = line[17:20].strip()
             new_atom.chainID = line[21:22].strip()
             new_atom.resiNum = int(line[22:26].strip())
+            new_atom.insCode = line[26:27].strip()
             new_atom.xyzCoords = [[float(line[30:38].strip())],
                                   [float(line[38:46].strip())],
                                   [float(line[46:54].strip())]]

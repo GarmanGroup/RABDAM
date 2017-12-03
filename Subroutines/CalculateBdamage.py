@@ -153,8 +153,8 @@ class rabdam(object):
                 if self.batchRun is False:
                     sys.exit('ERROR: Failed to download PDB file with '
                              'accession code %s:\n'
-                             'check that this PDB accession code exists.'
-                             % PDBcode)
+                             'check that a structure with this accession code '
+                             'exists.' % PDBcode)
                 elif self.batchRun is True:
                     return
 
@@ -607,6 +607,8 @@ class rabdam(object):
         # - write a PDB file in which the Bfactors are replaced by BDamage
         #   values (allowing users to e.g. colour the structure by BDamage
         #   when viewed with molecular graphics software)
+        # - write a cif file in which a column listinf the calculated BDamage
+        #   values has been appended to the ATOM (/HETATM) records
         # - plot a kernel density estimate of the complete (i.e. all analysed
         #   atoms) BDamage distribution
         # - plot a kernel density estimate of the BDamage values of the
@@ -626,7 +628,7 @@ class rabdam(object):
                     'BDamage')
 
         if 'cif' in output_options:
-            print 'Writing cif file with BDamage column'
+            print '\nWriting cif file with BDamage column'
             output.write_output_cif(self.pathTocif, self.batchRun)
 
         if 'kde' in output_options or 'summary' in output_options:

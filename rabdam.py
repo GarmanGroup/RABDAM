@@ -80,6 +80,12 @@ print '\nThis program was run on %d/%d/%d at %02.0f:%02.0f:%02.0f\n\n' % (
     day, month, year, hour, minute, second
     )
 
+# Sets default option for -o flag (default = generate all output files bar the
+# summary file)
+if vars(args)['output'] is None:
+    vars(args)['output'] = ['csv', 'pdb', 'cif', 'kde', 'bnet', 'summary']
+output_options = [item.lower() for item in vars(args)['output']]
+
 cwd = os.getcwd()
 # Reads in program options from input file specified by -i flag
 if vars(args)['input'] is not None:
@@ -102,9 +108,10 @@ if vars(args)['input'] is not None:
                      and '.cif' not in item and item.strip() != '']
     pathToCifList = [item.strip() for item in splitArgs if '=' not in item
                      and '.pdb' not in item and item.strip() != '']
-    if cif in vars(args)['output'] or vars(args)['output'] is None:
-        if len(pathToPDBlist) != len(pathToCifList):
-            sys.exit('Number of PDB files specified for BDamage analysis does\n'
+    if len(pathToPDBlist) != len(pathToCifList):
+        if 'cif' in vars(args)['output']:
+            sys.exit('ERROR: Number of PDB files specified for BDamage '
+                     'analysis does\n'
                      'not equal the number of cif files specified')
     # Reads in remaining program options specified in input file
     functionArgs = functionArgs.replace(' ', '')
@@ -116,6 +123,7 @@ if vars(args)['input'] is not None:
 # Reads in PDB file name(s) specified by -f flag listed in command line input
 elif vars(args)['pdb_file'] is not None:
     pathToPDBlist = vars(args)['pdb_file']
+    pathToCifList = vars(args)['pdb_file']
     splitArgs = []
 
 if len(pathToPDBlist) == 0:
@@ -337,12 +345,6 @@ for x in xrange(0, len(splitArgs)):
             taVal = True
         elif taVal in ['false', 'no', 'f', 'n']:
             taVal = False
-
-# Sets default option for -o flag (default = generate all output files bar the
-# summary file)
-if vars(args)['output'] is None:
-    vars(args)['output'] = ['csv', 'pdb', 'cif', 'kde', 'bnet', 'summary']
-output_options = [item.lower() for item in vars(args)['output']]
 
 # Runs the BDamage calculation for every specified PDB file
 for index, item in enumerate(pathToPDBlist):

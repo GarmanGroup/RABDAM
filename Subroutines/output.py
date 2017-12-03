@@ -25,6 +25,80 @@ class generate_output_files(object):
         self.pdb_code = pdb_file_path.split('/')[-1]
         self.df = df
 
+    def make_csv(self, bdamatomList, window):
+        # Returns a csv file containing a complete set of atom information
+        # (including both that provided in the input PDB file and also the
+        # BDamage values calculated by RABDAM) for all atoms considered for
+        # BDamage analysis. (This provides the user with a copy of the raw data
+        # which they can manipulate as they wish.)
+
+        newFile = open('%s_BDamage.csv' % self.pdb_file_path, 'w')
+
+        # Defines column header abbreviations
+        newFile.write('REC = RECORD NAME\n'
+                      'ATMNUM = ATOM SERIAL NUMBER\n'
+                      'ATMNAME = ATOM NAME\n'
+                      'CONFORMER = ALTERNATE LOCATION INDICATOR\n'
+                      'RESNAME = RESIDUE NAME\n'
+                      'CHAIN = CHAIN IDENTIFIER\n'
+                      'RESNUM = RESIDUE SEQUENCE NUMBER\n'
+                      'INSCODE = INSERTION CODE'
+                      'XPOS = ORTHOGONAL COORDINATES FOR X IN ANGSTROMS\n'
+                      'YPOS = ORTHOGONAL COORDINATES FOR Y IN ANGSTROMS\n'
+                      'ZPOS = ORTHOGONAL COORDINATES FOR Z IN ANGSTROMS\n'
+                      'OCC = OCCUPANCY\n'
+                      'BFAC = B FACTOR (TEMPERATURE FACTOR)\n'
+                      'ELEMENT = ELEMENT SYMBOL\n'
+                      'CHARGE = CHARGE ON ATOM\n'
+                      'PD = PACKING DENSITY (ATOMIC CONTACT NUMBER)\n')
+        newFile.write('AVRG_BF = AVERAGE B FACTOR FOR ATOMS IN A SIMILAR '
+                      'PACKING DENSITY ENVIRONMENT (SLIDING WINDOW SIZE '
+                      '= %s)\n' % window)
+        newFile.write('BDAM = B DAMAGE VALUE\n'
+                      '\n')
+        # Writes column headers
+        newFile.write('REC' + ','
+                      'ATMNUM' + ','
+                      'ATMNAME' + ','
+                      'CONFORMER' + ','
+                      'RESNAME' + ','
+                      'CHAIN' + ','
+                      'RESNUM' + ','
+                      'INSCODE' + ','
+                      'XPOS' + ','
+                      'YPOS' + ','
+                      'ZPOS' + ','
+                      'OCC' + ','
+                      'BFAC' + ','
+                      'ELEMENT' + ','
+                      'CHARGE' + ','
+                      'PD' + ','
+                      'AVRG_BF' + ','
+                      'BDAM' + '\n')
+
+        # Writes properties of each atom considered for BDamage analysis.
+        for atm in bdamatomList:
+            newFile.write(atm.lineID + ',')
+            newFile.write(str(atm.atomNum) + ',')
+            newFile.write(atm.atomType + ',')
+            newFile.write(atm.conformer + ',')
+            newFile.write(atm.resiType + ',')
+            newFile.write(atm.chainID + ',')
+            newFile.write(str(atm.resiNum) + ',')
+            newFile.write(atm.insCode + ',')
+            newFile.write(str(atm.xyzCoords[0][0]) + ',')
+            newFile.write(str(atm.xyzCoords[1][0]) + ',')
+            newFile.write(str(atm.xyzCoords[2][0]) + ',')
+            newFile.write(str(atm.occupancy) + ',')
+            newFile.write(str(atm.bFactor) + ',')
+            newFile.write(atm.atomID + ',')
+            newFile.write(str(atm.charge) + ',')
+            newFile.write(str(atm.pd) + ',')
+            newFile.write(str(atm.avrg_bf) + ',')
+            newFile.write(str(atm.bd) + '\n')
+
+        newFile.close()
+
     def write_output_cif(self, pathTocif, batchRun):
         # Appends a column of BDamage values to the cif file of the input
         # structure
@@ -37,19 +111,18 @@ class generate_output_files(object):
             url = 'http://www.rcsb.org/pdb/files/%s.cif' % pathTocif
             header = requests.get(url)
             if header.status_code >= 300:
-               if batchRun is False:
-                   sys.exit('ERROR: Failed to download cif file with '
-                            'accession code %s:\n'
-                            'check that this accession code exists.'
-                            % pathTocif)
+                if batchRun is False:
+                    sys.exit('ERROR: Failed to download cif file with '
+                             'accession code %s:\n'
+                             'check that a structure with this accession code '
+                             'exists.' % pathTocif)
                 elif batchRun is True:
                     return
-
-            print '\nDownloading cif file from RCSB website'
-            orig_cif_lines = download_cif(pathTocif)
+            else:
+                print 'Downloading %s cif file from RCSB website' % self.pdb_code
+                orig_cif_lines = download_cif(url)
 
         else:
-            print '\nPath to cif file supplied'
             splitPath = pathTocif.split('/')
             disk = '%s/' % splitPath[0]
             owd = os.getcwd()
@@ -57,16 +130,18 @@ class generate_output_files(object):
             os.chdir(disk)
             if not os.path.exists(pathTocif):
                 if self.batchRun is False:
-                    sys.exit('\nERROR: Supplied cif filepath not recognised')
+                    sys.exit('ERROR: Supplied cif filepath not recognised')
                 elif self.batchRun is True:
                     return
             os.chdir(owd)
-            orig_cif_lines = copy_cif
+            print 'Copying %s cif file from %s' % (self.pdb_code, pathTocif)
+            orig_cif_lines = copy_cif(pathTocif, disk)
 
+        #
         x_list = self.df.XPOS.tolist()
         y_list = self.df.YPOS.tolist()
         z_list = self.df.ZPOS.tolist()
-        b_dam_list= self.df.BDAM.tolist()
+        b_dam_list = self.df.BDAM.tolist()
 
         new_cif = open('%s_BDamage.cif' % self.pdb_file_path, 'w')
         for line in orig_cif_lines:
@@ -108,86 +183,14 @@ class generate_output_files(object):
                         int(index)
                         b_dam = b_dam_list[index]
                         b_dam = '{:.2f}'.format(b_dam)
-                        b_dam = b_dam.ljust(4)
+                        b_dam = b_dam.ljust(5)
                         line_middle = ' %s' % b_dam
                     except ValueError:
-                        line_middle = ' .   '
+                        line_middle = ' .    '
 
                     new_line = line_start + line_middle + line_end
                     new_cif.write('%s\n' % new_line)
         new_cif.close()
-
-
-    def make_csv(self, bdamatomList, window):
-        # Returns a csv file containing a complete set of atom information
-        # (including both that provided in the input PDB file and also the
-        # BDamage values calculated by RABDAM) for all atoms considered for
-        # BDamage analysis. (This provides the user with a copy of the raw data
-        # which they can manipulate as they wish.)
-
-        newFile = open('%s_BDamage.csv' % self.pdb_file_path, 'w')
-
-        # Defines column header abbreviations
-        newFile.write('REC = RECORD NAME\n'
-                      'ATMNUM = ATOM SERIAL NUMBER\n'
-                      'ATMNAME = ATOM NAME\n'
-                      'CONFORMER = ALTERNATE LOCATION INDICATOR\n'
-                      'RESNAME = RESIDUE NAME\n'
-                      'CHAIN = CHAIN IDENTIFIER\n'
-                      'RESNUM = RESIDUE SEQUENCE NUMBER\n'
-                      'XPOS = ORTHOGONAL COORDINATES FOR X IN ANGSTROMS\n'
-                      'YPOS = ORTHOGONAL COORDINATES FOR Y IN ANGSTROMS\n'
-                      'ZPOS = ORTHOGONAL COORDINATES FOR Z IN ANGSTROMS\n'
-                      'OCC = OCCUPANCY\n'
-                      'BFAC = B FACTOR (TEMPERATURE FACTOR)\n'
-                      'ELEMENT = ELEMENT SYMBOL\n'
-                      'CHARGE = CHARGE ON ATOM\n'
-                      'PD = PACKING DENSITY (ATOMIC CONTACT NUMBER)\n')
-        newFile.write('AVRG_BF = AVERAGE B FACTOR FOR ATOMS IN A SIMILAR '
-                      'PACKING DENSITY ENVIRONMENT (SLIDING WINDOW SIZE '
-                      '= %s)\n' % window)
-        newFile.write('BDAM = B DAMAGE VALUE\n'
-                      '\n')
-        # Writes column headers
-        newFile.write('REC' + ','
-                      'ATMNUM' + ','
-                      'ATMNAME' + ','
-                      'CONFORMER' + ','
-                      'RESNAME' + ','
-                      'CHAIN' + ','
-                      'RESNUM' + ','
-                      'XPOS' + ','
-                      'YPOS' + ','
-                      'ZPOS' + ','
-                      'OCC' + ','
-                      'BFAC' + ','
-                      'ELEMENT' + ','
-                      'CHARGE' + ','
-                      'PD' + ','
-                      'AVRG_BF' + ','
-                      'BDAM' + '\n')
-
-        # Writes properties of each atom considered for BDamage analysis.
-        for atm in bdamatomList:
-            newFile.write(atm.lineID + ',')
-            newFile.write(str(atm.atomNum) + ',')
-            newFile.write(atm.atomType + ',')
-            newFile.write(atm.conformer + ',')
-            newFile.write(atm.resiType + ',')
-            newFile.write(atm.chainID + ',')
-            newFile.write(str(atm.resiNum) + ',')
-            newFile.write(str(atm.xyzCoords[0][0]) + ',')
-            newFile.write(str(atm.xyzCoords[1][0]) + ',')
-            newFile.write(str(atm.xyzCoords[2][0]) + ',')
-            newFile.write(str(atm.occupancy) + ',')
-            newFile.write(str(atm.bFactor) + ',')
-            newFile.write(atm.atomID + ',')
-            newFile.write(str(atm.charge) + ',')
-            newFile.write(str(atm.pd) + ',')
-            newFile.write(str(atm.avrg_bf) + ',')
-            newFile.write(str(atm.bd) + '\n')
-
-        newFile.close()
 
     def make_histogram(self, highlightAtoms):
         # Returns a kernel density estimate of the BDamage values of every atom

@@ -38,24 +38,25 @@ def makePDB(header_lines, atomList, footer_lines, newPDBfilename, Bfac):
         e = atm.resiType
         f = atm.chainID
         g = atm.resiNum
-        h = atm.xyzCoords[0][0]
-        i = atm.xyzCoords[1][0]
-        j = atm.xyzCoords[2][0]
-        k = atm.occupancy
+        h = atm.insCode
+        i = atm.xyzCoords[0][0]
+        j = atm.xyzCoords[1][0]
+        k = atm.xyzCoords[2][0]
+        l = atm.occupancy
         if Bfac == 'Bfactor':
-            l = atm.bFactor
+            m = atm.bFactor
         elif Bfac == 'BDamage':
-            l = np.log(atm.bd)
-        m = atm.atomID
-        n = atm.charge
+            m = np.log(atm.bd)
+        n = atm.atomID
+        o = atm.charge
         # Atom properties are appropriately ordered and spaced, and reported
         # to the expected number of significant figures, for the PDB file
         # format. Note that atomType for some metal ions will not follow
         # standard PDB file format, but this will not affect the running of
         # RABDAM (nor most other programs that the user might want to load the
         # PDB file into, such as PyMol, Chimera, CCP4MG, WinCoot, etc.)
-        newLine = '%-6s%5d  %-3s%1s%3s%2s%4d    %8.3f%8.3f%8.3f%6.2f%6.2f          %2s%2s\n' % (
-            a, b, c, d, e, f, g, h, i, j, k, l, m, n
+        newLine = '%-6s%5d  %-3s%1s%3s%2s%4d%1s   %8.3f%8.3f%8.3f%6.2f%6.2f          %2s%2s\n' % (
+            a, b, c, d, e, f, g, h, i, j, k, l, m, n, o
             )
         newPDBfile.write(newLine)
 
@@ -82,6 +83,7 @@ def writeDataFrame(bdamAtomList):
     RESNAME = [None]*len(bdamAtomList)
     CHAIN = [None]*len(bdamAtomList)
     RESNUM = [None]*len(bdamAtomList)
+    INSCODE = [None]*len(bdamAtomList)
     XPOS = [None]*len(bdamAtomList)
     YPOS = [None]*len(bdamAtomList)
     ZPOS = [None]*len(bdamAtomList)
@@ -103,6 +105,7 @@ def writeDataFrame(bdamAtomList):
         RESNAME[index] = atm.resiType
         CHAIN[index] = atm.chainID
         RESNUM[index] = atm.resiNum
+        INSCODE[index] = atm.insCode
         XPOS[index] = atm.xyzCoords[0][0]
         YPOS[index] = atm.xyzCoords[1][0]
         ZPOS[index] = atm.xyzCoords[2][0]
@@ -122,6 +125,7 @@ def writeDataFrame(bdamAtomList):
                        'RESNAME': RESNAME,
                        'CHAIN': CHAIN,
                        'RESNUM': RESNUM,
+                       'INSCODE': INSCODE,
                        'XPOS': XPOS,
                        'YPOS': YPOS,
                        'ZPOS': ZPOS,
@@ -135,10 +139,10 @@ def writeDataFrame(bdamAtomList):
 
     # DataFrame columns are ordered.
     cols = df.columns.tolist()
-    cols = ([cols[11]] + [cols[1]] + [cols[0]] + [cols[7]] + [cols[12]]
-            + [cols[5]] + [cols[13]] + [cols[14]] + [cols[15]] + [cols[16]]
-            + [cols[9]] + [cols[4]] + [cols[8]] + [cols[6]] + [cols[10]]
-            + [cols[2]] + [cols[3]])
+    cols = ([cols[12]] + [cols[1]] + [cols[0]] + [cols[7]] + [cols[13]]
+            + [cols[5]] + [cols[14]] + [cols[9]] + [cols[15]] + [cols[16]]
+            + [cols[17]] + [cols[10]] + [cols[4]] + [cols[8]] + [cols[6]]
+            + [cols[11]] + [cols[2]] + [cols[3]])
     df = df[cols]
 
     return df
