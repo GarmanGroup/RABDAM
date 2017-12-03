@@ -1,7 +1,7 @@
 # RABDAM – identifying specific radiation damage in MX structures
 A program to calculate the *B*<sub>Damage</sub> and *B*<sub>net</sub> metrics to quantify the extent of specific radiation damage present within an individual MX structure. Suitable for running on any standard format PDB file.
 
-\*\***NOTE:** These scripts are under development, and are updated regularly. The program is currently being extended to incorporate nucleic acids analysis. Whilst these new capabilities are being tested, presently RABDAM is restricted to assessing damage to (i) protein crystal structures and (ii) the protein component of protein / nucleic acid crystal structures. If in the meantime you would like to use RABDAM for nucleic acids analysis, please contact the authors using the email addresses provided at the bottom of the page.\*\*
+\*\***NOTE:** These scripts are under development, and are updated regularly. The program is currently being extended to incorporate nucleic acids analysis. Whilst these new capabilities are being tested, presently RABDAM is restricted to assessing damage to (i) protein crystal structures and (ii) the protein component of protein / nucleic acid crystal structures. If in the meantime you would like to use RABDAM for nucleic acids analysis, please contact the authors at the email address provided at the bottom of the page.\*\*
 
 ___
 
@@ -50,7 +50,7 @@ Calculation of the *B*<sub>Damage</sub> metric. From an input PDB file of the as
 
 ___
 
-The *B*<sub>net</sub> metric is a derivative of the (per-atom) *B*<sub>Damage</sub> metric that summarises in a single value the overall extent of specific radiation damage suffered by an MX structure. One of the best-characterised chemical changes resulting from specific radiation damage that occurs within proteins\* is the decarboxylation of Glu and Asp residues; the *B*<sub>net</sub> metric is calculated from a kernel density estimate of the *B*<sub>Damage</sub> values of a structure’s Glu and Asp side chain oxygen atoms as the ratio of the area under the curve either side of the median of the (overall) *B*<sub>Damage</sub> distribution.
+The *B*<sub>net</sub> metric is a derivative of the (per-atom) *B*<sub>Damage</sub> metric that summarises in a single value the total extent of specific radiation damage suffered by an MX structure. One of the best-characterised chemical changes resulting from specific radiation damage that occurs within proteins\* is the decarboxylation of Glu and Asp residues; the *B*<sub>net</sub> metric is calculated from a kernel density estimate of the *B*<sub>Damage</sub> values of a structure’s Glu and Asp side chain oxygen atoms as the ratio of the area under the curve either side of the median of the (overall) *B*<sub>Damage</sub> distribution.
 
 (\* An equivalent of this protein-specific *B*<sub>net</sub> metric for nucleic acids is currently being developed - see the program description above.)
 
@@ -79,7 +79,7 @@ To check whether your computer is missing any of the packages / programs require
 
 \*\***NOTE:** Owing to its PDBCUR dependence, RABDAM can only be run in a terminal / command prompt in which CCP4 programs can also be run (*e.g.* the CCP4 console).\*\*
 
-RABDAM will take approximately 2 minutes to run a 200 kDa structure on a single processor (as estimated from tests performed under Windows 7 on a 3.70 GHz Intel i3-4170 processor). It is compatible with Windows, Mac and Linux operating systems.
+RABDAM will take approximately 1 min to run a 200 kDa structure on a single processor (as estimated from tests performed under Windows 7 on a 3.70 GHz Intel i3-4170 processor). It is compatible with Windows, Mac and Linux operating systems.
 
 ___
 
@@ -115,17 +115,24 @@ It is possible to specify more than one PDB file for analysis following the `-f`
 
 `python rabdam.py –f path/to/pdb_file_1.pdb path/to/pdb_file_2.pdb`
 
-Note that when using the `-f` flag, the supplied file path(s) must not contain any spaces. (This restriction does not apply when specifying file path(s) within an input txt file however.)
+Importantly, if you wish to write an output cif file (see the description `-o` flag description provided below), you will need to specify an input cif file also. If the input PDB file is specified using a PDB accession code, RABDAM will use the same accession code to obtain the input cif file from the RCSB PDB website. If however the input PDB file is specified via a file path, the user will need to specify an input cif file path **if** they wish to obtain an output cif file. RABDAM will assume that input PDB and cif files are listed in the same order. For example:
+
+`python rabdam.py -f path/to/pdb_file_1.pdb path/to/cif_file_1.cif XXXX path/to/pdb_file_2.pdb path/to/cif_file_2.cif`
+
+would generate output cif files for pdb_file_1, XXXX and pdb_file_2.
+
+Also note that when using the `-f` flag, the supplied file path(s) must not contain any spaces. (This restriction does not apply when specifying file path(s) within an input txt file however.)
 
 <br></br>
 The `-r` and `-o` flags control the output from the program. Both of these flags are optional.
 
 The `-r` flag can be used to instruct RABDAM to run to completion (default), or to stop / start part way through its full run. RABDAM is structured such that it writes the *B*<sub>Damage</sub> values calculated for an input MX structure to a dataframe; this dataframe is then used to write the program output files. Through use of the `-r` flag it is possible to instruct RABDAM to stop (`-r df` / `-r dataframe`) or start (`-r analysis`) its run following dataframe construction. This option will save time if for example you wish to change the formatting of the program output files (which can be controlled using parameters specified in the input txt file - see the “*Constructing an input file*” section below) without changing the *B*<sub>Damage</sub> distribution itself.
 
-The `-o` flag can be used to control the selection of output files that the program writes. By default RABDAM writes 5 output files:
+The `-o` flag can be used to control the selection of output files that the program writes. By default RABDAM writes 6 output files:
 
 - `kde` : a kernel density estimate of the distribution of *B*<sub>Damage</sub> values calculated for the input MX structure
 - `pdb` : a PDB file in which the *B*<sub>factor</sub> column of the ATOM / HETATM records is replaced by ln(*B*<sub>Damage</sub>) values (thus allowing the structure to be uniformly coloured by *B*<sub>Damage</sub> using molecular graphics software such as PyMol, CCP4mg, *etc*)
+- `cif` : a cif file in which a column of *B*<sub>Damage</sub> values is appended to the applicable ATOM (/ HETATM) records between the *B*<sub>factor</sub> and charge columns
 - `csv` : a csv file listing the properties (both those in the input PDB file and those calculated by RABDAM) of all atoms in the input MX structure included in the *B*<sub>Damage</sub> analysis
 - `bnet` : a kernel density estimate of the *B*<sub>Damage</sub> values of the terminal oxygen atoms of Glu and Asp residues, plus the value of the (protein-specific) *B*<sub>net</sub> value calculated from this distribution (see the “*Background*” section)
 - `summary` : an html file summarising the results presented in the above 4 output files
@@ -151,7 +158,7 @@ If you wish to run RABDAM with non-default parameter values, you will need to pr
 
 - The name of the PDB file(s) to be analysed
 
-Either a 4 character PDB accession code, or an absolute file path (which may contain spaces). It is possible to run multiple structures from a single input file by listing the names of each of those structures separated by commas (see below). This is the only parameter not stipulated by a keyword, and which does not have a default value.
+Either a 4 character PDB accession code, or an absolute file path (which may contain spaces). It is possible to run multiple structures from a single input file by listing the names of each of those structures separated by commas (see below). Importantly, if you wish to obtain an output cif file, you will need to specify an input cif file in addition to an input PDB file: if the input PDB file is specified via a PDB accession code then RABDAM will use this code to download both the PDB and cif files of the structure from the RCSB website; if however the input PDB file is specified using an absolute file path then you will need to also specify the absolute file path of the input cif file. RABDAM will assume that consecutively listed PDB / cif file paths relate to the same structure, so if you are analysing multiple structures using the same input file make sure the PDB and cif file paths are listed in the same order! This is the only parameter not stipulated by a keyword, and which does not have a default value.
 
 -	The output directory, *dir*
 

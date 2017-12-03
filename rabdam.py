@@ -108,11 +108,6 @@ if vars(args)['input'] is not None:
                      and '.cif' not in item and item.strip() != '']
     pathToCifList = [item.strip() for item in splitArgs if '=' not in item
                      and '.pdb' not in item and item.strip() != '']
-    if len(pathToPDBlist) != len(pathToCifList):
-        if 'cif' in vars(args)['output']:
-            sys.exit('ERROR: Number of PDB files specified for BDamage '
-                     'analysis does\n'
-                     'not equal the number of cif files specified')
     # Reads in remaining program options specified in input file
     functionArgs = functionArgs.replace(' ', '')
     functionArgs = functionArgs.replace('\n', '')
@@ -122,10 +117,22 @@ if vars(args)['input'] is not None:
 
 # Reads in PDB file name(s) specified by -f flag listed in command line input
 elif vars(args)['pdb_file'] is not None:
-    pathToPDBlist = vars(args)['pdb_file']
-    pathToCifList = vars(args)['pdb_file']
+    pathToPDBlist = [item for item in vars(args)['pdb_file'] if '.cif' not in
+                     item]
+    pathToCifList = [item for item in vars(args)['pdb_file'] if '.pdb' not in
+                     item]
     splitArgs = []
 
+# Checks that the user has specified the same number of input PDB and cif files
+# IF the user wants to obtain an output cif file
+if len(pathToPDBlist) != len(pathToCifList):
+    if 'cif' in vars(args)['output']:
+        sys.exit('ERROR: Number of PDB files specified for BDamage '
+                 'analysis does\n'
+                 'not equal the number of cif files specified')
+
+# Checks that the user has specified at least one input structure for RABDAM
+# analysis
 if len(pathToPDBlist) == 0:
     sys.exit('No input PDB code / file provided')
 
