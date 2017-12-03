@@ -105,9 +105,12 @@ class generate_output_files(object):
         import requests
         from parsePDB import download_cif, copy_cif
 
-        #
+        # If 4 digitPDB accession code has been supplied:
         if len(pathTocif) == 4:
-            # Checks whether cif url exists
+            # Checks whether cif url exists. If it doesn't, program terminates
+            # with error message / moves on to the next structure, depending
+            # upon whether batchContinue has been set to False (default) /
+            # True. If it does, RABDAM writes the cif file lines to a list.
             url = 'http://www.rcsb.org/pdb/files/%s.cif' % pathTocif
             header = requests.get(url)
             if header.status_code >= 300:
@@ -122,7 +125,13 @@ class generate_output_files(object):
                 print 'Downloading %s cif file from RCSB website' % self.pdb_code
                 orig_cif_lines = download_cif(url)
 
+        # If (absolute) path to cif file has been provided:
         else:
+            # Checks whether cif file exists at specified location. If it
+            # doesn't, program terminates with error message / moves on to the
+            # next structure, depending upon whether batchContinue has been set
+            # to False (default) / True. If it does, RABDAM writes the cif
+            # file lines to a list.
             splitPath = pathTocif.split('/')
             disk = '%s/' % splitPath[0]
             owd = os.getcwd()
@@ -137,7 +146,9 @@ class generate_output_files(object):
             print 'Copying %s cif file from %s' % (self.pdb_code, pathTocif)
             orig_cif_lines = copy_cif(pathTocif, disk)
 
-        #
+        # Loops through the cif file lines. A column of BDamage values is
+        # appended to the ATOM (/ HETATM) records (between the Bfactor and
+        # charge columns).
         x_list = self.df.XPOS.tolist()
         y_list = self.df.YPOS.tolist()
         z_list = self.df.ZPOS.tolist()
@@ -146,7 +157,7 @@ class generate_output_files(object):
         new_cif = open('%s_BDamage.cif' % self.pdb_file_path, 'w')
         for line in orig_cif_lines:
             if line.startswith('_atom_site.B_iso_or_equiv'):
-                new_cif.write('%s\n' % line)
+                new_cif.write('%s\n' % line)  # Adds in new column descriptor
                 new_cif.write('%s\n' % line.replace('_atom_site.B_iso_or_equiv',
                                                     '_atom_site.B_Damage'))
             else:
@@ -173,6 +184,8 @@ class generate_output_files(object):
                         if z == value:
                             z_indices.append(index)
 
+                    # Matches the corresponding BDamage value to the ATOM
+                    # (/ HETATM) described by the current cif file line
                     index = ''
                     for x_index in x_indices:
                         if x_index in y_indices and x_index in z_indices:
