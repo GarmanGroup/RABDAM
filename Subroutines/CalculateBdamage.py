@@ -306,9 +306,9 @@ class rabdam(object):
         # PDB file and its associated symmetry operations. Note that unit cell
         # generation is currently performed by the PDBCUR program from the CCP4
         # software suite.
-        print ('\nProcessing PDB file to remove hydrogen atoms, anisotropic '
-               '\nB factor records, and atoms with zero occupancy, as well as '
-               '\nretaining only the most probable alternate conformations')
+        print('\nProcessing PDB file to remove hydrogen atoms, anisotropic '
+              '\nB factor records, and atoms with zero occupancy, as well as '
+              '\nretaining only the most probable alternate conformations')
 
         (multi_model, clean_au_file, clean_au_list, header_lines, footer_lines,
          unit_cell_params) = clean_pdb_file(pathToPDB, PDBdirectory,
