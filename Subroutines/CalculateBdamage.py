@@ -65,9 +65,9 @@ class rabdam(object):
                              calc_packing_density, write_pckg_dens_to_atoms)
 
         if run == 'rabdam':
-            print '**************************** RABDAM ****************************\n'
+            print('**************************** RABDAM ****************************\n')
         elif run == 'rabdam_dataframe':
-            print '*********************** RABDAM DATAFRAME ***********************\n'
+            print('*********************** RABDAM DATAFRAME ***********************\n')
 
         print('\nPlease cite: M. Gerstel, C. M. Deane and E.F. Garman. (2015).\n'
               'J. Synchrotron Radiation, 22, 201-212.\n'
@@ -81,42 +81,42 @@ class rabdam(object):
               '************************* Input Section ************************\n')
         # Prints the values of the program options to be used in the current
         # RABDAM run
-        print 'Calculating BDamage for %s' % self.pathToPDB
-        print 'Writing output files to %s' % self.outputDir
+        print('Calculating BDamage for %s' % self.pathToPDB)
+        print('Writing output files to %s' % self.outputDir)
         if self.PDT == 7:
-            print 'Using default packing density threshold of 7 Angstroms'
+            print('Using default packing density threshold of 7 Angstroms')
         else:
-            print 'Packing density threshold defined by user as %s Angstroms' % self.PDT
+            print('Packing density threshold defined by user as %s Angstroms' % self.PDT)
         if self.windowSize == 0.02:
-            print 'Using default window size of 2%'
+            print('Using default window size of 2%')
         else:
-            print 'Window size defined by user as %s%%' % (self.windowSize*100)
+            print('Window size defined by user as %s%%' % (self.windowSize*100))
         if self.HETATM is True:
-            print 'Keeping HETATM'
+            print('Keeping HETATM')
         elif self.HETATM is False:
-            print 'Removing HETATM'
+            print('Removing HETATM')
         if self.protOrNA == 'protein':
-            print 'Retaining protein atoms, discarding nucleic acid atoms'
+            print('Retaining protein atoms, discarding nucleic acid atoms')
         elif self.protOrNA in ['nucleicacid', 'na']:
-            print 'Retaining nucleic acid atoms, discarding protein atoms'
+            print('Retaining nucleic acid atoms, discarding protein atoms')
         if len(self.addAtoms) == 0:
-            print 'No atoms to be added'
+            print('No atoms to be added')
         else:
             add_atoms_string = ''
             for value in self.addAtoms:
                 value = value + ', '
                 add_atoms_string = add_atoms_string + value
             add_atoms_string = add_atoms_string.strip(', ')
-            print 'Atoms to be added: %s' % add_atoms_string
+            print('Atoms to be added: %s' % add_atoms_string)
         if len(self.removeAtoms) == 0:
-            print 'No atoms to be removed'
+            print('No atoms to be removed')
         else:
             remove_atoms_string = ''
             for value in self.removeAtoms:
                 value = value + ', '
                 remove_atoms_string = remove_atoms_string + value
             remove_atoms_string = remove_atoms_string.strip(', ')
-            print 'Atoms to be removed: %s' % remove_atoms_string
+            print('Atoms to be removed: %s' % remove_atoms_string)
 
         print('\n********************* End of Input Section *********************\n'
               '****************************************************************\n')
@@ -136,7 +136,7 @@ class rabdam(object):
 
         # If 4 digit PDB accession code has been supplied:
         if len(self.pathToPDB) == 4:
-            print 'PDB code supplied\n'
+            print('PDB code supplied\n')
             PDBcode = self.pathToPDB.upper()
             window_name = 100*self.windowSize
             window_name = str(window_name).replace('.', '_')
@@ -169,8 +169,9 @@ class rabdam(object):
             # copy of the PDB file is downloaded from the RSCB PDB website and
             # saved to the new directory.
             if os.path.isdir(PDBdirectory):
-                print 'Folder %s already exists locally at %s' % (PDBcode,
-                                                                  PDBdirectory)
+                print('Folder %s already exists locally at %s' % (
+                    PDBcode, PDBdirectory
+                    ))
                 print('Do you want to overwrite the existing folder?\n'
                       '--USER INPUT-- type your choice and press RETURN\n'
                       'yes = overwrite this folder\n'
@@ -180,10 +181,10 @@ class rabdam(object):
                     if self.overwrite is True:
                         owChoice = 'yes'
                     elif self.overwrite is False:
-                        owChoice = raw_input(prompt).lower()
+                        owChoice = input(prompt).lower()
 
                     if owChoice == 'yes' or owChoice == 'y':
-                        print '\nOverwriting existing folder'
+                        print('\nOverwriting existing folder')
                         shutil.rmtree(PDBdirectory)
                         downloadPDB(PDBcode, PDBdirectory, pathToPDB)
                         break
@@ -195,7 +196,7 @@ class rabdam(object):
                             return
                         break
                     else:
-                        print 'Unrecognised input - please answer "yes" or "no"'
+                        print('Unrecognised input - please answer "yes" or "no"')
             else:
                 downloadPDB(PDBcode, PDBdirectory, pathToPDB)
 
@@ -240,7 +241,7 @@ class rabdam(object):
                 elif self.batchRun is True:
                     return
             else:
-                print 'Filepath to .pdb file supplied\n'
+                print('Filepath to .pdb file supplied\n')
                 fileName = splitPath[len(splitPath)-1]
                 splitFilename = fileName.split('.')
                 PDBcode = splitFilename[len(splitFilename)-2].upper()
@@ -253,8 +254,9 @@ class rabdam(object):
                 newPathToPDB = '%s%s' % (PDBdirectory, fileName)
 
                 if os.path.isdir(PDBdirectory):
-                    print 'Folder %s already exists locally at %s' % (
-                        PDBcode, PDBdirectory)
+                    print('Folder %s already exists locally at %s' % (
+                        PDBcode, PDBdirectory
+                        ))
                     print('Do you want to overwrite the existing folder?\n'
                           '--USER INPUT-- type your choice and press RETURN\n'
                           'yes = overwrite this folder\n'
@@ -264,10 +266,10 @@ class rabdam(object):
                         if self.overwrite is True:
                             owChoice = 'yes'
                         elif self.overwrite is False:
-                            owChoice = raw_input(prompt).lower()
+                            owChoice = input(prompt).lower()
 
                         if owChoice == 'yes' or owChoice == 'y':
-                            print '\nOverwriting existing folder'
+                            print('\nOverwriting existing folder')
                             shutil.rmtree(PDBdirectory)
                             copyPDB(pathToPDB, disk, newPathToPDB, PDBdirectory)
                             break
@@ -279,7 +281,7 @@ class rabdam(object):
                                 return
                             break
                         else:
-                            print 'Unrecognised input - please answer "yes" or "no"'
+                            print('Unrecognised input - please answer "yes" or "no"')
                 else:
                     copyPDB(pathToPDB, disk, newPathToPDB, PDBdirectory)
 
@@ -306,9 +308,9 @@ class rabdam(object):
         # PDB file and its associated symmetry operations. Note that unit cell
         # generation is currently performed by the PDBCUR program from the CCP4
         # software suite.
-        print ('\nProcessing PDB file to remove hydrogen atoms, anisotropic '
-               '\nB factor records, and atoms with zero occupancy, as well as '
-               '\nretaining only the most probable alternate conformations')
+        print('\nProcessing PDB file to remove hydrogen atoms, anisotropic '
+              '\nB factor records, and atoms with zero occupancy, as well as '
+              '\nretaining only the most probable alternate conformations')
 
         (multi_model, clean_au_file, clean_au_list, header_lines, footer_lines,
          unit_cell_params) = clean_pdb_file(pathToPDB, PDBdirectory,
@@ -322,7 +324,7 @@ class rabdam(object):
         if not self.createOrigpdb:
             os.remove(pathToPDB)
 
-        print '\nGenerating unit cell\n'
+        print('\nGenerating unit cell\n')
         PDBCURinputFile = '%sPDBCURinput.txt' % pdb_file_path
         PDBCURlog = '%sPDBCURlog.txt' % pdb_file_path
         genPDBCURinputs(PDBCURinputFile)
@@ -346,7 +348,7 @@ class rabdam(object):
         # a list of all atoms in the unit cell, plus the unit cell parameters.
         # The unit cell PDB file is then deleted unless createUCpdb is set
         # equal to True in the input file (default = False).
-        print 'Reading in unit cell coordinates'
+        print('Reading in unit cell coordinates')
         ucAtomList = full_atom_list(unit_cell_pdb)
 
         # Halts program if no atoms selected for BDamage analysis
@@ -373,9 +375,9 @@ class rabdam(object):
 
         transAtomList = duplicate(ucAtomList)
         cartesianVectors = convertToCartesian(unit_cell_params)
-        for a in xrange(-1, 2):
-            for b in xrange(-1, 2):
-                for c in xrange(-1, 2):
+        for a in range(-1, 2):
+            for b in range(-1, 2):
+                for c in range(-1, 2):
                     if a == 0 and b == 0 and c == 0:
                         pass  # No identity translation
                     else:
@@ -417,15 +419,15 @@ class rabdam(object):
             os.remove(clean_au_file)
 
         auParams = getAUparams(bdamAtomList)
-        print '\nObtained asymmetric unit parameters:'
-        print 'xMin = %8.3f' % auParams[0]
-        print 'xMax = %8.3f' % auParams[1]
-        print 'yMin = %8.3f' % auParams[2]
-        print 'yMax = %8.3f' % auParams[3]
-        print 'zMin = %8.3f' % auParams[4]
-        print 'zMax = %8.3f\n' % auParams[5]
+        print('\nObtained asymmetric unit parameters:')
+        print('xMin = %8.3f' % auParams[0])
+        print('xMax = %8.3f' % auParams[1])
+        print('yMin = %8.3f' % auParams[2])
+        print('yMax = %8.3f' % auParams[3])
+        print('zMin = %8.3f' % auParams[4])
+        print('zMax = %8.3f\n' % auParams[5])
 
-        print 'Removing atoms outside of packing density threshold'
+        print('Removing atoms outside of packing density threshold')
         keepParams = convertParams(auParams, self.PDT)
         trimmedAtomList = trimAtoms(transAtomList, keepParams)
 
@@ -442,7 +444,7 @@ class rabdam(object):
         # Calculates the packing density (atomic contact number) of every atom
         # in the asymmetric unit.
 
-        print 'Calculating packing density values\n'
+        print('Calculating packing density values\n')
         au_atom_xyz, trim_atom_xyz = get_xyz_from_objects(bdamAtomList,
                                                           trimmedAtomList)
         packing_density_array = calc_packing_density(au_atom_xyz,
@@ -459,13 +461,13 @@ class rabdam(object):
         # ratio of its Bfactor as compared to the average of the Bfactor values
         # of similarly (identified via sliding window) packed atoms.
 
-        print 'Calculating BDamage values\n'
+        print('Calculating BDamage values\n')
         window = int(round((len(bdamAtomList)*self.windowSize), 0))
         if window % 2 == 0:
             window = window + 1  # Window size must be an odd number.
         if window < 11:
             window = 11  # Minimum window size is 11.
-        print 'Size of sliding window --> %s atoms\n' % window
+        print('Size of sliding window --> %s atoms\n' % window)
         calcBdam(bdamAtomList, window)
 
         print('****************************************************************\n'
@@ -476,9 +478,9 @@ class rabdam(object):
         # multiple analysis runs to be performed from the same DataFrame,
         # thereby reducing their calculation time.
 
-        print 'Writing BDamage data to DataFrame\n'
+        print('Writing BDamage data to DataFrame\n')
         df = writeDataFrame(bdamAtomList)
-        print 'Saving DataFrame\n'
+        print('Saving DataFrame\n')
         storage = '%s/DataFrame' % PDBdirectory
         os.mkdir(storage)
         storage_file = '%s/%s' % (storage, PDBcode)
@@ -507,7 +509,7 @@ class rabdam(object):
         from makeDataFrame import makePDB
 
         if run == 'rabdam_analysis':
-            print '************************ RABDAM ANALYSIS ***********************\n'
+            print('************************ RABDAM ANALYSIS ***********************\n')
             print('\nPlease cite: M. Gerstel, C. M. Deane and E.F. Garman. (2015).\n'
                   'J. Synchrotron Radiation, 22, 201-212.\n'
                   'http://dx.doi.org/doi:10.1107/S1600577515002131\n')
@@ -572,9 +574,9 @@ class rabdam(object):
                 if self.overwrite is True:
                     owChoice = 'yes'
                 elif self.overwrite is False:
-                    owChoice = raw_input(prompt).lower()
+                    owChoice = input(prompt).lower()
                 if owChoice == 'yes' or owChoice == 'y':
-                    print '\nOverwriting existing analysis files\n'
+                    print('\nOverwriting existing analysis files\n')
                     for name in actual_analysis_files:
                         os.remove(name)
                     break
@@ -586,10 +588,10 @@ class rabdam(object):
                         return
                     break
                 else:
-                    print 'Unrecognised input - please answer "yes" or "no"'
+                    print('Unrecognised input - please answer "yes" or "no"')
 
         # Pkl files unpickled
-        print 'Unpickling DataFrame and variables\n'
+        print('Unpickling DataFrame and variables\n')
         with open(storage_file + '_variables.pkl', 'rb') as f:
             (pdb_file_path, PDBcode, bdamAtomList, header_lines, footer_lines,
              window) = pickle.load(f)
@@ -618,29 +620,29 @@ class rabdam(object):
         output = generate_output_files(pdb_file_path=pdb_file_path, df=df)
 
         if 'csv' in output_options:
-            print 'Writing csv file\n'
+            print('Writing csv file\n')
             output.make_csv(bdamAtomList, window)
 
         if 'pdb' in output_options:
-            print 'Writing PDB file with BDamage values replacing Bfactors'
+            print('Writing PDB file with BDamage values replacing Bfactors')
             pdb_file_name = pdb_file_path + '_BDamage.pdb'
             makePDB(header_lines, bdamAtomList, footer_lines, pdb_file_name,
                     'BDamage')
 
         if 'cif' in output_options:
-            print '\nWriting cif file with BDamage column'
+            print('\nWriting cif file with BDamage column')
             output.write_output_cif(self.pathTocif, self.batchRun)
 
         if 'kde' in output_options or 'summary' in output_options:
-            print '\nPlotting kernel density estimate\n'
+            print('\nPlotting kernel density estimate\n')
             output.make_histogram(self.highlightAtoms)
 
         if 'bnet' in output_options or 'summary' in output_options:
-            print 'Calculating Bnet\n'
+            print('Calculating Bnet\n')
             output.calculate_Bnet(window_name, pdt_name, window)
 
         if 'summary' in output_options:
-            print 'Writing summary html file\n'
+            print('Writing summary html file\n')
             output.write_html_summary(cwd, output_options, self.highlightAtoms)
 
         print('************** End of Writing Output Files Section *************\n'

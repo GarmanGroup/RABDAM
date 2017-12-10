@@ -94,8 +94,8 @@ def trimAtoms(atomList, params):
     # Removes all atoms with coordinates which lie outside of the trimmed
     # atoms box from the list of atoms in the 3x3 unit cell assembly.
 
-    print ('Discarding atoms that lie further than 14 Angstroms from the\n'
-           'asymmetric unit')
+    print('Discarding atoms that lie further than 14 Angstroms from the\n'
+          'asymmetric unit')
 
     trimmedAtomList = []
     for atom in atomList:
@@ -103,5 +103,5 @@ def trimAtoms(atomList, params):
         if isInXYZparams(atomXYZ, params):
             trimmedAtomList.append(atom)
 
-    print '--> %s atoms have been retained' % len(trimmedAtomList)
+    print('--> %s atoms have been retained' % len(trimmedAtomList))
     return trimmedAtomList

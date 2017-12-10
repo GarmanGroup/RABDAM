@@ -122,7 +122,7 @@ class generate_output_files(object):
                 elif batchRun is True:
                     return
             else:
-                print 'Downloading %s cif file from RCSB website' % self.pdb_code
+                print('Downloading %s cif file from RCSB website' % self.pdb_code)
                 orig_cif_lines = download_cif(url)
 
         # If (absolute) path to cif file has been provided:
@@ -143,7 +143,7 @@ class generate_output_files(object):
                 elif self.batchRun is True:
                     return
             os.chdir(owd)
-            print 'Copying %s cif file from %s' % (self.pdb_code, pathTocif)
+            print('Copying %s cif file from %s' % (self.pdb_code, pathTocif))
             orig_cif_lines = copy_cif(pathTocif, disk)
 
         # Loops through the cif file lines. A column of BDamage values is

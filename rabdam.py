@@ -76,9 +76,9 @@ hour = startIndex.tm_hour
 minute = startIndex.tm_min
 second = startIndex.tm_sec
 
-print '\nThis program was run on %d/%d/%d at %02.0f:%02.0f:%02.0f\n\n' % (
+print('\nThis program was run on %d/%d/%d at %02.0f:%02.0f:%02.0f\n\n' % (
     day, month, year, hour, minute, second
-    )
+    ))
 
 # Sets default option for -o flag (default = generate all output files bar the
 # summary file)
@@ -156,7 +156,7 @@ run = 'rabdam'
 
 # If input file is provided, program options are updated to the values it
 # specifies
-for x in xrange(0, len(splitArgs)):
+for x in range(0, len(splitArgs)):
     # Specifies location to which output 'Logfiles' directory is written
     if splitArgs[x][0:3].lower() == 'dir':
         dirArg = splitArgs[x].split('=')
@@ -255,7 +255,7 @@ for x in xrange(0, len(splitArgs)):
                 if len(removeAtomsRange) == 2:
                     min_val = int(removeAtomsRange[-2])
                     max_val = int(removeAtomsRange[-1])
-                    removeAtomsRange = xrange(min_val, (max_val+1))
+                    removeAtomsRange = range(min_val, (max_val+1))
                     for number in removeAtomsRange:
                         removeAtomsList.append(str(number))
                 elif len(removeAtomsRange) == 1:
@@ -276,7 +276,7 @@ for x in xrange(0, len(splitArgs)):
                 if len(addAtomsRange) == 2:
                     min_val = int(addAtomsRange[-2])
                     max_val = int(addAtomsRange[-1])
-                    addAtomsRange = xrange(min_val, (max_val+1))
+                    addAtomsRange = range(min_val, (max_val+1))
                     for number in addAtomsRange:
                         addAtomsList.append(str(number))
                 elif len(addAtomsRange) == 1:
@@ -299,7 +299,7 @@ for x in xrange(0, len(splitArgs)):
                 if len(highlightAtomsRange) == 2:
                     min_val = int(highlightAtomsRange[-2])
                     max_val = int(highlightAtomsRange[-1])
-                    highlightAtomsRange = xrange(min_val, (max_val+1))
+                    highlightAtomsRange = range(min_val, (max_val+1))
                     for number in highlightAtomsRange:
                         highlightAtomsList.append(str(number))
                 elif len(highlightAtomsRange) == 1:
@@ -389,6 +389,6 @@ runtime = time.time() - start
 mins = math.floor(runtime/60)
 secs = math.fmod(runtime, 60)
 if mins == 0:
-    print 'Program run time: %02.3f sec\n\n' % secs
+    print('Program run time: %02.3f sec\n\n' % secs)
 elif mins >= 1:
-    print 'Program run time: %01.0f min %02.3f sec\n\n' % (mins, secs)
+    print('Program run time: %01.0f min %02.3f sec\n\n' % (mins, secs))

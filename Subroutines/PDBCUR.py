@@ -83,9 +83,9 @@ def clean_pdb_file(pathToPDB, PDBdirectory, batchRun, pdb_file_path):
     alternate_conformers_occupancy = []
     for line in filtered_pdb_lines:
         if line[16:17].strip() != '':
-            alternate_conformers_chainresnum.append(line[21:26].replace(' ', ''))
+            alternate_conformers_chainresnum.append(line[21:27].replace(' ', ''))
             alternate_conformers_label.append(line[16:17].strip())
-            alternate_conformers_occupancy.append(line[54:60].strip())
+            alternate_conformers_occupancy.append(float(line[54:60].strip()))
 
     df = pd.DataFrame({'chainresnum': alternate_conformers_chainresnum,
                        'conformer': alternate_conformers_label,
@@ -122,7 +122,7 @@ def clean_pdb_file(pathToPDB, PDBdirectory, batchRun, pdb_file_path):
     for line in filtered_pdb_lines:
         if ((line[16:17].strip() == '')
             or (line[16:17].strip() != ''
-                and alternate_conformers[line[21:26].replace(' ', '')] == line[16:17].strip())
+                and alternate_conformers[line[21:27].replace(' ', '')] == line[16:17].strip())
             ):
             clean_au_file.write(line)
             new_atom = atom()
@@ -133,6 +133,7 @@ def clean_pdb_file(pathToPDB, PDBdirectory, batchRun, pdb_file_path):
             new_atom.resiType = line[17:20].strip()
             new_atom.chainID = line[21:22].strip()
             new_atom.resiNum = int(line[22:26].strip())
+            new_atom.insCode = line[26:27].strip()
             new_atom.xyzCoords = [[float(line[30:38].strip())],
                                   [float(line[38:46].strip())],
                                   [float(line[46:54].strip())]]
@@ -155,7 +156,7 @@ def genPDBCURinputs(PDBCURinputFile):
     # Creates input file for the CCP4 suite program PDBCUR, instructing it to
     # create the unit cell from an input pdb file of an asymmetric unit
 
-    print 'Writing input file for PDBCUR at %s' % PDBCURinputFile
+    print('Writing input file for PDBCUR at %s' % PDBCURinputFile)
     input_file = open(PDBCURinputFile, 'w')
     input_file.write('genunit\n')
     input_file.close()
@@ -170,12 +171,12 @@ def runPDBCUR(clean_au_file, PDBCURoutputPDB, PDBCURinputFile, PDBCURlog):
     runPDBCURcommand = 'pdbcur xyzin %s xyzout %s < %s > %s' % (
         clean_au_file, PDBCURoutputPDB, PDBCURinputFile, PDBCURlog
         )
-    print 'Running PDBCUR (Winn et al. 2011) to generate unit cell'
+    print('Running PDBCUR (Winn et al. 2011) to generate unit cell')
     os.system(runPDBCURcommand)
-    print 'PDBCUR log is printed below\n'
+    print('PDBCUR log is printed below\n')
     PDBCURlogText = open(PDBCURlog, 'r')
     for line in PDBCURlogText:
-        print line
+        print('%s' % line)
     PDBCURlogText.close()
     os.remove(PDBCURlog)
     os.remove(PDBCURinputFile)

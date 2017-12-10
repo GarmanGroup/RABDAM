@@ -1,6 +1,6 @@
 # RABDAM – identifying specific radiation damage in MX structures
 
-[![python2](https://img.shields.io/badge/python-2.7-blue.svg)](https://www.python.org/download/releases/2.7/)
+[![Python Version](https://img.shields.io/badge/python-3.6-blue.svg)](https://www.python.org/download/releases/3.6/)
 [![LGPL licensed](https://img.shields.io/badge/license-LGPL%20v3-blue.svg)](https://github.com/GarmanGroup/RABDAM/blob/master/COPYING.LESSER)
 
 A program to calculate the *B*<sub>Damage</sub> and *B*<sub>net</sub> metrics to quantify the extent of specific radiation damage present within an individual MX structure. Suitable for running on any standard format PDB file.
@@ -13,6 +13,7 @@ ___
 -	[How to run in brief](#how-to-run-in-brief)
 - [Background](#background)
 -	[Usage](#usage)
+    - [Installation](#installation)
     -	[System requirements](#system-requirements)
     - [Data requirements](#data-requirements)
     -	[Running RABDAM](#running-rabdam)
@@ -73,7 +74,7 @@ ___
 
 ## Usage
 #### System requirements
-RABDAM is written in Python 2.7. In addition, it is dependent upon the following packages / programs that are not included in the [Anaconda Python 2.7 distribution](https://www.continuum.io/downloads) from release 4.3.0 onwards:
+This version of RABDAM is written in Python 3.6. In addition, it is dependent upon the following packages / programs that are not included in the [Anaconda Python 3.6 distribution](https://www.continuum.io/downloads) from release 4.3.0 onwards:
 
 -	The [CCP4 software suite](http://www.ccp4.ac.uk/) (RABDAM has a dependency on the CCP4 suite program PDBCUR)
 

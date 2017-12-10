@@ -54,12 +54,12 @@ def downloadPDB(PDBcode, PDBdirectory, pathToPDB):
 
     urlText = 'http://www.rcsb.org/pdb/files/%s.pdb' % PDBcode
     os.makedirs(PDBdirectory)
-    print 'Directory %s created' % PDBdirectory
+    print('Directory %s created' % PDBdirectory)
     origPDB = requests.get(urlText)
-    print 'Downloaded PDB file from %s' % urlText
+    print('Downloaded PDB file from %s' % urlText)
     localFile = open(pathToPDB, 'w')
     localFile.write(origPDB.text)
-    print 'PDB file saved to %s' % pathToPDB
+    print('PDB file saved to %s' % pathToPDB)
     localFile.close()
 
 def download_cif(url):
@@ -88,7 +88,7 @@ def copyPDB(pathToPDB, disk, newPathToPDB, PDBdirectory):
     os.makedirs(PDBdirectory)
     localFile = open(newPathToPDB, 'w')
     localFile.write(origPDB.read())
-    print 'PDB file copied to %s' % newPathToPDB
+    print('PDB file copied to %s' % newPathToPDB)
     localFile.close()
     origPDB.close()
 
@@ -137,8 +137,8 @@ def full_atom_list(fileName):
             new_atom.charge = line[78:80].strip()
             ucAtomList.append(new_atom)
     fileOpen.close()
-    print 'Finished reading in atoms --> %d atoms found' % int(len(ucAtomList))
-    print 'in %s' % fileName
+    print('Finished reading in atoms --> %d atoms found' % int(len(ucAtomList)))
+    print('in %s' % fileName)
     return ucAtomList
 
 
@@ -200,5 +200,5 @@ def b_damage_atom_list(clean_au_list, HETATM, protOrNA, addAtoms,
             bdamatomList.append(atm)
             bdamatomSet.add(atm.atomNum)
 
-    print 'Finished reading in atoms --> %d atoms found' % int(len(clean_au_list))
+    print('Finished reading in atoms --> %d atoms found' % int(len(clean_au_list)))
     return bdamatomList

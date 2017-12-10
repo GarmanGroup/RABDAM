@@ -45,7 +45,7 @@ def calc_packing_density(xyz_au_atom, xyz_surr_atom, pack_dens_thresh):
     num_au_atoms = xyz_au_atom.shape[0]
     packing_density_array = np.zeros([num_au_atoms, 1])
 
-    for i in xrange(num_au_atoms):
+    for i in range(num_au_atoms):
         distances = np.sqrt(np.square(xyz_surr_atom[:, :] - xyz_au_atom[i, :]).sum(axis=1))
         packing_density_array[i][0] = np.sum(distances < pack_dens_thresh) - 1  # Subtract 1 to correct for the atom itself being counted.
 
@@ -100,7 +100,7 @@ def calcBdam(bdamAtomList, window):
     ser = ser.rolling(window=window, center=True).mean()
     ser = ser.fillna(0)
 
-    index_list = xrange(0, len(bdamAtomList))
+    index_list = range(0, len(bdamAtomList))
     index = pd.Series(index_list)
     index = index.rename('INDEX')
 

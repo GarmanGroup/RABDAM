@@ -25,7 +25,7 @@ def convertToCartesian(unit_cell_params):
     import math
     import numpy as np
 
-    print 'Converting the unit cell parameters to Cartesian vectors'
+    print('Converting the unit cell parameters to Cartesian vectors')
 
     a = unit_cell_params[0]
     b = unit_cell_params[1]
@@ -68,7 +68,7 @@ def convertToCartesian(unit_cell_params):
     cCartesianVector = np.dot(conversionMatrix, cVector)
     cartesianVectors = (aCartesianVector, bCartesianVector, cCartesianVector)
 
-    print 'Conversion complete\n'
+    print('Conversion complete\n')
     return cartesianVectors
 
 
@@ -104,7 +104,7 @@ def translateUnitCell(ucAtomList, transAtomList, cartesianVectors,
         new_item.xyzCoords = np.add(item.xyzCoords, transVector)
         transAtomList.append(new_item)
 
-    print 'Successfully translated by (%2sa,%2sb,%2sc) unit cells' % (
+    print('Successfully translated by (%2sa,%2sb,%2sc) unit cells' % (
         aTrans, bTrans, cTrans
-        )
+        ))
     return transAtomList
