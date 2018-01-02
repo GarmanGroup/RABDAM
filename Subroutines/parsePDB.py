@@ -37,46 +37,44 @@ class atom(object):
         self.resiNum = residuenum
         self.insCode = insertioncode
         self.xyzCoords = xyz_coords
-        self.atomID = atomidentifier
-        self.bFactor = bfactor
         self.occupancy = occupancy
+        self.bFactor = bfactor
+        self.atomID = atomidentifier
         self.charge = charge
         self.pd = packingdensity
         self.avrg_bf = avrg_bfactor
         self.bd = bdamage
 
 
-def downloadPDB(PDBcode, PDBdirectory, pathToPDB):
-    # Downloads and saves PDB file from the RSCB PDB website.
+def download_pdb_and_mmcif(PDBcode, PDBdirectory, pathToPDB, pathToCif):
+    # Downloads and saves PDB and mmCif files from the RSCB PDB website.
 
     import os
     import requests
 
-    urlText = 'http://www.rcsb.org/pdb/files/%s.pdb' % PDBcode
+    pdb_url = 'http://www.rcsb.org/pdb/files/%s.pdb' % PDBcode
+    cif_url = 'http://www.rcsb.org/pdb/files/%s.cif' % PDBcode
+
     os.makedirs(PDBdirectory)
     print 'Directory %s created' % PDBdirectory
-    origPDB = requests.get(urlText)
-    print 'Downloaded PDB file from %s' % urlText
-    localFile = open(pathToPDB, 'w')
-    localFile.write(origPDB.text)
+
+    origPDB = requests.get(pdb_url)
+    print 'Downloaded PDB file from %s' % pdb_url
+    pdb_file = open(pathToPDB, 'w')
+    pdb_file.write(origPDB.text)
     print 'PDB file saved to %s' % pathToPDB
-    localFile.close()
+    pdb_file.close()
 
-def download_cif(url):
-    # Downloads and saves cif file from the RSCB PDB website.
-
-    import requests
-
-    orig_cif = requests.get(url)
-    orig_cif = orig_cif.text.split('\n')
-    orig_cif_lines = [line.replace('\r', '') for line in orig_cif]
-    orig_cif_lines = [line.replace('\n', '') for line in orig_cif_lines]
-
-    return orig_cif_lines
+    origCif = requests.get(cif_url)
+    print 'Downloaded mmCif file from %s' % cif_url
+    cif_file = open(pathToCif, 'w')
+    cif_file.write(origCif.text)
+    print 'mmCif file saved to %s' % pathToCif
+    cif_file.close()
 
 
-def copyPDB(pathToPDB, disk, newPathToPDB, PDBdirectory):
-    # Copies .pdb file from any provided file path to Logfiles directory.
+def copy_input(pathToPDB, disk, newPathToPDB, PDBdirectory):
+    # Copies specified file to Logfiles directory.
 
     import os
 
@@ -88,26 +86,9 @@ def copyPDB(pathToPDB, disk, newPathToPDB, PDBdirectory):
     os.makedirs(PDBdirectory)
     localFile = open(newPathToPDB, 'w')
     localFile.write(origPDB.read())
-    print 'PDB file copied to %s' % newPathToPDB
+    print '%s copied to %s' % (pathToPDB, newPathToPDB)
     localFile.close()
     origPDB.close()
-
-
-def copy_cif(pathTocif, disk):
-    # Copies .cif file from any provided file path to Logfiles directory.
-
-    import os
-
-    owd = os.getcwd()
-    os.chdir('/')  # Changes directory to root directory
-    os.chdir(disk)
-    orig_cif = open(pathTocif, 'r')
-    os.chdir(owd)
-    orig_cif_lines = [line.replace('\r', '') for line in orig_cif]
-    orig_cif_lines = [line.replace('\n', '') for line in orig_cif_lines]
-    orig_cif.close()
-
-    return orig_cif_lines
 
 
 def full_atom_list(fileName):

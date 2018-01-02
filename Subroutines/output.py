@@ -99,110 +99,80 @@ class generate_output_files(object):
 
         newFile.close()
 
-    def write_output_cif(self, pathTocif, batchRun):
-        # Appends a column of BDamage values to the cif file of the input
-        # structure
-        import requests
-        from parsePDB import download_cif, copy_cif
+    def write_output_cif(self, cif_lines, cif_header_lines,
+                         cif_footer_lines, cif_column_labels):
+        # Writes an mmCif file for the input structure with an additional
+        # column of BDamage values for those atoms included in the calculation.
+        import re
 
-        # If 4 digitPDB accession code has been supplied:
-        if len(pathTocif) == 4:
-            # Checks whether cif url exists. If it doesn't, program terminates
-            # with error message / moves on to the next structure, depending
-            # upon whether batchContinue has been set to False (default) /
-            # True. If it does, RABDAM writes the cif file lines to a list.
-            url = 'http://www.rcsb.org/pdb/files/%s.cif' % pathTocif
-            header = requests.get(url)
-            if header.status_code >= 300:
-                if batchRun is False:
-                    sys.exit('ERROR: Failed to download cif file with '
-                             'accession code %s:\n'
-                             'check that a structure with this accession code '
-                             'exists.' % pathTocif)
-                elif batchRun is True:
-                    return
-            else:
-                print 'Downloading %s cif file from RCSB website' % self.pdb_code
-                orig_cif_lines = download_cif(url)
-
-        # If (absolute) path to cif file has been provided:
-        else:
-            # Checks whether cif file exists at specified location. If it
-            # doesn't, program terminates with error message / moves on to the
-            # next structure, depending upon whether batchContinue has been set
-            # to False (default) / True. If it does, RABDAM writes the cif
-            # file lines to a list.
-            splitPath = pathTocif.split('/')
-            disk = '%s/' % splitPath[0]
-            owd = os.getcwd()
-            os.chdir('/')
-            os.chdir(disk)
-            if not os.path.exists(pathTocif):
-                if self.batchRun is False:
-                    sys.exit('ERROR: Supplied cif filepath not recognised')
-                elif self.batchRun is True:
-                    return
-            os.chdir(owd)
-            print 'Copying %s cif file from %s' % (self.pdb_code, pathTocif)
-            orig_cif_lines = copy_cif(pathTocif, disk)
-
-        # Loops through the cif file lines. A column of BDamage values is
-        # appended to the ATOM (/ HETATM) records (between the Bfactor and
-        # charge columns).
         x_list = self.df.XPOS.tolist()
         y_list = self.df.YPOS.tolist()
         z_list = self.df.ZPOS.tolist()
         b_dam_list = self.df.BDAM.tolist()
 
         new_cif = open('%s_BDamage.cif' % self.pdb_file_path, 'w')
-        for line in orig_cif_lines:
-            if line.startswith('_atom_site.B_iso_or_equiv'):
-                new_cif.write('%s\n' % line)  # Adds in new column descriptor
-                new_cif.write('%s\n' % line.replace('_atom_site.B_iso_or_equiv',
-                                                    '_atom_site.B_Damage'))
+
+        for line in cif_header_lines:
+            if line.replace(' ', '') != '':
+                new_cif.write('%s\n' % line)
+
+        new_cif.write('loop_\n')
+
+        for column in cif_column_labels:
+            if column == 'B_iso_or_equiv':
+                new_cif.write('_atom_site.%s\n' % column)
+                new_cif.write('_atom_site.B_Damage\n')
             else:
-                if not line[0:6].strip() in ['ATOM', 'HETATM']:
-                    new_cif.write('%s\n' % line)
-                elif line[0:6].strip() in ['ATOM', 'HETATM']:
-                    line_start = line[0:63]
-                    line_end = line[63:]
+                new_cif.write('_atom_site.%s\n' % column)
 
-                    x = float(line[32:38])
-                    y = float(line[39:45])
-                    z = float(line[46:52])
-                    x_indices = []
-                    y_indices = []
-                    z_indices = []
+        for line in cif_lines:
+            values = line.split()
 
-                    for index, value in enumerate(x_list):
-                        if x == value:
-                            x_indices.append(index)
-                    for index, value in enumerate(y_list):
-                        if y == value:
-                            y_indices.append(index)
-                    for index, value in enumerate(z_list):
-                        if z == value:
-                            z_indices.append(index)
+            x = float(values[cif_column_labels.index('Cartn_x')])
+            y = float(values[cif_column_labels.index('Cartn_y')])
+            z = float(values[cif_column_labels.index('Cartn_z')])
+            x_indices = []
+            y_indices = []
+            z_indices = []
 
-                    # Matches the corresponding BDamage value to the ATOM
-                    # (/ HETATM) described by the current cif file line
-                    index = ''
-                    for x_index in x_indices:
-                        if x_index in y_indices and x_index in z_indices:
-                            index = x_index
-                            break
+            for index, value in enumerate(x_list):
+                if x == value:
+                    x_indices.append(index)
+            for index, value in enumerate(y_list):
+                if y == value:
+                    y_indices.append(index)
+            for index, value in enumerate(z_list):
+                if z == value:
+                    z_indices.append(index)
 
-                    try:
-                        int(index)
-                        b_dam = b_dam_list[index]
-                        b_dam = '{:.2f}'.format(b_dam)
-                        b_dam = b_dam.ljust(5)
-                        line_middle = ' %s' % b_dam
-                    except ValueError:
-                        line_middle = ' .    '
+            # Matches the corresponding BDamage value to the ATOM
+            # (/ HETATM) described by the current cif file line
+            index = ''
+            for x_index in x_indices:
+                if x_index in y_indices and x_index in z_indices:
+                    index = x_index
+                    break
 
-                    new_line = line_start + line_middle + line_end
-                    new_cif.write('%s\n' % new_line)
+            try:
+                int(index)
+                b_dam = b_dam_list[index]
+                b_dam = '{:.2f}'.format(b_dam)
+                b_dam = b_dam.ljust(5)
+                line_middle = ' %s' % b_dam
+            except ValueError:
+                line_middle = ' .    '
+
+            bfac = values[cif_column_labels.index('B_iso_or_equiv')]
+            split_line = re.split('(%s)' % bfac, line)
+            bfac_index = split_line.index(bfac)
+            line_start = ''.join(split_line[0:bfac_index+1])
+            line_end = ''.join(split_line[bfac_index+1:])
+            new_line = line_start + line_middle + line_end
+            new_cif.write('%s\n' % new_line)
+
+        for line in cif_footer_lines:
+            new_cif.write('%s\n' % line)
+
         new_cif.close()
 
     def make_histogram(self, highlightAtoms):

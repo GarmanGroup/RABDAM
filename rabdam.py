@@ -83,7 +83,7 @@ print '\nThis program was run on %d/%d/%d at %02.0f:%02.0f:%02.0f\n\n' % (
 # Sets default option for -o flag (default = generate all output files bar the
 # summary file)
 if vars(args)['output'] is None:
-    vars(args)['output'] = ['csv', 'pdb', 'cif', 'kde', 'bnet', 'summary']
+    vars(args)['output'] = ['csv', 'bdam', 'kde', 'bnet', 'summary']
 output_options = [item.lower() for item in vars(args)['output']]
 
 cwd = os.getcwd()
@@ -96,45 +96,29 @@ if vars(args)['input'] is not None:
     input_file = input_file_loc_list[len(input_file_loc_list)-1]
     if len(input_file_loc_list) > 1:
         input_file_loc = input_file_loc.replace(input_file, '')
-    else:
-        input_file_loc = cwd
-    os.chdir(input_file_loc)
+        os.chdir(input_file_loc)
     fileCont = open(input_file, 'r')
     functionArgs = fileCont.read()
     fileCont.close()
     os.chdir(cwd)
     splitArgs = functionArgs.split(',')
-    pathToPDBlist = [item.strip() for item in splitArgs if '=' not in item
-                     and '.cif' not in item and item.strip() != '']
-    pathToCifList = [item.strip() for item in splitArgs if '=' not in item
-                     and '.pdb' not in item and item.strip() != '']
+    pathToInputList = [item.strip() for item in splitArgs if '=' not in item]
     # Reads in remaining program options specified in input file
     functionArgs = functionArgs.replace(' ', '')
     functionArgs = functionArgs.replace('\n', '')
     functionArgs = functionArgs.replace('\r', '')
     splitArgs = functionArgs.split(',')
-    splitArgs = [item for item in splitArgs if '=' in item]
+    splitArgs = [item.strip() for item in splitArgs if '=' in item]
 
 # Reads in PDB file name(s) specified by -f flag listed in command line input
 elif vars(args)['pdb_file'] is not None:
-    pathToPDBlist = [item for item in vars(args)['pdb_file'] if '.cif' not in
-                     item]
-    pathToCifList = [item for item in vars(args)['pdb_file'] if '.pdb' not in
-                     item]
+    pathToInputList = [item.strip() for item in vars(args)['pdb_file']]
     splitArgs = []
-
-# Checks that the user has specified the same number of input PDB and cif files
-# IF the user wants to obtain an output cif file
-if len(pathToPDBlist) != len(pathToCifList):
-    if 'cif' in vars(args)['output']:
-        sys.exit('ERROR: Number of PDB files specified for BDamage '
-                 'analysis does\n'
-                 'not equal the number of cif files specified')
 
 # Checks that the user has specified at least one input structure for RABDAM
 # analysis
-if len(pathToPDBlist) == 0:
-    sys.exit('No input PDB code / file provided')
+if len(pathToInputList) == 0:
+    sys.exit('Input file / accession code not specified')
 
 # Initialises default program options
 outputLoc = cwd
@@ -354,16 +338,15 @@ for x in xrange(0, len(splitArgs)):
             taVal = False
 
 # Runs the BDamage calculation for every specified PDB file
-for index, item in enumerate(pathToPDBlist):
-    cifLoc = pathToCifList[index]
+for item in pathToInputList:
     for windowVal in windowList:
         for pdtVal in pdtList:
             # Initialises rabdam object
-            pdb = rabdam(pathToPDB=item, pathTocif=cifLoc, outputDir=outputLoc,
-                         batchRun=batchVal, overwrite=overwriteVal,
-                         PDT=pdtVal, windowSize=windowVal,
-                         protOrNA=protOrNAVal, HETATM=hetatmVal,
-                         addAtoms=addAtomsList, removeAtoms=removeAtomsList,
+            pdb = rabdam(pathToInput=item, outputDir=outputLoc,
+                         batchRun=batchVal, overwrite=overwriteVal, PDT=pdtVal,
+                         windowSize=windowVal, protOrNA=protOrNAVal,
+                         HETATM=hetatmVal, addAtoms=addAtomsList,
+                         removeAtoms=removeAtomsList,
                          highlightAtoms=highlightAtomsList,
                          createOrigpdb=origVal, createAUpdb=auVal,
                          createUCpdb=ucVal, createAUCpdb=aucVal,
