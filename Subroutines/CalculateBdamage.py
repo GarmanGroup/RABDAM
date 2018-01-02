@@ -527,7 +527,7 @@ class rabdam(object):
         from makeDataFrame import makePDB
 
         if run == 'rabdam_analysis':
-            print '************************ RABDAM ANALYSIS ***********************\n'
+            print('************************ RABDAM ANALYSIS ***********************\n')
 
         # Changes directory to the specified location for the output 'Logfiles'
         # directory. The default location is the current working directory
