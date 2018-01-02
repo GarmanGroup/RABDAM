@@ -19,7 +19,137 @@
 # <http://www.gnu.org/licenses/>.
 
 
-def clean_pdb_file(pathToPDB, PDBdirectory, batchRun, pdb_file_path):
+def convert_cif_to_pdb(pathToInput, convert_cif):
+    import os
+    import sys
+    from parsePDB import atom
+    from makeDataFrame import makePDB
+
+    input_cif_lines = []
+    start = False
+
+    input_cif = open('%s' % pathToInput, 'r')
+    input_cif_lines = ''
+    for line in input_cif:
+        line = line.replace('\n', '')
+        line = line.replace('\r', '')
+        line = line.strip()
+        input_cif_lines = input_cif_lines + line + '\\'
+    input_cif.close()
+
+    input_cif_lines = input_cif_lines.split('\#\\')
+    ATM_rec = ''
+    space_group = ''
+    cif_header_lines = ''
+    cif_footer_lines = '#\\'
+    header = True
+    for subsection in input_cif_lines:
+        if '_atom_site.group_PDB' in subsection:
+            ATM_rec = subsection
+            header = False
+        elif ('_cell.length_a' in subsection
+             or '_symmetry.space_group_name_H-M' in subsection
+             ):
+            space_group = space_group + subsection
+        else:
+            if header is True:
+                cif_header_lines = cif_header_lines + subsection + '\#\\'
+            elif header is False:
+                cif_footer_lines = cif_footer_lines + subsection + '\#\\'
+    cif_footer_lines = cif_footer_lines.split('\\')
+    cif_header_lines = cif_header_lines.split('\\')
+
+    # Constructs CRYST1 line of PDB file
+    space_group = space_group.split('\\')
+    a = ''
+    b = ''
+    c = ''
+    alpha = ''
+    beta = ''
+    gamma = ''
+    sGroup = ''
+    z = ''
+    for line in space_group:
+        if line.startswith('_cell.length_a'):
+            a = line.split()[-1].strip()
+        elif line.startswith('_cell.length_b'):
+            b = line.split()[-1].strip()
+        elif line.startswith('_cell.length_c'):
+            c = line.split()[-1].strip()
+        elif line.startswith('_cell.angle_alpha'):
+            alpha = line.split()[-1].strip()
+        elif line.startswith('_cell.angle_beta'):
+            beta = line.split()[-1].strip()
+        elif line.startswith('_cell.angle_gamma'):
+            gamma = line.split()[-1].strip()
+        elif line.startswith('_symmetry.space_group_name_H-M'):
+            sGroup = line.replace('_symmetry.space_group_name_H-M', '')
+            sGroup = sGroup.replace("'", '')
+            sGroup = sGroup.strip()
+        elif line.startswith('_cell.Z_PDB'):
+            z = line.split()[-1].strip()
+    if any([a, b, c, alpha, beta, gamma, sGroup, z]) == '':
+        sys.exit('Failed to construct CRYST1 line')
+    cryst1_line = ''.join(['CRYST1', a.rjust(9), b.rjust(9), c.rjust(9),
+                           alpha.rjust(7), beta.rjust(7), gamma.rjust(7), ' ',
+                           sGroup.ljust(11), z.rjust(4), '\n'])
+
+    if ATM_rec == '':
+        sys.exit('\nFailed to extract ATOM / HETATM records from input .cif '
+                 'file\n'
+                 '- check that this file is consistent with the standard cif '
+                 'file format')
+    else:
+        ATM_rec = ATM_rec.split('\\')
+        cif_column_labels = [line.replace('_atom_site.', '') for line in
+                             ATM_rec if line.startswith('_atom_site.')]
+        columns = [line for line in ATM_rec if
+                   line.startswith(('ATOM', 'HETATM'))]
+
+        cif_atom_list = []
+        cif_lines = []
+        for line in columns:
+            values = line.split()
+
+            if int(values[cif_column_labels.index('pdbx_PDB_model_num')]) > 1:
+                sys.exit('\n\nMore than one model present in input mmCif file.\n'
+                         'Please submit an mmCif file containing a single model '
+                         'for BDamage analysis.\n')
+
+            input_atom = atom()
+            input_atom.lineID = values[cif_column_labels.index('group_PDB')]
+            input_atom.atomNum = int(values[cif_column_labels.index('id')])
+            input_atom.atomType = values[cif_column_labels.index('auth_atom_id')]
+            input_atom.conformer = values[cif_column_labels.index('label_alt_id')]
+            input_atom.resiType = values[cif_column_labels.index('auth_comp_id')]
+            input_atom.chainID = values[cif_column_labels.index('auth_asym_id')]
+            input_atom.resiNum = int(values[cif_column_labels.index('auth_seq_id')])
+            input_atom.insCode = values[cif_column_labels.index('pdbx_PDB_ins_code')]
+            input_atom.xyzCoords = [[float(values[cif_column_labels.index('Cartn_x')])],
+                                    [float(values[cif_column_labels.index('Cartn_y')])],
+                                    [float(values[cif_column_labels.index('Cartn_z')])]]
+            input_atom.occupancy = float(values[cif_column_labels.index('occupancy')])
+            input_atom.bFactor = float(values[cif_column_labels.index('B_iso_or_equiv')])
+            input_atom.element = values[cif_column_labels.index('type_symbol')]
+            input_atom.charge = values[cif_column_labels.index('pdbx_formal_charge')]
+
+            cif_atom_list.append(input_atom)
+            cif_lines.append(line)
+
+    if convert_cif is True:
+        os.remove(pathToInput)
+        pathToInput = pathToInput.replace('.cif', '.pdb')
+        pdb_header_lines = cryst1_line
+        # Also need to check that number of models doesn't exceed 1
+        pdb_footer_lines = ''
+        makePDB(pdb_header_lines, cif_atom_list, pdb_footer_lines, pathToInput,
+               'Bfactor')
+
+    return (pathToInput, cif_lines, cif_header_lines, cif_footer_lines,
+            cif_column_labels)
+
+
+def clean_pdb_file(pathToInput, PDBdirectory, batchRun, pdb_file_path):
     # Filters the input PDB file ATOM / HETATM records to remove anisotropic
     # Bfactor records, hydrogen atoms and 0 occupancy atoms, as well as
     # retaining only the most probable alternate conformers (in the case
@@ -40,7 +170,7 @@ def clean_pdb_file(pathToPDB, PDBdirectory, batchRun, pdb_file_path):
     header_lines = []
     footer_lines = []
     unit_cell_params = []
-    orig_pdb = open('%s' % pathToPDB, 'r')
+    orig_pdb = open('%s' % pathToInput, 'r')
     header = True
     footer = False
     for line in orig_pdb:

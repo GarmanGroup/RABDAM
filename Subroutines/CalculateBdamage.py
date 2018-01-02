@@ -20,12 +20,11 @@
 
 
 class rabdam(object):
-    def __init__(self, pathToPDB, pathTocif, outputDir, batchRun, overwrite,
-                 PDT, windowSize, protOrNA, HETATM, addAtoms, removeAtoms,
+    def __init__(self, pathToInput, outputDir, batchRun, overwrite, PDT,
+                 windowSize, protOrNA, HETATM, addAtoms, removeAtoms,
                  highlightAtoms, createOrigpdb, createAUpdb, createUCpdb,
                  createAUCpdb, createTApdb):
-        self.pathToPDB = pathToPDB
-        self.pathTocif = pathTocif
+        self.pathToInput = pathToInput
         self.outputDir = outputDir
         self.batchRun = batchRun
         self.overwrite = overwrite
@@ -55,9 +54,10 @@ class rabdam(object):
         duplicate = copy.copy
         import pickle
 
-        from PDBCUR import clean_pdb_file, genPDBCURinputs, runPDBCUR
-        from parsePDB import (full_atom_list, b_damage_atom_list, downloadPDB,
-                              copyPDB)
+        from PDBCUR import (convert_cif_to_pdb, clean_pdb_file,
+                            genPDBCURinputs, runPDBCUR)
+        from parsePDB import (full_atom_list, b_damage_atom_list,
+                              download_pdb_and_mmcif, copy_input)
         from translateUnitCell import convertToCartesian, translateUnitCell
         from trimUnitCellAssembly import getAUparams, convertParams, trimAtoms
         from makeDataFrame import makePDB, writeDataFrame
@@ -69,10 +69,6 @@ class rabdam(object):
         elif run == 'rabdam_dataframe':
             print('*********************** RABDAM DATAFRAME ***********************\n')
 
-        print('\nPlease cite: M. Gerstel, C. M. Deane and E.F. Garman. (2015).\n'
-              'J. Synchrotron Radiation, 22, 201-212.\n'
-              'http://dx.doi.org/doi:10.1107/S1600577515002131\n')
-
         print('\n****************************************************************\n'
               '***************** Program to calculate BDamage *****************\n'
               '****************************************************************\n')
@@ -81,7 +77,7 @@ class rabdam(object):
               '************************* Input Section ************************\n')
         # Prints the values of the program options to be used in the current
         # RABDAM run
-        print('Calculating BDamage for %s' % self.pathToPDB)
+        print('Calculating BDamage for %s' % self.pathToInput)
         print('Writing output files to %s' % self.outputDir)
         if self.PDT == 7:
             print('Using default packing density threshold of 7 Angstroms')
@@ -135,28 +131,31 @@ class rabdam(object):
         # new directory.
 
         # If 4 digit PDB accession code has been supplied:
-        if len(self.pathToPDB) == 4:
-            print('PDB code supplied\n')
-            PDBcode = self.pathToPDB.upper()
+        if len(self.pathToInput) == 4:
+            print('Accession code supplied\n')
+            PDBcode = self.pathToInput.upper()
             window_name = 100*self.windowSize
             window_name = str(window_name).replace('.', '_')
             pdt_name = str(self.PDT).replace('.', '_')
             PDBdirectory = 'Logfiles/%s_window_%s_pdt_%s/' % (PDBcode, window_name, pdt_name)
             pdb_file_path = '%s%s' % (PDBdirectory, PDBcode)
-            pathToPDB = '%s%s.pdb' % (PDBdirectory, PDBcode)
+            pathToInput = '%s%s.pdb' % (PDBdirectory, PDBcode)
+            pathToCif = '%s%s.cif' % (PDBdirectory, PDBcode)
 
-            # Checks whether PDB accession code exists - if not, exit program
+            # Checks whether accession code exists - if not, exit program
             # with error message
-            url = 'http://www.rcsb.org/pdb/files/%s.pdb' % PDBcode
-            header = requests.get(url)
-            if header.status_code >= 300:
-                if self.batchRun is False:
-                    sys.exit('ERROR: Failed to download PDB file with '
-                             'accession code %s:\n'
-                             'check that a structure with this accession code '
-                             'exists.' % PDBcode)
-                elif self.batchRun is True:
-                    return
+            urls = ['http://www.rcsb.org/pdb/files/%s.pdb' % PDBcode,
+                    'http://www.rcsb.org/pdb/files/%s.cif' % PDBcode]
+            for url in urls:
+                header = requests.get(url)
+                if header.status_code >= 300:
+                    if self.batchRun is False:
+                        sys.exit('ERROR: Failed to download %s file with '
+                                 'accession code %s:\n'
+                                 'check that a structure with this accession code '
+                                 'exists.' % (url[-4:], PDBcode))
+                    elif self.batchRun is True:
+                        return
 
             # If directory with same name as PDBdirectory already exists in
             # 'Logfiles' directory, user input is requested ('Do you want to
@@ -186,7 +185,8 @@ class rabdam(object):
                     if owChoice == 'yes' or owChoice == 'y':
                         print('\nOverwriting existing folder')
                         shutil.rmtree(PDBdirectory)
-                        downloadPDB(PDBcode, PDBdirectory, pathToPDB)
+                        download_pdb_and_mmcif(PDBcode, PDBdirectory,
+                                               pathToInput, pathToCif)
                         break
                     elif owChoice == 'no' or owChoice == 'n':
                         if self.batchRun is False:
@@ -198,11 +198,12 @@ class rabdam(object):
                     else:
                         print('Unrecognised input - please answer "yes" or "no"')
             else:
-                downloadPDB(PDBcode, PDBdirectory, pathToPDB)
+                download_pdb_and_mmcif(PDBcode, PDBdirectory, pathToInput,
+                                       pathToCif)
 
             # Checks that PDB file has been successfully downloaded and saved to
             # the 'Logfiles' directory
-            if not os.path.exists(pathToPDB):
+            if not os.path.exists(pathToInput):
                 shutil.rmtree('%s' % PDBdirectory)
                 if self.batchRun is False:
                     sys.exit('ERROR: Failed to download and save PDB file - cause unknown')
@@ -222,36 +223,37 @@ class rabdam(object):
             # If it doesn't already exist, new PDBdirectory is created and copy
             # of input PDB file is saved to the new directory.
             owd = os.getcwd()
-            pathToPDB = self.pathToPDB.replace('\\', '/')
-            splitPath = pathToPDB.split('/')
+            pathToInput = self.pathToInput.replace('\\', '/')
+            splitPath = pathToInput.split('/')
             disk = '%s/' % splitPath[0]
             os.chdir('/')
             os.chdir(disk)
-            if not os.path.exists(pathToPDB):
+            if not os.path.exists(pathToInput):
                 if self.batchRun is False:
-                    sys.exit('ERROR: Supplied pdb filepath not recognised')
+                    sys.exit('ERROR: Supplied filepath not recognised')
                 elif self.batchRun is True:
                     return
             os.chdir(owd)
 
-            if pathToPDB[-4:] != '.pdb':
+            if pathToInput[-4:] not in ['.pdb', '.cif']:
                 if self.batchRun is False:
-                    sys.exit('ERROR: Supplied filepath to PDB is not a .pdb '
-                             'file')
+                    sys.exit('ERROR: Supplied input filepath is not a .pdb or '
+                             '.cif file')
                 elif self.batchRun is True:
                     return
             else:
-                print('Filepath to .pdb file supplied\n')
+                print('Filepath to %s file supplied\n' % pathToInput[-4])
                 fileName = splitPath[len(splitPath)-1]
                 splitFilename = fileName.split('.')
-                PDBcode = splitFilename[len(splitFilename)-2].upper()
+                PDBcode = splitFilename[-2].upper()
                 fileName = PDBcode + '.' + splitFilename[len(splitFilename)-1]
                 window_name = 100*self.windowSize
                 window_name = str(window_name).replace('.', '_')
                 pdt_name = str(self.PDT).replace('.', '_')
                 PDBdirectory = 'Logfiles/%s_window_%s_pdt_%s/' % (PDBcode, window_name, pdt_name)
                 pdb_file_path = '%s%s' % (PDBdirectory, PDBcode)
-                newPathToPDB = '%s%s' % (PDBdirectory, fileName)
+                newpathToInput = '%s%s' % (PDBdirectory, fileName)
+                pathToCif = ''
 
                 if os.path.isdir(PDBdirectory):
                     print('Folder %s already exists locally at %s' % (
@@ -271,7 +273,7 @@ class rabdam(object):
                         if owChoice == 'yes' or owChoice == 'y':
                             print('\nOverwriting existing folder')
                             shutil.rmtree(PDBdirectory)
-                            copyPDB(pathToPDB, disk, newPathToPDB, PDBdirectory)
+                            copy_input(pathToInput, disk, newpathToInput, PDBdirectory)
                             break
                         elif owChoice == 'no' or owChoice == 'n':
                             if self.batchRun is False:
@@ -283,20 +285,21 @@ class rabdam(object):
                         else:
                             print('Unrecognised input - please answer "yes" or "no"')
                 else:
-                    copyPDB(pathToPDB, disk, newPathToPDB, PDBdirectory)
+                    copy_input(pathToInput, disk, newpathToInput, PDBdirectory)
 
                 # Checks that PDB file has been successfully copied to the
                 # 'Logfiles' directory
-                if not os.path.exists(newPathToPDB):
+                if not os.path.exists(newpathToInput):
                     shutil.rmtree('%s' % PDBdirectory)
                     if self.batchRun is False:
-                        sys.exit('ERROR: Failed to copy PDB file to Logfiles '
-                                 'directory.\nCheck that supplied PDB file is '
-                                 'not in use by another program')
+                        sys.exit('ERROR: Failed to copy input cif / PDB file '
+                                 'to the Logfiles directory.\n'
+                                 'Check that supplied PDB file is not in use '
+                                 'by another program')
                     elif self.batchRun is True:
                         return
 
-                pathToPDB = newPathToPDB
+                pathToInput = newpathToInput
 
         print('\nAll files generated by this program will be stored in:\n'
               '    %s\n' % PDBdirectory)
@@ -308,21 +311,35 @@ class rabdam(object):
         # PDB file and its associated symmetry operations. Note that unit cell
         # generation is currently performed by the PDBCUR program from the CCP4
         # software suite.
-        print('\nProcessing PDB file to remove hydrogen atoms, anisotropic '
+        print('\nProcessing input file to remove hydrogen atoms, anisotropic '
               '\nB factor records, and atoms with zero occupancy, as well as '
               '\nretaining only the most probable alternate conformations')
 
+        if self.pathToInput[-4:] == '.cif':
+            (pathToInput, cif_lines, cif_header_lines, cif_footer_lines,
+             cif_column_labels) = convert_cif_to_pdb(pathToInput, True)
+        elif len(self.pathToInput) == 4:
+            (pathToCif, cif_lines, cif_header_lines, cif_footer_lines,
+             cif_column_labels) = convert_cif_to_pdb(pathToCif, False)
+        else:
+            cif_lines = ''
+            cif_header_lines = ''
+            cif_footer_lines = ''
+            cif_column_labels = ''
+
         (multi_model, clean_au_file, clean_au_list, header_lines, footer_lines,
-         unit_cell_params) = clean_pdb_file(pathToPDB, PDBdirectory,
+         unit_cell_params) = clean_pdb_file(pathToInput, PDBdirectory,
                                             self.batchRun, pdb_file_path)
         if multi_model is True:
             shutil.rmtree('%s' % PDBdirectory)
             return
 
-        # Deletes input PDB file fed into the program unless createOrigpdb
+        # Deletes input file fed into the program unless createOrigpdb
         # is set equal to True in the input file (default=False).
         if not self.createOrigpdb:
-            os.remove(pathToPDB)
+            os.remove(pathToInput)
+            if pathToCif != '':
+                os.remove(pathToCif)
 
         print('\nGenerating unit cell\n')
         PDBCURinputFile = '%sPDBCURinput.txt' % pdb_file_path
@@ -486,8 +503,9 @@ class rabdam(object):
         storage_file = '%s/%s' % (storage, PDBcode)
         df.to_pickle(storage_file + '_dataframe.pkl')
         with open(storage_file + '_variables.pkl', 'wb') as f:
-            pickle.dump((pdb_file_path, PDBcode, bdamAtomList, header_lines,
-                         footer_lines, window), f)
+            pickle.dump((pdb_file_path, PDBcode, bdamAtomList, cif_lines,
+                         cif_header_lines, cif_footer_lines, cif_column_labels,
+                         header_lines, footer_lines, window), f)
 
         print('****************************************************************\n'
               '*************** End Of Writing DataFrame Section ***************\n')
@@ -509,10 +527,7 @@ class rabdam(object):
         from makeDataFrame import makePDB
 
         if run == 'rabdam_analysis':
-            print('************************ RABDAM ANALYSIS ***********************\n')
-            print('\nPlease cite: M. Gerstel, C. M. Deane and E.F. Garman. (2015).\n'
-                  'J. Synchrotron Radiation, 22, 201-212.\n'
-                  'http://dx.doi.org/doi:10.1107/S1600577515002131\n')
+            print '************************ RABDAM ANALYSIS ***********************\n'
 
         # Changes directory to the specified location for the output 'Logfiles'
         # directory. The default location is the current working directory
@@ -533,10 +548,12 @@ class rabdam(object):
         # Note that currently there is no option to replace only a subset of
         # the output analysis files.
 
-        pathToPDB = self.pathToPDB.replace('\\', '/')
-        splitPath = pathToPDB.split('/')
-        pathToPDB = splitPath[len(splitPath)-1]
-        PDBcode = pathToPDB.replace('.pdb', '')
+        pathToInput = self.pathToInput.replace('\\', '/')
+        splitPath = pathToInput.split('/')
+        pathToInput = splitPath[len(splitPath)-1]
+        PDBcode = pathToInput
+        for file_name in ['.pdb', '.cif']:
+            PDBcode = PDBcode.replace('%s' % file_name, '')
         PDBcode = PDBcode.upper()
         window_name = 100*self.windowSize
         window_name = str(window_name).replace('.', '_')
@@ -593,8 +610,9 @@ class rabdam(object):
         # Pkl files unpickled
         print('Unpickling DataFrame and variables\n')
         with open(storage_file + '_variables.pkl', 'rb') as f:
-            (pdb_file_path, PDBcode, bdamAtomList, header_lines, footer_lines,
-             window) = pickle.load(f)
+            (pdb_file_path, PDBcode, bdamAtomList, cif_lines,
+             cif_header_lines, cif_footer_lines, cif_column_labels,
+             header_lines, footer_lines, window) = pickle.load(f)
         df = pd.read_pickle(storage_file + '_dataframe.pkl')
 
         print('************** End Of Processing DataFrame Section *************\n'
@@ -623,15 +641,16 @@ class rabdam(object):
             print('Writing csv file\n')
             output.make_csv(bdamAtomList, window)
 
-        if 'pdb' in output_options:
-            print('Writing PDB file with BDamage values replacing Bfactors')
-            pdb_file_name = pdb_file_path + '_BDamage.pdb'
-            makePDB(header_lines, bdamAtomList, footer_lines, pdb_file_name,
-                    'BDamage')
-
-        if 'cif' in output_options:
-            print('\nWriting cif file with BDamage column')
-            output.write_output_cif(self.pathTocif, self.batchRun)
+        if 'bdam' in output_options:
+            if (len(self.pathToInput) == 4 or self.pathToInput.split('.')[-1] == 'pdb'):
+                print('\nWriting PDB file with BDamage values replacing Bfactors')
+                pdb_file_name = pdb_file_path + '_BDamage.pdb'
+                makePDB(header_lines, bdamAtomList, footer_lines, pdb_file_name,
+                        'BDamage')
+            if (len(self.pathToInput) == 4 or self.pathToInput.split('.')[-1] == 'cif'):
+                print('\nWriting cif file with BDamage column')
+                output.write_output_cif(cif_lines, cif_header_lines,
+                                        cif_footer_lines, cif_column_labels)
 
         if 'kde' in output_options or 'summary' in output_options:
             print('\nPlotting kernel density estimate\n')
