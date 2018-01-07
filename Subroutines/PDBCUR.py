@@ -39,6 +39,7 @@ def convert_cif_to_pdb(pathToInput, convert_cif):
 
     input_cif_lines = input_cif_lines.split('\#\\')
     ATM_rec = ''
+    disulfide_bonds = ''
     space_group = ''
     cif_header_lines = ''
     cif_footer_lines = '#\\'
@@ -51,6 +52,8 @@ def convert_cif_to_pdb(pathToInput, convert_cif):
              or '_symmetry.space_group_name_H-M' in subsection
              ):
             space_group = space_group + subsection
+        elif 'disulf1' in subsection:
+            disulfide_bonds = subsection
         else:
             if header is True:
                 cif_header_lines = cif_header_lines + subsection + '\#\\'
@@ -93,6 +96,31 @@ def convert_cif_to_pdb(pathToInput, convert_cif):
     cryst1_line = ''.join(['CRYST1', a.rjust(9), b.rjust(9), c.rjust(9),
                            alpha.rjust(7), beta.rjust(7), gamma.rjust(7), ' ',
                            sGroup.ljust(11), z.rjust(4), '\n'])
+
+    # Constructs SSBOND lines of PDB file
+    disulfide_bonds = disulfide_bonds.split('\\')
+    disulf_bonds = [line for line in disulfide_bonds if line.startswith('disulf')]
+    disulf_column_labels = [line.replace('_struct_conn.', '') for line in
+                            disulfide_bonds if line.startswith('_struct_conn.')]
+    disulf_lines = ''
+    for line in disulf_bonds:
+        values = line.split()
+
+        res_name_1 = values[disulf_column_labels.index('ptnr1_label_comp_id')]
+        chain_id_1 = values[disulf_column_labels.index('ptnr1_label_asym_id')]
+        res_num_1 = values[disulf_column_labels.index('ptnr1_label_seq_id')]
+        ins_code_1 = values[disulf_column_labels.index('pdbx_ptnr1_PDB_ins_code')]
+        res_name_2 = values[disulf_column_labels.index('ptnr2_label_comp_id')]
+        chain_id_2 = values[disulf_column_labels.index('ptnr2_label_asym_id')]
+        res_num_2 = values[disulf_column_labels.index('ptnr2_label_seq_id')]
+        ins_code_2 = values[disulf_column_labels.index('pdbx_ptnr2_PDB_ins_code')]
+
+        disulf_line = ''.join(['SSBOND', ''.rjust(5), res_name_1.rjust(3), ' ',
+                               chain_id_1.rjust(1), ' ', res_num_1.rjust(4),
+                               ins_code_1.rjust(1), '   ', res_name_2.rjust(3),
+                               ' ', chain_id_2.rjust(1), ' ',
+                               res_num_2.rjust(4), ins_code_2.rjust(1), '\n'])
+        disulf_lines = disulf_lines + disulf_line
 
     if ATM_rec == '':
         sys.exit('\nFailed to extract ATOM / HETATM records from input .cif '
@@ -139,7 +167,7 @@ def convert_cif_to_pdb(pathToInput, convert_cif):
     if convert_cif is True:
         os.remove(pathToInput)
         pathToInput = pathToInput.replace('.cif', '.pdb')
-        pdb_header_lines = cryst1_line
+        pdb_header_lines = cryst1_line + disulf_lines
         # Also need to check that number of models doesn't exceed 1
         pdb_footer_lines = ''
         makePDB(pdb_header_lines, cif_atom_list, pdb_footer_lines, pathToInput,
@@ -166,6 +194,8 @@ def clean_pdb_file(pathToInput, PDBdirectory, batchRun, pdb_file_path):
 
     # Removes anisotropic Bfactors, hydrogen atoms and 0 occupancy atoms
     multi_model = False
+    low_occ_disulfide = False
+    disulfide_bonds = []
     filtered_pdb_lines = []
     header_lines = []
     footer_lines = []
@@ -181,6 +211,11 @@ def clean_pdb_file(pathToInput, PDBdirectory, batchRun, pdb_file_path):
                 sys.exit('\n\nMore than one model present in input PDB file.\n'
                          'Please submit a PDB file containing a single model '
                          'for BDamage analysis.\n')
+        elif line.startswith('SSBOND'):
+            disulfide_bonds.append('%s %s%s%s' % (line[11:14], line[15:16],
+                                                   line[17:21], line[21:22]))
+            disulfide_bonds.append('%s %s%s%s' % (line[25:28], line[29:30],
+                                                   line[31:35], line[35:36]))
         elif line[0:6].strip() == 'CRYST1':
             params = line.split()
             a = float(params[1])
@@ -196,6 +231,18 @@ def clean_pdb_file(pathToInput, PDBdirectory, batchRun, pdb_file_path):
              ):
             filtered_pdb_lines.append(line)
             header = False
+            # Checks that all disulfide bonds have been refined with 100% occupancy.
+            occupancy = float(line[54:60])
+            for bond in disulfide_bonds:
+                if bond in line and occupancy != 1.0:
+                    low_occ_disulfide = True
+                    if batchRun is False:
+                        sys.exit('\n\nOne or more disulfide bonds has been '
+                                 'refined with an occupancy of less than 1.\n'
+                                 'To enable damage detection, disulfide bonds '
+                                 'should be refined as single occupancy\n'
+                                 'rather than in alternate oxidised and reduced'
+                                 ' conformations.')
         elif line[0:6].strip() == 'CONECT':
             footer = True
 
@@ -278,8 +325,8 @@ def clean_pdb_file(pathToInput, PDBdirectory, batchRun, pdb_file_path):
 
     clean_au_file.close()
 
-    return (multi_model, clean_au_file_name, clean_au_list, header_lines,
-            footer_lines, unit_cell_params)
+    return (multi_model, low_occ_disulfide, clean_au_file_name, clean_au_list,
+            header_lines, footer_lines, unit_cell_params)
 
 
 def genPDBCURinputs(PDBCURinputFile):

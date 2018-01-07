@@ -339,12 +339,14 @@ class rabdam(object):
             cif_footer_lines = ''
             cif_column_labels = ''
 
-        (multi_model, clean_au_file, clean_au_list, header_lines, footer_lines,
-         unit_cell_params) = clean_pdb_file(pathToInput, PDBdirectory,
-                                            self.batchRun, pdb_file_path)
+        (multi_model, low_occ_disulfide, clean_au_file, clean_au_list,
+         header_lines, footer_lines, unit_cell_params) = clean_pdb_file(
+             pathToInput, PDBdirectory, self.batchRun, pdb_file_path)
         if multi_model is True:
             shutil.rmtree('%s' % PDBdirectory)
             return
+        if low_occ_disulfide is True:
+            shutil.rmtree('%s' % PDBdirectory)
 
         # Deletes input file fed into the program unless createOrigpdb
         # is set equal to True in the input file (default=False).
