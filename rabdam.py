@@ -30,6 +30,7 @@ import math
 import numpy as np
 
 sys.path.insert(0, './Subroutines')
+sys.path.insert(0, './BDB')
 
 from CalculateBdamage import rabdam
 from checkDependencies import check_RABDAM_dependencies

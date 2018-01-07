@@ -54,7 +54,6 @@ class rabdam(object):
         duplicate = copy.copy
         import pickle
 
-        sys.path.insert(0, './../BDB')
         from bdb_list import rabdam_compatible_structures
         from PDBCUR import (convert_cif_to_pdb, clean_pdb_file,
                             genPDBCURinputs, runPDBCUR)
