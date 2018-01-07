@@ -54,6 +54,8 @@ class rabdam(object):
         duplicate = copy.copy
         import pickle
 
+        sys.path.insert(0, './../BDB')
+        from bdb_list import rabdam_compatible_structures
         from PDBCUR import (convert_cif_to_pdb, clean_pdb_file,
                             genPDBCURinputs, runPDBCUR)
         from parsePDB import (full_atom_list, b_damage_atom_list,
@@ -141,6 +143,17 @@ class rabdam(object):
             pdb_file_path = '%s%s' % (PDBdirectory, PDBcode)
             pathToInput = '%s%s.pdb' % (PDBdirectory, PDBcode)
             pathToCif = '%s%s.cif' % (PDBdirectory, PDBcode)
+
+            # Checks whether PDB accession code is listed in the BDB as
+            # containing full isotropic B-factor values - if the code is not in
+            # this list, RABDAM throws an error
+            compat_struct_list = rabdam_compatible_structures()
+            if PDBcode not in compat_struct_list:
+                if self.batchRun is False:
+                    sys.exit('ERROR: Supplied PDB accession code is not '
+                             'deposited with full isotropic\nB-factor values')
+                elif self.batchRun is True:
+                    return
 
             # Checks whether accession code exists - if not, exit program
             # with error message
