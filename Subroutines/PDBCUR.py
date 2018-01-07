@@ -168,7 +168,6 @@ def convert_cif_to_pdb(pathToInput, convert_cif):
         os.remove(pathToInput)
         pathToInput = pathToInput.replace('.cif', '.pdb')
         pdb_header_lines = cryst1_line + disulf_lines
-        # Also need to check that number of models doesn't exceed 1
         pdb_footer_lines = ''
         makePDB(pdb_header_lines, cif_atom_list, pdb_footer_lines, pathToInput,
                'Bfactor')
