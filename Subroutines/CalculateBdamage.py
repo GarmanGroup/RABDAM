@@ -328,16 +328,14 @@ class rabdam(object):
               '\nretaining only the most probable alternate conformations')
 
         if self.pathToInput[-4:] == '.cif':
-            (pathToInput, cif_lines, cif_header_lines, cif_footer_lines,
-             cif_column_labels) = convert_cif_to_pdb(pathToInput, True)
+            (pathToInput, cif_header_lines, cif_footer_lines) = convert_cif_to_pdb(
+                pathToInput, True)
         elif len(self.pathToInput) == 4:
-            (pathToCif, cif_lines, cif_header_lines, cif_footer_lines,
-             cif_column_labels) = convert_cif_to_pdb(pathToCif, False)
+            (pathToCif, cif_header_lines, cif_footer_lines) = convert_cif_to_pdb(
+                pathToCif, False)
         else:
-            cif_lines = ''
-            cif_header_lines = ''
-            cif_footer_lines = ''
-            cif_column_labels = ''
+            cif_header_lines = ['#']
+            cif_footer_lines = ['#']
 
         (multi_model, low_occ_disulfide, clean_au_file, clean_au_list,
          header_lines, footer_lines, unit_cell_params) = clean_pdb_file(
@@ -510,15 +508,15 @@ class rabdam(object):
         # thereby reducing their calculation time.
 
         print('Writing BDamage data to DataFrame\n')
-        df = writeDataFrame(bdamAtomList)
+        df, cif_column_widths = writeDataFrame(bdamAtomList)
         print('Saving DataFrame\n')
         storage = '%s/DataFrame' % PDBdirectory
         os.mkdir(storage)
         storage_file = '%s/%s' % (storage, PDBcode)
         df.to_pickle(storage_file + '_dataframe.pkl')
         with open(storage_file + '_variables.pkl', 'wb') as f:
-            pickle.dump((pdb_file_path, PDBcode, bdamAtomList, cif_lines,
-                         cif_header_lines, cif_footer_lines, cif_column_labels,
+            pickle.dump((pdb_file_path, PDBcode, bdamAtomList,
+                         cif_header_lines, cif_footer_lines, cif_column_widths,
                          header_lines, footer_lines, window), f)
 
         print('****************************************************************\n'
@@ -624,9 +622,9 @@ class rabdam(object):
         # Pkl files unpickled
         print('Unpickling DataFrame and variables\n')
         with open(storage_file + '_variables.pkl', 'rb') as f:
-            (pdb_file_path, PDBcode, bdamAtomList, cif_lines,
-             cif_header_lines, cif_footer_lines, cif_column_labels,
-             header_lines, footer_lines, window) = pickle.load(f)
+            (pdb_file_path, PDBcode, bdamAtomList, cif_header_lines,
+             cif_footer_lines, cif_column_widths, header_lines, footer_lines,
+             window) = pickle.load(f)
         df = pd.read_pickle(storage_file + '_dataframe.pkl')
 
         print('************** End Of Processing DataFrame Section *************\n'
@@ -656,15 +654,14 @@ class rabdam(object):
             output.make_csv(bdamAtomList, window)
 
         if 'bdam' in output_options:
-            if (len(self.pathToInput) == 4 or self.pathToInput.split('.')[-1] == 'pdb'):
-                print('\nWriting PDB file with BDamage values replacing Bfactors')
-                pdb_file_name = pdb_file_path + '_BDamage.pdb'
-                makePDB(header_lines, bdamAtomList, footer_lines, pdb_file_name,
-                        'BDamage')
-            if (len(self.pathToInput) == 4 or self.pathToInput.split('.')[-1] == 'cif'):
-                print('\nWriting cif file with BDamage column')
-                output.write_output_cif(cif_lines, cif_header_lines,
-                                        cif_footer_lines, cif_column_labels)
+            print('\nWriting PDB file with BDamage values replacing Bfactors')
+            pdb_file_name = pdb_file_path + '_BDamage.pdb'
+            makePDB(header_lines, bdamAtomList, footer_lines, pdb_file_name,
+                    'BDamage')
+            print('\nWriting cif file with BDamage column')
+            cif_lines = output.generate_cif_lines(cif_column_widths)
+            output.write_output_cif(cif_header_lines, cif_lines,
+                                    cif_footer_lines)
 
         if 'kde' in output_options or 'summary' in output_options:
             print('\nPlotting kernel density estimate\n')

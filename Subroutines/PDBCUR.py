@@ -135,7 +135,6 @@ def convert_cif_to_pdb(pathToInput, convert_cif):
                    line.startswith(('ATOM', 'HETATM'))]
 
         cif_atom_list = []
-        cif_lines = []
         for line in columns:
             values = line.split()
 
@@ -162,7 +161,6 @@ def convert_cif_to_pdb(pathToInput, convert_cif):
             input_atom.charge = values[cif_column_labels.index('pdbx_formal_charge')]
 
             cif_atom_list.append(input_atom)
-            cif_lines.append(line)
 
     if convert_cif is True:
         os.remove(pathToInput)
@@ -172,8 +170,7 @@ def convert_cif_to_pdb(pathToInput, convert_cif):
         makePDB(pdb_header_lines, cif_atom_list, pdb_footer_lines, pathToInput,
                'Bfactor')
 
-    return (pathToInput, cif_lines, cif_header_lines, cif_footer_lines,
-            cif_column_labels)
+    return (pathToInput, cif_header_lines, cif_footer_lines)
 
 
 def clean_pdb_file(pathToInput, PDBdirectory, batchRun, pdb_file_path):

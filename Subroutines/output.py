@@ -99,17 +99,38 @@ class generate_output_files(object):
 
         newFile.close()
 
-    def write_output_cif(self, cif_lines, cif_header_lines,
-                         cif_footer_lines, cif_column_labels):
+    def generate_cif_lines(self, cif_column_widths):
+        cif_lines = []
+
+        for row in range(self.df.shape[0]):
+            lineID = self.df.REC[row].ljust(cif_column_widths['REC']) + ' '
+            atomNum = str(self.df.ATMNUM[row]).ljust(cif_column_widths['ATMNUM']) + ' '
+            atomType = self.df.ATMNAME[row].ljust(cif_column_widths['ATMNAME']) + ' '
+            conformer = self.df.CONFORMER[row].ljust(cif_column_widths['CONFORMER']) + ' '
+            resiType = self.df.RESNAME[row].ljust(cif_column_widths['RESNAME']) + ' '
+            chainID = self.df.CHAIN[row].ljust(cif_column_widths['CHAIN']) + ' '
+            resiNum = str(self.df.RESNUM[row]).ljust(cif_column_widths['RESNUM']) + ' '
+            insCode = self.df.INSCODE[row].ljust(cif_column_widths['INSCODE']) + ' '
+            x_coord = str(self.df.XPOS[row]).ljust(cif_column_widths['XPOS']) + ' '
+            y_coord = str(self.df.YPOS[row]).ljust(cif_column_widths['YPOS']) + ' '
+            z_coord = str(self.df.ZPOS[row]).ljust(cif_column_widths['ZPOS']) + ' '
+            occupancy = str(self.df.OCC[row]).ljust(cif_column_widths['OCC']) + ' '
+            bFactor = str(self.df.BFAC[row]).ljust(cif_column_widths['BFAC']) + ' '
+            bDamage = '{0:.2f}'.format(self.df.BDAM[row]).ljust(cif_column_widths['BDAM']) + ' '
+            element = self.df.ELEMENT[row].ljust(cif_column_widths['ELEMENT']) + ' '
+            charge = self.df.CHARGE[row].ljust(cif_column_widths['CHARGE'])
+
+            cif_line = (lineID + atomNum + atomType + conformer + resiType
+                        + chainID + resiNum + insCode + x_coord + y_coord
+                        + z_coord + occupancy + bFactor + bDamage + element
+                        + charge)
+            cif_lines.append(cif_line)
+
+        return cif_lines
+
+    def write_output_cif(self, cif_header_lines, cif_lines, cif_footer_lines):
         # Writes an mmCif file for the input structure with an additional
         # column of BDamage values for those atoms included in the calculation.
-        import re
-
-        x_list = self.df.XPOS.tolist()
-        y_list = self.df.YPOS.tolist()
-        z_list = self.df.ZPOS.tolist()
-        b_dam_list = self.df.BDAM.tolist()
-
         new_cif = open('%s_BDamage.cif' % self.pdb_file_path, 'w')
 
         for line in cif_header_lines:
@@ -118,57 +139,27 @@ class generate_output_files(object):
 
         new_cif.write('loop_\n')
 
-        for column in cif_column_labels:
-            if column == 'B_iso_or_equiv':
-                new_cif.write('_atom_site.%s\n' % column)
-                new_cif.write('_atom_site.B_Damage\n')
-            else:
-                new_cif.write('_atom_site.%s\n' % column)
+        # Writes column labels to output cif file
+        new_cif.write('_atom_site.group_PDB\n' +
+                      '_atom_site.id\n' +
+                      '_atom_site.auth_atom_id\n' +
+                      '_atom_site.label_alt_id\n' +
+                      '_atom_site.auth_comp_id\n' +
+                      '_atom_site.auth_asym_id\n' +
+                      '_atom_site.auth_seq_id\n' +
+                      '_atom_site.pdbx_PDB_ins_code\n' +
+                      '_atom_site.Cartn_x\n' +
+                      '_atom_site.Cartn_y\n' +
+                      '_atom_site.Cartn_z\n' +
+                      '_atom_site.occupancy\n' +
+                      '_atom_site.B_iso_or_equiv\n' +
+                      '_atom_site.B_Damage\n' +
+                      '_atom_site.type_symbol\n' +
+                      '_atom_site.pdbx_formal_charge\n')
 
+        # Writes ATOM / HETATM records to output cif file
         for line in cif_lines:
-            values = line.split()
-
-            x = float(values[cif_column_labels.index('Cartn_x')])
-            y = float(values[cif_column_labels.index('Cartn_y')])
-            z = float(values[cif_column_labels.index('Cartn_z')])
-            x_indices = []
-            y_indices = []
-            z_indices = []
-
-            for index, value in enumerate(x_list):
-                if x == value:
-                    x_indices.append(index)
-            for index, value in enumerate(y_list):
-                if y == value:
-                    y_indices.append(index)
-            for index, value in enumerate(z_list):
-                if z == value:
-                    z_indices.append(index)
-
-            # Matches the corresponding BDamage value to the ATOM
-            # (/ HETATM) described by the current cif file line
-            index = ''
-            for x_index in x_indices:
-                if x_index in y_indices and x_index in z_indices:
-                    index = x_index
-                    break
-
-            try:
-                int(index)
-                b_dam = b_dam_list[index]
-                b_dam = '{:.2f}'.format(b_dam)
-                b_dam = b_dam.ljust(5)
-                line_middle = ' %s' % b_dam
-            except ValueError:
-                line_middle = ' .    '
-
-            bfac = values[cif_column_labels.index('B_iso_or_equiv')]
-            split_line = re.split('(%s)' % bfac, line)
-            bfac_index = split_line.index(bfac)
-            line_start = ''.join(split_line[0:bfac_index+1])
-            line_end = ''.join(split_line[bfac_index+1:])
-            new_line = line_start + line_middle + line_end
-            new_cif.write('%s\n' % new_line)
+            new_cif.write('%s\n' % line)
 
         for line in cif_footer_lines:
             new_cif.write('%s\n' % line)

@@ -73,6 +73,7 @@ def writeDataFrame(bdamAtomList):
     # BDamage values calculated by RABDAM) for all atoms considered for
     # BDamage analysis.
 
+    import copy
     import pandas as pd
 
     # Initialises a list for each atom property considered.
@@ -117,8 +118,8 @@ def writeDataFrame(bdamAtomList):
         AVRG_BF[index] = atm.avrg_bf
         BDAM[index] = atm.bd
 
-    # Lists are concatenated into the colummns of a DataFrame.
-    df = pd.DataFrame({'REC': REC,
+    # Generates dictionary of column widths for output cif files
+    df_list_dict = {'REC': REC,
                        'ATMNUM': ATMNUM,
                        'ATMNAME': ATMNAME,
                        'CONFORMER': CONFORMER,
@@ -134,8 +135,43 @@ def writeDataFrame(bdamAtomList):
                        'ELEMENT': ELEMENT,
                        'CHARGE': CHARGE,
                        'PD': PD,
-                       'AVRG BF': AVRG_BF,
-                       'BDAM': BDAM})
+                       'AVRG_BF': AVRG_BF,
+                       'BDAM': BDAM}
+
+    df_list_dict_copy = copy.copy(df_list_dict)
+    for key in df_list_dict_copy:
+        if set(df_list_dict_copy[key]) == {''}:
+            df_list_dict[key] = ['?']*len(bdamAtomList)
+        elif (len(set(df_list_dict_copy[key])) > 1
+            and '' in set(df_list_dict_copy[key])
+            ):
+            cif_list = []
+            for atm in df_list_dict_copy[key]:
+                if atm == '':
+                    cif_list.append('.')
+                else:
+                    cif_list.append(atm)
+            df_list_dict[key] = cif_list
+
+    cif_column_widths = {'REC': len(max(df_list_dict['REC'], key=len)),
+                         'ATMNUM': len(max([str(value) for value in df_list_dict['ATMNUM']], key=len)),
+                         'ATMNAME': len(max(df_list_dict['ATMNAME'], key=len)),
+                         'CONFORMER': len(max(df_list_dict['CONFORMER'], key=len)),
+                         'RESNAME': len(max(df_list_dict['RESNAME'], key=len)),
+                         'CHAIN': len(max(df_list_dict['CHAIN'], key=len)),
+                         'RESNUM': len(max([str(value) for value in df_list_dict['RESNUM']], key=len)),
+                         'INSCODE': len(max(df_list_dict['INSCODE'], key=len)),
+                         'XPOS': len(max([str(value) for value in df_list_dict['XPOS']], key=len)),
+                         'YPOS': len(max([str(value) for value in df_list_dict['YPOS']], key=len)),
+                         'ZPOS': len(max([str(value) for value in df_list_dict['ZPOS']], key=len)),
+                         'OCC': len(max([str(value) for value in df_list_dict['OCC']], key=len)),
+                         'BFAC': len(max([str(value) for value in df_list_dict['BFAC']], key=len)),
+                         'BDAM': len(max(['{0:.2f}'.format(value) for value in df_list_dict['BDAM']], key=len)),
+                         'ELEMENT': len(max(df_list_dict['ELEMENT'], key=len)),
+                         'CHARGE': len(max(df_list_dict['CHARGE'], key=len))}
+
+    # Lists are concatenated into the colummns of a DataFrame.
+    df = pd.DataFrame(df_list_dict)
 
     # DataFrame columns are ordered.
     cols = df.columns.tolist()
@@ -145,4 +181,4 @@ def writeDataFrame(bdamAtomList):
             + [cols[11]] + [cols[2]] + [cols[3]])
     df = df[cols]
 
-    return df
+    return df, cif_column_widths
