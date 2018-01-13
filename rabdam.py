@@ -47,13 +47,13 @@ input_file_group.add_argument('--dependencies', action='store_true',
                               'order to be able to run RABDAM')
 input_file_group.add_argument('-i', '--input', help='Absolute path to input '
                               'file listing program parameter values')
-input_file_group.add_argument('-f', '--pdb_file', nargs='+', help='Specifies '
-                              'input pdb file (via either a 4 character PDB '
-                              'accession code or an absolute file path) for '
-                              'BDamage analysis - this option allows the '
-                              'RABDAM program to be run (using default '
-                              'program parameter values) without providing an '
-                              'input file listing program options')
+input_file_group.add_argument('-f', '--pdb_or_mmcif_file', nargs='+',
+                              help='Specifies input pdb file (via either a 4 '
+                              'character PDB accession code or an absolute '
+                              'file path) for BDamage analysis - this option '
+                              'allows the RABDAM program to be run (using '
+                              'default program parameter values) without '
+                              'providing an input file listing program options')
 parser.add_argument('-r', '--run', help='Specifies whether to run the '
                     'complete program (= default), to calculate BDamage '
                     'values only ("df" / "dataframe"), or to analyse '
