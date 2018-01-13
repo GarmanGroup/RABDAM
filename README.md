@@ -80,7 +80,7 @@ ___
 
 ## Usage
 #### System requirements
-This version of RABDAM is written in Python 3.6. In addition, it is dependent upon the following packages / programs that are not included in the [Anaconda Python 3.6 distribution](https://www.continuum.io/downloads) (release 4.3.0 onwards):
+This version of RABDAM is written in Python 3.6 (a version of the program in Python 2.7 is available from the py27 branch). In addition, it is dependent upon the following packages / programs that are not included in the [Anaconda Python 3.6 distribution](https://www.continuum.io/downloads) (release 4.3.0 onwards):
 
 -	The [CCP4 software suite](http://www.ccp4.ac.uk/) (RABDAM has a dependency on the CCP4 suite program PDBCUR)
 
@@ -276,11 +276,13 @@ The initial development and testing of the *B*<sub>Damage</sub> metric is descri
 
 Please cite this paper if you use RABDAM to analyse specific radiation damage in your MX structure.
 
+<br></br>
 RABDAM is dependent upon the CCP4 suite program PDBCUR:
 
 - Winn MD, Ballard CC, Cowtan KD, Dodson EJ, Emsley P, Evans PR, Keegan RM, Krissinel EB, Leslie AGW, McCoy A, McNicholas SJ, Murshudov GN, Pannu NS, Potterton EA, Powell HR, Read RJ, Vagin A, Wilson KS (2011) Overview of the CCP4 suite and current developments. *Acta Crystallogr D* **67**: 235-242
 [https://doi.org/doi:10.1107/S0907444910045749](https://doi.org/doi:10.1107/S0907444910045749)
 
+<br></br>
 RABDAM extracts a list of PDB accession codes with full isotropic (\*but not necessarily atomic) *B*-factors from the *B*-factor Databank:
 - Touw WG, Vriend G (2014) BDB: Databank of PDB files with consistent *B*-factors. *Protein Eng Des Sel* **27**: 457-462
 [https://doi.org/10.1093/protein/gzu044](https://doi.org/10.1093/protein/gzu044)
