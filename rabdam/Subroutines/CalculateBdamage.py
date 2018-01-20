@@ -54,16 +54,44 @@ class rabdam(object):
         duplicate = copy.copy
         import pickle
 
-        from bdb_list import rabdam_compatible_structures
-        from PDBCUR import (convert_cif_to_pdb, clean_pdb_file,
-                            genPDBCURinputs, runPDBCUR)
-        from parsePDB import (full_atom_list, b_damage_atom_list,
-                              download_pdb_and_mmcif, copy_input)
-        from translateUnitCell import convertToCartesian, translateUnitCell
-        from trimUnitCellAssembly import getAUparams, convertParams, trimAtoms
-        from makeDataFrame import makePDB, writeDataFrame
-        from Bdamage import (calcBdam, get_xyz_from_objects,
-                             calc_packing_density, write_pckg_dens_to_atoms)
+        if __name__ == 'Subroutines.CalculateBdamage':
+            from Subroutines.bdb_list import rabdam_compatible_structures
+            from Subroutines.PDBCUR import (
+                convert_cif_to_pdb, clean_pdb_file, genPDBCURinputs, runPDBCUR
+                )
+            from Subroutines.parsePDB import (
+                full_atom_list, b_damage_atom_list, download_pdb_and_mmcif,
+                copy_input
+                )
+            from Subroutines.translateUnitCell import (
+                convertToCartesian, translateUnitCell
+                )
+            from Subroutines.trimUnitCellAssembly import (
+                getAUparams, convertParams, trimAtoms
+                )
+            from Subroutines.makeDataFrame import makePDB, writeDataFrame
+            from Subroutines.Bdamage import (
+                calcBdam, get_xyz_from_objects, calc_packing_density,
+                write_pckg_dens_to_atoms)
+        else:
+            from rabdam.Subroutines.bdb_list import rabdam_compatible_structures
+            from rabdam.Subroutines.PDBCUR import (
+                convert_cif_to_pdb, clean_pdb_file, genPDBCURinputs, runPDBCUR
+                )
+            from rabdam.Subroutines.parsePDB import (
+                full_atom_list, b_damage_atom_list, download_pdb_and_mmcif,
+                copy_input
+                )
+            from rabdam.Subroutines.translateUnitCell import (
+                convertToCartesian, translateUnitCell
+                )
+            from rabdam.Subroutines.trimUnitCellAssembly import (
+                getAUparams, convertParams, trimAtoms
+                )
+            from rabdam.Subroutines.makeDataFrame import makePDB, writeDataFrame
+            from rabdam.Subroutines.Bdamage import (
+                calcBdam, get_xyz_from_objects, calc_packing_density,
+                write_pckg_dens_to_atoms)
 
         if run == 'rabdam':
             print('**************************** RABDAM ****************************\n')
@@ -236,6 +264,8 @@ class rabdam(object):
             # of input PDB file is saved to the new directory.
             owd = os.getcwd()
             pathToInput = self.pathToInput.replace('\\', '/')
+            if not pathToInput.startswith('/'):
+                pathToInput = '/' + pathToInput
             splitPath = pathToInput.split('/')
             disk = '%s/' % splitPath[0]
             os.chdir('/')
@@ -535,8 +565,13 @@ class rabdam(object):
         import sys
         import pickle
         import pandas as pd
-        from output import generate_output_files
-        from makeDataFrame import makePDB
+
+        if __name__ == 'Subroutines.CalculateBdamage':
+            from Subroutines.output import generate_output_files
+            from Subroutines.makeDataFrame import makePDB
+        else:
+            from rabdam.Subroutines.output import generate_output_files
+            from rabdam.Subroutines.makeDataFrame import makePDB
 
         if run == 'rabdam_analysis':
             print('************************ RABDAM ANALYSIS ***********************\n')
@@ -673,7 +708,7 @@ class rabdam(object):
 
         if 'summary' in output_options:
             print('Writing summary html file\n')
-            output.write_html_summary(cwd, output_options, self.highlightAtoms)
+            output.write_html_summary(output_options, self.highlightAtoms)
 
         print('************** End of Writing Output Files Section *************\n'
               '****************************************************************\n')

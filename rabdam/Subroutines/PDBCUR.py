@@ -22,8 +22,13 @@
 def convert_cif_to_pdb(pathToInput, convert_cif):
     import os
     import sys
-    from parsePDB import atom
-    from makeDataFrame import makePDB
+
+    if __name__ == 'Subroutines.PDBCUR':
+        from Subroutines.parsePDB import atom
+        from Subroutines.makeDataFrame import makePDB
+    else:
+        from rabdam.Subroutines.parsePDB import atom
+        from rabdam.Subroutines.makeDataFrame import makePDB
 
     input_cif_lines = []
     start = False
@@ -186,7 +191,11 @@ def clean_pdb_file(pathToInput, PDBdirectory, batchRun, pdb_file_path):
     import shutil
     import math
     import pandas as pd
-    from parsePDB import atom
+
+    if __name__ == 'Subroutines.PDBCUR':
+        from Subroutines.parsePDB import atom
+    else:
+        from rabdam.Subroutines.parsePDB import atom
 
     # Removes anisotropic Bfactors, hydrogen atoms and 0 occupancy atoms
     multi_model = False
