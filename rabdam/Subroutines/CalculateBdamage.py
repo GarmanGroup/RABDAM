@@ -1,6 +1,6 @@
 
 # RABDAM
-# Copyright (C) 2017 Garman Group, University of Oxford
+# Copyright (C) 2018 Garman Group, University of Oxford
 
 # This file is part of RABDAM.
 
@@ -60,8 +60,8 @@ class rabdam(object):
                 convert_cif_to_pdb, clean_pdb_file, genPDBCURinputs, runPDBCUR
                 )
             from Subroutines.parsePDB import (
-                full_atom_list, b_damage_atom_list, download_pdb_and_mmcif,
-                copy_input
+                download_pdb_and_mmcif, copy_input, full_atom_list,
+                b_damage_atom_list
                 )
             from Subroutines.translateUnitCell import (
                 convertToCartesian, translateUnitCell
@@ -70,17 +70,17 @@ class rabdam(object):
                 getAUparams, convertParams, trimAtoms
                 )
             from Subroutines.makeDataFrame import makePDB, writeDataFrame
-            from Subroutines.Bdamage import (
-                calcBdam, get_xyz_from_objects, calc_packing_density,
-                write_pckg_dens_to_atoms)
+            from Subroutines.BDamage import (
+                get_xyz_from_objects, calc_packing_density,
+                write_pckg_dens_to_atoms, calcBDam)
         else:
             from rabdam.Subroutines.bdb_list import rabdam_compatible_structures
             from rabdam.Subroutines.PDBCUR import (
                 convert_cif_to_pdb, clean_pdb_file, genPDBCURinputs, runPDBCUR
                 )
             from rabdam.Subroutines.parsePDB import (
-                full_atom_list, b_damage_atom_list, download_pdb_and_mmcif,
-                copy_input
+                download_pdb_and_mmcif, copy_input, full_atom_list,
+                b_damage_atom_list
                 )
             from rabdam.Subroutines.translateUnitCell import (
                 convertToCartesian, translateUnitCell
@@ -89,9 +89,9 @@ class rabdam(object):
                 getAUparams, convertParams, trimAtoms
                 )
             from rabdam.Subroutines.makeDataFrame import makePDB, writeDataFrame
-            from rabdam.Subroutines.Bdamage import (
-                calcBdam, get_xyz_from_objects, calc_packing_density,
-                write_pckg_dens_to_atoms)
+            from rabdam.Subroutines.BDamage import (
+                get_xyz_from_objects, calc_packing_density,
+                write_pckg_dens_to_atoms, calcBDam)
 
         if run == 'rabdam':
             print('**************************** RABDAM ****************************\n')

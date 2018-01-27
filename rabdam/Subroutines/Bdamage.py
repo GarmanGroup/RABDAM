@@ -1,6 +1,6 @@
 
 # RABDAM
-# Copyright (C) 2017 Garman Group, University of Oxford
+# Copyright (C) 2018 Garman Group, University of Oxford
 
 # This file is part of RABDAM.
 
@@ -59,7 +59,7 @@ def write_pckg_dens_to_atoms(bdamAtomList, packing_density_array):
         atom.pd = packing_density_array[i][0]
 
 
-def calcBdam(bdamAtomList, window):
+def calcBDam(bdamAtomList, window):
     # All atoms to be considered for BDamage analysis are ordered via their
     # packing density values; the BDamage value of each atom is then
     # calculated as the ratio of its Bfactor as compared to the average of the
