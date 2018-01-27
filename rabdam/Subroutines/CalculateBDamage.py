@@ -54,7 +54,7 @@ class rabdam(object):
         duplicate = copy.copy
         import pickle
 
-        if __name__ == 'Subroutines.CalculateBdamage':
+        if __name__ == 'Subroutines.CalculateBDamage':
             from Subroutines.bdb_list import rabdam_compatible_structures
             from Subroutines.PDBCUR import (
                 convert_cif_to_pdb, clean_pdb_file, genPDBCURinputs, runPDBCUR
@@ -566,7 +566,7 @@ class rabdam(object):
         import pickle
         import pandas as pd
 
-        if __name__ == 'Subroutines.CalculateBdamage':
+        if __name__ == 'Subroutines.CalculateBDamage':
             from Subroutines.output import generate_output_files
             from Subroutines.makeDataFrame import makePDB
         else:
