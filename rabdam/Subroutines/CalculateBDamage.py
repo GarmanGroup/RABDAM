@@ -527,7 +527,7 @@ class rabdam(object):
         if window < 11:
             window = 11  # Minimum window size is 11.
         print('Size of sliding window --> %s atoms\n' % window)
-        calcBdam(bdamAtomList, window)
+        calcBDam(bdamAtomList, window)
 
         print('****************************************************************\n'
               '******************* Writing DataFrame Section ******************\n')
