@@ -81,10 +81,10 @@ ___
 
 ## Usage
 #### Installation
-1. RABDAM can be downloaded / cloned from GitHub. You can then either run RABDAM as a script from the RABDAM directory, or alternatively you can install RABDAM as a package (able to be run from any directory) by navigating to the RABDAM directory and executing:<br>
+1. RABDAM can be downloaded / cloned from GitHub. You can then either run RABDAM as a script from the RABDAM directory, or alternatively you can install RABDAM as a package (which can be run from any directory) by navigating to the RABDAM directory and executing:<br>
 `python setup.py install`<br>
 
-2. RABDAM can be installed (as a package) straight from PyPi() with `pip`:<br>
+2. RABDAM can be installed (as a package) straight from [PyPi](https://pypi.python.org/pypi/rabdam) with `pip`:<br>
 `pip install rabdam`<br>
 
 3. RABDAM will also shortly be available as part of the [CCP4 software suite](http://www.ccp4.ac.uk/).

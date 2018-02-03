@@ -25,7 +25,7 @@ setup(
               'atomic displacement parameters', 'BDamage', 'Bnet'],
     install_requires=['numpy', 'matplotlib', 'seaborn', 'pandas', 'requests',
                         'setuptools'],
-    classifiers=['Programming Language :: Python :: 3.6'],
+    classifiers=['Programming Language :: Python'],
     python_requires='>=3.6',
     entry_points={'console_scripts': ['rabdam = rabdam.rabdam:main']}
 )
