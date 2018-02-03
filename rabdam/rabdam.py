@@ -174,6 +174,13 @@ def main():
             elif overwriteVal in ['false', 'no', 'f', 'n']:
                 overwriteVal = False
 
+            # If command line output is directed to a file, sets overwriteVal
+            # to True to prevent program from requiring user input to decide
+            # whether to overwrite any pre-existing file(s) with the same file
+            # path(s) as the output file(s) to be written
+            if os.fstat(0) != os.fstat(1):   
+                overwriteVal = True
+
         # Specifies packing density threshold
         elif splitArgs[x][0:3].lower() == 'pdt':
             pdtArg = splitArgs[x].split('=')
