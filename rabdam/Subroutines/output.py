@@ -27,8 +27,8 @@ class generate_output_files(object):
 
     def make_csv(self, bdamatomList, window):
         # Returns a csv file containing a complete set of atom information
-        # (including both that provided in the input PDB file and also the
-        # BDamage values calculated by RABDAM) for all atoms considered for
+        # (including both that provided in the input PDB / mmCif file and also
+        # the BDamage values calculated by RABDAM) for all atoms considered for
         # BDamage analysis. (This provides the user with a copy of the raw data
         # which they can manipulate as they wish.)
 
@@ -232,7 +232,8 @@ class generate_output_files(object):
         na = self.df[self.df.ATMNAME.isin(["O3'", "O5'", "C3'", "C5'"])]
 
         if prot.empty and na.empty:
-            print('\nNo sites used for Bnet calculation present in structure\n')
+            print('\n\nERROR: No sites used for Bnet calculation present in structure\n')
+            return
 
         if not prot.empty:
             # Calculates median of protein BDamage distribution
@@ -251,9 +252,10 @@ class generate_output_files(object):
             # along the x(BDamage)-axis from the kernel density plot. These
             # coordinate pairs are used to calculate, via the trapezium rule,
             # the area under the curve between the smallest value of x and the
-            # median (= area LHS), and the area under the curve between the
-            # median and the largest value of x (= area RHS). The Bnet summary
-            # metric is then calculated as the ratio of area RHS to area LHS.
+            # median (= total_area_LHS), and the area under the curve between
+            # the median and the largest value of x (= total_area_RHS). The
+            # Bnet summary metric is then calculated as the ratio of
+            # total_area_RHS to total_area_LHS.
             xy_values = plot.get_lines()[0].get_data()
             x_values = xy_values[0]
             y_values = xy_values[1]
@@ -317,9 +319,10 @@ class generate_output_files(object):
             # along the x(BDamage)-axis from the kernel density plot. These
             # coordinate pairs are used to calculate, via the trapezium rule,
             # the area under the curve between the smallest value of x and the
-            # median (= area LHS), and the area under the curve between the
-            # median and the largest value of x (= area RHS). The Bnet summary
-            # metric is then calculated as the ratio of area RHS to area LHS.
+            # median (= total_area_LHS), and the area under the curve between
+            # the median and the largest value of x (= total_area_RHS). The
+            # Bnet summary metric is then calculated as the ratio of
+            # total_area_RHS to total_area_LHS.
             xy_values = plot.get_lines()[0].get_data()
             x_values = xy_values[0]
             y_values = xy_values[1]
@@ -423,7 +426,9 @@ class generate_output_files(object):
                         '<html>\n'
                         '  <head>\n'
                         '    <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>\n'
-                        '    <script type="text/javascript" src="file://%s/HTML_stylesheet.js"></script>\n' % os.path.dirname(os.path.abspath(__file__)))
+                        '    <script type="text/javascript" src="file://%s/HTML_stylesheet.js"></script>\n' % os.path.dirname(os.path.abspath(__file__)))  # Locates
+                                                                                                              # HTML stylesheets when RABDAM is run either as a
+                                                                                                              # package or as a script
         html_file.write('    <link href="file://%s/HTML_stylesheet.css" type="text/css" rel="stylesheet">\n' % os.path.dirname(os.path.abspath(__file__)))
         html_file.write('    <title>'+self.pdb_code.replace('_', ' ')+' BDamage summary file</title>\n'
                         '  </head>\n')

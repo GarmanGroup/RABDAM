@@ -20,7 +20,7 @@
 
 
 def makePDB(header_lines, atomList, footer_lines, newPDBfilename, Bfac):
-    # Writes a pdb file containing a complete set of atom information for all
+    # Writes a PDB file containing a complete set of atom information for all
     # atoms in 'atomList', plus header and footer information.
 
     import numpy as np
@@ -118,25 +118,25 @@ def writeDataFrame(bdamAtomList):
         AVRG_BF[index] = atm.avrg_bf
         BDAM[index] = atm.bd
 
-    # Generates dictionary of column widths for output cif files
+    # Generates dictionary of DataFrame columns
     df_list_dict = {'REC': REC,
-                       'ATMNUM': ATMNUM,
-                       'ATMNAME': ATMNAME,
-                       'CONFORMER': CONFORMER,
-                       'RESNAME': RESNAME,
-                       'CHAIN': CHAIN,
-                       'RESNUM': RESNUM,
-                       'INSCODE': INSCODE,
-                       'XPOS': XPOS,
-                       'YPOS': YPOS,
-                       'ZPOS': ZPOS,
-                       'OCC': OCC,
-                       'BFAC': BFAC,
-                       'ELEMENT': ELEMENT,
-                       'CHARGE': CHARGE,
-                       'PD': PD,
-                       'AVRG_BF': AVRG_BF,
-                       'BDAM': BDAM}
+                    'ATMNUM': ATMNUM,
+                    'ATMNAME': ATMNAME,
+                    'CONFORMER': CONFORMER,
+                    'RESNAME': RESNAME,
+                    'CHAIN': CHAIN,
+                    'RESNUM': RESNUM,
+                    'INSCODE': INSCODE,
+                    'XPOS': XPOS,
+                    'YPOS': YPOS,
+                    'ZPOS': ZPOS,
+                    'OCC': OCC,
+                    'BFAC': BFAC,
+                    'ELEMENT': ELEMENT,
+                    'CHARGE': CHARGE,
+                    'PD': PD,
+                    'AVRG_BF': AVRG_BF,
+                    'BDAM': BDAM}
 
     df_list_dict_copy = copy.copy(df_list_dict)
     for key in df_list_dict_copy:
@@ -153,6 +153,7 @@ def writeDataFrame(bdamAtomList):
                     cif_list.append(atm)
             df_list_dict[key] = cif_list
 
+    # Generates dictionary of column widths for output cif file
     cif_column_widths = {'REC': len(max(df_list_dict['REC'], key=len)),
                          'ATMNUM': len(max([str(value) for value in df_list_dict['ATMNUM']], key=len)),
                          'ATMNAME': len(max(df_list_dict['ATMNAME'], key=len)),

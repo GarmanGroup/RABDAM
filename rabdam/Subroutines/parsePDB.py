@@ -21,8 +21,8 @@
 
 class atom(object):
     # A class to assign properties to atoms (specifically all properties
-    # provided in the input PDB file, plus values relating to the BDamage
-    # calculation).
+    # provided in the input PDB / mmCif file, plus values relating to the
+    # BDamage calculation).
 
     def __init__(self, lineidentifier='', atomnum=0, atomtype='', conformer='',
                  resitype='', chainID='', residuenum=0, insertioncode = '',
@@ -73,7 +73,7 @@ def download_pdb_and_mmcif(PDBcode, PDBdirectory, pathToPDB, pathToCif):
     cif_file.close()
 
 
-def copy_input(pathToPDB, disk, newPathToPDB, PDBdirectory):
+def copy_input(pathToInput, disk, newPathToInput, PDBdirectory):
     # Copies specified file to Logfiles directory.
 
     import os
@@ -81,14 +81,14 @@ def copy_input(pathToPDB, disk, newPathToPDB, PDBdirectory):
     owd = os.getcwd()
     os.chdir('/')  # Changes directory to root directory
     os.chdir(disk)
-    origPDB = open(pathToPDB, 'r')
+    origInput = open(pathToInput, 'r')
     os.chdir(owd)
     os.makedirs(PDBdirectory)
-    localFile = open(newPathToPDB, 'w')
-    localFile.write(origPDB.read())
-    print('%s copied to %s' % (pathToPDB, newPathToPDB))
+    localFile = open(newPathToInput, 'w')
+    localFile.write(origInput.read())
+    print('%s copied to %s' % (pathToInput, newPathToInput))
     localFile.close()
-    origPDB.close()
+    origInput.close()
 
 
 def full_atom_list(fileName):
@@ -118,8 +118,8 @@ def full_atom_list(fileName):
             new_atom.charge = line[78:80].strip()
             ucAtomList.append(new_atom)
     fileOpen.close()
-    print('Finished reading in atoms --> %d atoms found' % int(len(ucAtomList)))
-    print('in %s' % fileName)
+    print('Finished reading in atoms --> %d atoms found in\n%s' % (
+          int(len(ucAtomList)), fileName))
     return ucAtomList
 
 
@@ -133,14 +133,13 @@ def b_damage_atom_list(clean_au_list, HETATM, protOrNA, addAtoms,
     import copy
     duplicate = copy.copy
 
-    bdam_list_unfiltered = duplicate(clean_au_list)
-    bdam_list_unfiltered = bdam_list_unfiltered + [None]*len(bdam_list_unfiltered)
+    bdam_list_unfiltered = duplicate(clean_au_list) + [None]*len(clean_au_list)
 
     for index, atm in enumerate(clean_au_list):
         # Removes hetatm if HETATM set to 'Remove' in input file.
         if atm.lineID == 'HETATM':
             if HETATM is False:
-                if atm.resiType != 'MSE':
+                if atm.resiType not in ['MSE']:
                     bdam_list_unfiltered[index] = None
 
         elif atm.lineID == 'ATOM':

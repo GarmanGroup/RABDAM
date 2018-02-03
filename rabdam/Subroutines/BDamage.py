@@ -47,7 +47,8 @@ def calc_packing_density(xyz_au_atom, xyz_surr_atom, pack_dens_thresh):
 
     for i in range(num_au_atoms):
         distances = np.sqrt(np.square(xyz_surr_atom[:, :] - xyz_au_atom[i, :]).sum(axis=1))
-        packing_density_array[i][0] = np.sum(distances < pack_dens_thresh) - 1  # Subtract 1 to correct for the atom itself being counted.
+        packing_density_array[i][0] = np.sum(distances < pack_dens_thresh) - 1  # Subtract
+        # 1 to correct for the atom itself being counted.
 
     return packing_density_array
 
@@ -62,8 +63,8 @@ def write_pckg_dens_to_atoms(bdamAtomList, packing_density_array):
 def calcBDam(bdamAtomList, window):
     # All atoms to be considered for BDamage analysis are ordered via their
     # packing density values; the BDamage value of each atom is then
-    # calculated as the ratio of its Bfactor as compared to the average of the
-    # Bfactor values of similarly (identified via sliding window) packed atoms.
+    # calculated as the ratio of its B-factor as compared to the average of the
+    # B-factor values of similarly (identified via sliding window) packed atoms.
 
     import pandas as pd
     import math
@@ -86,11 +87,11 @@ def calcBDam(bdamAtomList, window):
                        'PD': PD})
 
     # DataFrame rows are sorted by packing density (and next by atom number
-    # in cases of equal packing density). Average Bfactor values are then
+    # in cases of equal packing density). Average B-factor values are then
     # calculated via a rolling mean approach with a window size as specified in
     # the input file (default = 2%). In the cases of those atoms which lie too
     # close to either edge of the packing density distribution to lie at the
-    # centre of a full-sized window, the average B factor value of each of
+    # centre of a full-sized window, the average B-factor value of each of
     # these atoms is taken from the closest complete window.
     df = df.sort_values(by=['PD', 'ATMNUM'], ascending=[True, True])
     df = df.reset_index(drop=True)

@@ -26,7 +26,9 @@ def getAUparams(atomList):
 
     # Initialises x, y and z minima and maxima using values from first atom in
     # atomList.
-    xMin = atomList[0].xyzCoords[0][0]
+    xMin = atomList[0].xyzCoords[0][0]  # xyzCoords is a list of lists, hence
+    # the first slice extracts the first list, the second slice extracts the
+    # first number in this (single item) list
     xMax = atomList[0].xyzCoords[0][0]
     yMin = atomList[0].xyzCoords[1][0]
     yMax = atomList[0].xyzCoords[1][0]

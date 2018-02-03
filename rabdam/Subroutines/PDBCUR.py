@@ -20,6 +20,8 @@
 
 
 def convert_cif_to_pdb(pathToInput, convert_cif):
+    # If RABDAM is provided with an input mmCif file, converts it into PDB file
+    # format.
     import os
     import sys
 
@@ -30,8 +32,7 @@ def convert_cif_to_pdb(pathToInput, convert_cif):
         from rabdam.Subroutines.parsePDB import atom
         from rabdam.Subroutines.makeDataFrame import makePDB
 
-    input_cif_lines = []
-    start = False
+    exit = False
 
     input_cif = open('%s' % pathToInput, 'r')
     input_cif_lines = ''
@@ -64,8 +65,8 @@ def convert_cif_to_pdb(pathToInput, convert_cif):
                 cif_header_lines = cif_header_lines + subsection + '\#\\'
             elif header is False:
                 cif_footer_lines = cif_footer_lines + subsection + '\#\\'
-    cif_footer_lines = cif_footer_lines.split('\\')
     cif_header_lines = cif_header_lines.split('\\')
+    cif_footer_lines = cif_footer_lines.split('\\')
 
     # Constructs CRYST1 line of PDB file
     space_group = space_group.split('\\')
@@ -97,7 +98,8 @@ def convert_cif_to_pdb(pathToInput, convert_cif):
         elif line.startswith('_cell.Z_PDB'):
             z = line.split()[-1].strip()
     if any([a, b, c, alpha, beta, gamma, sGroup, z]) == '':
-        sys.exit('Failed to construct CRYST1 line')
+        exit = True
+        print('\n\nERROR: Failed to construct CRYST1 line')
     cryst1_line = ''.join(['CRYST1', a.rjust(9), b.rjust(9), c.rjust(9),
                            alpha.rjust(7), beta.rjust(7), gamma.rjust(7), ' ',
                            sGroup.ljust(11), z.rjust(4), '\n'])
@@ -127,58 +129,60 @@ def convert_cif_to_pdb(pathToInput, convert_cif):
                                res_num_2.rjust(4), ins_code_2.rjust(1), '\n'])
         disulf_lines = disulf_lines + disulf_line
 
+    # Constructs ATOM / HETATM record lines of PDB file
     if ATM_rec == '':
-        sys.exit('\nFailed to extract ATOM / HETATM records from input .cif '
-                 'file\n'
-                 '- check that this file is consistent with the standard cif '
-                 'file format')
+        exit = True
+        print('\n\nERROR: Failed to extract ATOM / HETATM records from input '
+              '.cif file\n- check that this file is consistent with the '
+              'standard cif file format')
     else:
-        ATM_rec = ATM_rec.split('\\')
-        cif_column_labels = [line.replace('_atom_site.', '') for line in
-                             ATM_rec if line.startswith('_atom_site.')]
-        columns = [line for line in ATM_rec if
-                   line.startswith(('ATOM', 'HETATM'))]
+        if convert_cif is True:
+            ATM_rec = ATM_rec.split('\\')
+            cif_column_labels = [line.replace('_atom_site.', '') for line in
+                                 ATM_rec if line.startswith('_atom_site.')]
+            rows = [line for line in ATM_rec if line.startswith(('ATOM', 'HETATM'))]
 
-        cif_atom_list = []
-        for line in columns:
-            values = line.split()
+            cif_atom_list = []
+            multi_model = False
+            for line in rows:
+                values = line.split()
 
-            if int(values[cif_column_labels.index('pdbx_PDB_model_num')]) > 1:
-                sys.exit('\n\nMore than one model present in input mmCif file.\n'
-                         'Please submit an mmCif file containing a single model '
-                         'for BDamage analysis.\n')
+                if int(values[cif_column_labels.index('pdbx_PDB_model_num')]) > 1:
+                    exit = True
+                    print('\n\nERROR: More than one model present in input '
+                          'mmCif file.\nPlease submit an mmCif file containing '
+                          'a single model for BDamage analysis.\n')
 
-            input_atom = atom()
-            input_atom.lineID = values[cif_column_labels.index('group_PDB')]
-            input_atom.atomNum = int(values[cif_column_labels.index('id')])
-            input_atom.atomType = values[cif_column_labels.index('auth_atom_id')]
-            input_atom.conformer = values[cif_column_labels.index('label_alt_id')]
-            input_atom.resiType = values[cif_column_labels.index('auth_comp_id')]
-            input_atom.chainID = values[cif_column_labels.index('auth_asym_id')]
-            input_atom.resiNum = int(values[cif_column_labels.index('auth_seq_id')])
-            input_atom.insCode = values[cif_column_labels.index('pdbx_PDB_ins_code')]
-            input_atom.xyzCoords = [[float(values[cif_column_labels.index('Cartn_x')])],
-                                    [float(values[cif_column_labels.index('Cartn_y')])],
-                                    [float(values[cif_column_labels.index('Cartn_z')])]]
-            input_atom.occupancy = float(values[cif_column_labels.index('occupancy')])
-            input_atom.bFactor = float(values[cif_column_labels.index('B_iso_or_equiv')])
-            input_atom.element = values[cif_column_labels.index('type_symbol')]
-            input_atom.charge = values[cif_column_labels.index('pdbx_formal_charge')]
+                input_atom = atom()
+                input_atom.lineID = values[cif_column_labels.index('group_PDB')]
+                input_atom.atomNum = int(values[cif_column_labels.index('id')])
+                input_atom.atomType = values[cif_column_labels.index('auth_atom_id')]
+                input_atom.conformer = values[cif_column_labels.index('label_alt_id')]
+                input_atom.resiType = values[cif_column_labels.index('auth_comp_id')]
+                input_atom.chainID = values[cif_column_labels.index('auth_asym_id')]
+                input_atom.resiNum = int(values[cif_column_labels.index('auth_seq_id')])
+                input_atom.insCode = values[cif_column_labels.index('pdbx_PDB_ins_code')]
+                input_atom.xyzCoords = [[float(values[cif_column_labels.index('Cartn_x')])],
+                                        [float(values[cif_column_labels.index('Cartn_y')])],
+                                        [float(values[cif_column_labels.index('Cartn_z')])]]
+                input_atom.occupancy = float(values[cif_column_labels.index('occupancy')])
+                input_atom.bFactor = float(values[cif_column_labels.index('B_iso_or_equiv')])
+                input_atom.element = values[cif_column_labels.index('type_symbol')]
+                input_atom.charge = values[cif_column_labels.index('pdbx_formal_charge')]
 
-            cif_atom_list.append(input_atom)
+                cif_atom_list.append(input_atom)
 
-    if convert_cif is True:
-        os.remove(pathToInput)
-        pathToInput = pathToInput.replace('.cif', '.pdb')
-        pdb_header_lines = cryst1_line + disulf_lines
-        pdb_footer_lines = ''
-        makePDB(pdb_header_lines, cif_atom_list, pdb_footer_lines, pathToInput,
-               'Bfactor')
+            os.remove(pathToInput)
+            pathToInput = pathToInput.replace('.cif', '.pdb')
+            pdb_header_lines = cryst1_line + disulf_lines
+            pdb_footer_lines = ''
+            makePDB(pdb_header_lines, cif_atom_list, pdb_footer_lines,
+                    pathToInput, 'Bfactor')
 
-    return (pathToInput, cif_header_lines, cif_footer_lines)
+    return (pathToInput, cif_header_lines, cif_footer_lines, exit)
 
 
-def clean_pdb_file(pathToInput, PDBdirectory, batchRun, pdb_file_path):
+def clean_pdb_file(pathToInput, PDBdirectory, pdb_file_path):
     # Filters the input PDB file ATOM / HETATM records to remove anisotropic
     # Bfactor records, hydrogen atoms and 0 occupancy atoms, as well as
     # retaining only the most probable alternate conformers (in the case
@@ -194,33 +198,39 @@ def clean_pdb_file(pathToInput, PDBdirectory, batchRun, pdb_file_path):
 
     if __name__ == 'Subroutines.PDBCUR':
         from Subroutines.parsePDB import atom
+        from Subroutines.makeDataFrame import makePDB
     else:
         from rabdam.Subroutines.parsePDB import atom
+        from rabdam.Subroutines.makeDataFrame import makePDB
 
-    # Removes anisotropic Bfactors, hydrogen atoms and 0 occupancy atoms
-    multi_model = False
-    low_occ_disulfide = False
+    # Checks that only a single model is present in the input PDB file, and
+    # that any disulphide bonds have been refined with 100% occupancy. Then
+    # removes anisotropic Bfactors, hydrogen atoms and 0 occupancy atoms.
+    exit = False
+
     disulfide_bonds = []
     filtered_pdb_lines = []
     header_lines = []
     footer_lines = []
     unit_cell_params = []
+
     orig_pdb = open('%s' % pathToInput, 'r')
     header = True
     footer = False
     for line in orig_pdb:
+        # Checks for single model
         if line.replace(' ', '').startswith('MODEL2'):
-            multi_model = True
-            if batchRun is False:
-                shutil.rmtree('%s' % PDBdirectory)
-                sys.exit('\n\nMore than one model present in input PDB file.\n'
-                         'Please submit a PDB file containing a single model '
-                         'for BDamage analysis.\n')
+            exit = True
+            print('\n\nERROR: More than one model present in input PDB file.\n'
+                  'Please submit a PDB file containing a single model for '
+                  'BDamage analysis.\n')
+        # Extracts ids of sulfur atoms involved in disulfide bonds
         elif line.startswith('SSBOND'):
             disulfide_bonds.append('%s %s%s%s' % (line[11:14], line[15:16],
                                                    line[17:21], line[21:22]))
             disulfide_bonds.append('%s %s%s%s' % (line[25:28], line[29:30],
                                                    line[31:35], line[35:36]))
+        # Extracsts unit cell parameters
         elif line[0:6].strip() == 'CRYST1':
             params = line.split()
             a = float(params[1])
@@ -230,6 +240,7 @@ def clean_pdb_file(pathToInput, PDBdirectory, batchRun, pdb_file_path):
             beta = math.radians(float(params[5]))
             gamma = math.radians(float(params[6]))
             unit_cell_params.extend((a, b, c, alpha, beta, gamma))
+        # Extracts non-hydrogen, non-0 occupancy ATOM / HETATM records
         elif (line[0:6].strip() in ['ATOM', 'HETATM']
             and line[76:78].strip() != 'H'
             and float(line[54:60].strip()) > 0
@@ -240,14 +251,12 @@ def clean_pdb_file(pathToInput, PDBdirectory, batchRun, pdb_file_path):
             occupancy = float(line[54:60])
             for bond in disulfide_bonds:
                 if bond in line and occupancy != 1.0:
-                    low_occ_disulfide = True
-                    if batchRun is False:
-                        sys.exit('\n\nOne or more disulfide bonds has been '
-                                 'refined with an occupancy of less than 1.\n'
-                                 'To enable damage detection, disulfide bonds '
-                                 'should be refined as single occupancy\n'
-                                 'rather than in alternate oxidised and reduced'
-                                 ' conformations.')
+                    exit = True
+                    print('\n\nERROR: One or more disulfide bonds has been '
+                          'refined with an occupancy of less than 1.\nTo '
+                          'enable damage detection, disulfide bonds should be '
+                          'refined as single occupancy\nrather than in '
+                          'alternate oxidised and reduced conformations.')
         elif line[0:6].strip() == 'CONECT':
             footer = True
 
@@ -295,18 +304,11 @@ def clean_pdb_file(pathToInput, PDBdirectory, batchRun, pdb_file_path):
         alternate_conformers[a] = b
 
     clean_au_list = []
-    clean_au_file_name = '%s_asymmetric_unit.pdb' % pdb_file_path
-    clean_au_file = open('%s' % clean_au_file_name, 'w')
-
-    for line in header_lines:
-        clean_au_file.write(line)
-
     for line in filtered_pdb_lines:
         if ((line[16:17].strip() == '')
             or (line[16:17].strip() != ''
                 and alternate_conformers[line[21:27].replace(' ', '')] == line[16:17].strip())
             ):
-            clean_au_file.write(line)
             new_atom = atom()
             new_atom.lineID = line[0:6].strip()
             new_atom.atomNum = int(line[6:11].strip())
@@ -325,18 +327,16 @@ def clean_pdb_file(pathToInput, PDBdirectory, batchRun, pdb_file_path):
             new_atom.charge = line[78:80].strip()
             clean_au_list.append(new_atom)
 
-    for line in footer_lines:
-        clean_au_file.write(line)
+    clean_au_file = '%s_asymmetric_unit.pdb' % pdb_file_path
+    makePDB(header_lines, clean_au_list, footer_lines, clean_au_file, 'Bfactor')
 
-    clean_au_file.close()
-
-    return (multi_model, low_occ_disulfide, clean_au_file_name, clean_au_list,
-            header_lines, footer_lines, unit_cell_params)
+    return (exit, clean_au_file, clean_au_list, header_lines, footer_lines,
+            unit_cell_params)
 
 
 def genPDBCURinputs(PDBCURinputFile):
     # Creates input file for the CCP4 suite program PDBCUR, instructing it to
-    # create the unit cell from an input pdb file of an asymmetric unit
+    # generate the unit cell from an input PDB file of an asymmetric unit
 
     print('Writing input file for PDBCUR at %s' % PDBCURinputFile)
     input_file = open(PDBCURinputFile, 'w')

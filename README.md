@@ -1,5 +1,6 @@
 # RABDAM – identifying specific radiation damage in MX structures
 
+[![Python Version](https://img.shields.io/badge/python-2.7-blue.svg)](https://www.python.org/download/releases/2.7/)
 [![Python Version](https://img.shields.io/badge/python-3.6-blue.svg)](https://www.python.org/download/releases/3.6/)
 [![LGPL licensed](https://img.shields.io/badge/license-LGPL%20v3-blue.svg)](https://github.com/GarmanGroup/RABDAM/blob/master/COPYING.LESSER)
 
@@ -80,7 +81,7 @@ ___
 
 ## Usage
 #### System requirements
-This version of RABDAM is written in Python 3.6 (a version of the program in Python 2.7 is available from the py27 branch). In addition, it is dependent upon the following packages / programs that are not included in the [Anaconda Python 3.6 distribution](https://www.continuum.io/downloads) (release 4.3.0 onwards):
+RABDAM supports both Python 2 and Python 3. In addition, it is dependent upon the following packages / programs that are not included in the [Anaconda Python distribution](https://www.continuum.io/downloads) (release 4.3.0 onwards):
 
 -	The [CCP4 software suite](http://www.ccp4.ac.uk/) (RABDAM has a dependency on the CCP4 suite program PDBCUR)
 
@@ -124,7 +125,7 @@ Alternatively, if you wish to perform a run of RABDAM using entirely default par
 
 It is possible to specify more than one PDB and / or mmCif files for analysis following the `-f` flag, *e.g.*:
 
-+`python rabdam.py –f path/to/pdb_file_1.pdb path/to/mmcif_file_2.cif path/to/pdb_file_3.pdb`
+`python rabdam.py –f path/to/pdb_file_1.pdb path/to/mmcif_file_2.cif path/to/pdb_file_3.pdb`
 
 Importantly, note that when using the `-f` flag, the supplied file path(s) must not contain any spaces. (This restriction does not apply when specifying file path(s) within an input txt file however.)
 
@@ -166,7 +167,7 @@ Either a 4 character PDB accession code, or an absolute file path (which may con
 
 -	The output directory, *dir*
 
-The location of the directory (specified by its absolute file path) in which you would like the program output files to be written. If not specified, this defaults to the current working directory, *i.e.* that in which the rabdam.py script is located.
+The location of the directory (specified by its absolute file path) in which you would like the program output files to be written. If not specified, this defaults to the current working directory.
 
 - Option to ignore errors encountered during batch runs, *batchContinue*
 
