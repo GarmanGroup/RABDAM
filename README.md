@@ -80,6 +80,17 @@ RABDAM will calculate the values of the *B*<sub>Damage</sub> and *B*<sub>net</su
 ___
 
 ## Usage
+#### Installation
+1. RABDAM can be downloaded / cloned from GitHub. You can then either run RABDAM as a script from the RABDAM directory, or alternatively you can install RABDAM as a package (able to be run from any directory) by navigating to the RABDAM directory and executing:<br>
+`python setup.py install`<br>
+
+2. RABDAM can be installed (as a package) straight from PyPi() with `pip`:<br>
+`pip install rabdam`<br>
+
+3. RABDAM will also shortly be available as part of the [CCP4 software suite](http://www.ccp4.ac.uk/).
+
+___
+
 #### System requirements
 RABDAM supports both Python 2 and Python 3. In addition, it is dependent upon the following packages / programs that are not included in the [Anaconda Python distribution](https://www.continuum.io/downloads) (release 4.3.0 onwards):
 
@@ -101,6 +112,8 @@ RABDAM can be run on any standard format PDB or mmCif file of a single model of 
 ____
 
 #### Running RABDAM
+\*\*RABDAM can be run either as a script or as a package (see the [Installation](#installation) section for further details). The example commands provided below are for running the program as a script. If you are running RABDAM as a package, simply replace `python rabdam.py` with `rabdam`.\*\*
+
 RABDAM is a command line program. There are four main command line flags that control the program run:
 
 -	`-i` / `--input`
