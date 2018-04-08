@@ -31,7 +31,9 @@ def main():
     import numpy as np
     import argparse
 
-    if __name__ == '__main__':
+    if (__name__ == '__main__'
+        or '/Applications/ccp4-7.0' in os.environ
+        ):
         from Subroutines.CalculateBDamage import rabdam
         from Subroutines.checkDependencies import check_RABDAM_dependencies
     else:
@@ -178,7 +180,7 @@ def main():
             # to True to prevent program from requiring user input to decide
             # whether to overwrite any pre-existing file(s) with the same file
             # path(s) as the output file(s) to be written
-            if os.fstat(0) != os.fstat(1):   
+            if os.fstat(0) != os.fstat(1):
                 overwriteVal = True
 
         # Specifies packing density threshold
@@ -392,5 +394,5 @@ def main():
         print('Program run time: %01.0f min %02.3f sec\n\n' % (mins, secs))
 
 # Runs 'main' function if rabdam.py is run as a script
-if __name__ == '__main__':
+if __name__ == '__main__' or '/Applications/ccp4-7.0' in os.environ:
     main()

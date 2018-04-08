@@ -369,11 +369,11 @@ class rabdam(object):
         # format.
         exit = False
         if self.pathToInput[-4:] == '.cif':
-            (pathToInput, cif_header_lines, cif_footer_lines, exit) = convert_cif_to_pdb(
-                pathToInput, True)
+            (pathToInput, aniso_rec, cif_header_lines, cif_footer_lines,
+             exit) = convert_cif_to_pdb(pathToInput, True)
         elif len(self.pathToInput) == 4:
-            (pathToCif, cif_header_lines, cif_footer_lines, exit) = convert_cif_to_pdb(
-                pathToCif, False)
+            (pathToCif, aniso_rec, cif_header_lines, cif_footer_lines,
+             exit) = convert_cif_to_pdb(pathToCif, False)
         else:
             cif_header_lines = ['#']
             cif_footer_lines = ['#']
@@ -576,7 +576,7 @@ class rabdam(object):
         storage_file = '%s/%s' % (storage, PDBcode)
         df.to_pickle(storage_file + '_dataframe.pkl')
         with open(storage_file + '_variables.pkl', 'wb') as f:
-            pickle.dump((pdb_file_path, PDBcode, bdamAtomList,
+            pickle.dump((pdb_file_path, PDBcode, bdamAtomList, aniso_rec,
                          cif_header_lines, cif_footer_lines, cif_column_widths,
                          header_lines, footer_lines, window), f)
 
@@ -694,7 +694,7 @@ class rabdam(object):
         df = pd.read_pickle(storage_file + '_dataframe.pkl')
         print('Unpickling DataFrame and variables\n')
         with open(storage_file + '_variables.pkl', 'rb') as f:
-            (pdb_file_path, PDBcode, bdamAtomList, cif_header_lines,
+            (pdb_file_path, PDBcode, bdamAtomList, aniso_rec, cif_header_lines,
              cif_footer_lines, cif_column_widths, header_lines, footer_lines,
              window) = pickle.load(f)
 
@@ -731,7 +731,8 @@ class rabdam(object):
                     'BDamage')
             print('\nWriting cif file with BDamage column')
             cif_lines = output.generate_cif_lines(cif_column_widths)
-            output.write_output_cif(cif_header_lines, cif_lines,
+            aniso_lines = output.generate_aniso_cif_lines(aniso_rec)
+            output.write_output_cif(cif_header_lines, cif_lines, aniso_lines,
                                     cif_footer_lines)
 
         if 'kde' in output_options or 'summary' in output_options:

@@ -128,7 +128,27 @@ class generate_output_files(object):
 
         return cif_lines
 
-    def write_output_cif(self, cif_header_lines, cif_lines, cif_footer_lines):
+    def generate_aniso_cif_lines(self, aniso_rec):
+        aniso_lines = ['#', 'loop_']
+
+        columns = [line.split('.')[1] for line in aniso_rec if
+                   line.startswith('_atom_site_anisotrop')]
+        atomNum_index = columns.index('id')
+
+        for label in columns:
+            label = '_atom_site_anisotrop.' + label
+            aniso_lines.append(label)
+
+        for line in aniso_rec:
+            if not line[0:5] in ['loop_', '_atom']:
+                values = line.split()
+                if int(values[atomNum_index]) in self.df.ATMNUM.tolist():
+                    aniso_lines.append(line)
+
+        return aniso_lines
+
+    def write_output_cif(self, cif_header_lines, cif_lines, aniso_lines,
+                         cif_footer_lines):
         # Writes an mmCif file for the input structure with an additional
         # column of BDamage values for those atoms included in the calculation.
         new_cif = open('%s_BDamage.cif' % self.pdb_file_path, 'w')
@@ -159,6 +179,9 @@ class generate_output_files(object):
 
         # Writes ATOM / HETATM records to output cif file
         for line in cif_lines:
+            new_cif.write('%s\n' % line)
+
+        for line in aniso_lines:
             new_cif.write('%s\n' % line)
 
         for line in cif_footer_lines:

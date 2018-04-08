@@ -43,30 +43,40 @@ def convert_cif_to_pdb(pathToInput, convert_cif):
         input_cif_lines = input_cif_lines + line + '\\'
     input_cif.close()
 
-    input_cif_lines = input_cif_lines.split('\#\\')
+    input_cif_lines = input_cif_lines.split('#\\')
     ATM_rec = ''
+    aniso_rec = ''
     disulfide_bonds = ''
     space_group = ''
     cif_header_lines = ''
     cif_footer_lines = '#\\'
     header = True
+    footer = False
     for subsection in input_cif_lines:
         if '_atom_site.group_PDB' in subsection:
             ATM_rec = subsection
             header = False
+        elif '_atom_site_anisotrop.id' in subsection:
+            aniso_rec = subsection
+            footer = True
+        elif 'disulf1' in subsection:
+            disulfide_bonds = subsection
         elif ('_cell.length_a' in subsection
              or '_symmetry.space_group_name_H-M' in subsection
              ):
             space_group = space_group + subsection
-        elif 'disulf1' in subsection:
-            disulfide_bonds = subsection
-        else:
-            if header is True:
-                cif_header_lines = cif_header_lines + subsection + '\#\\'
-            elif header is False:
-                cif_footer_lines = cif_footer_lines + subsection + '\#\\'
+
+        if header is True:
+            cif_header_lines = cif_header_lines + subsection + '#\\'
+        elif footer is True and not '_atom_site_anisotrop.id' in subsection:
+            cif_footer_lines = cif_footer_lines + subsection + '#\\'
+
+    aniso_rec = aniso_rec.split('\\')
+    aniso_rec.remove('')
     cif_header_lines = cif_header_lines.split('\\')
+    cif_header_lines.remove('')
     cif_footer_lines = cif_footer_lines.split('\\')
+    cif_footer_lines.remove('')
 
     # Constructs CRYST1 line of PDB file
     space_group = space_group.split('\\')
@@ -80,24 +90,42 @@ def convert_cif_to_pdb(pathToInput, convert_cif):
     z = ''
     for line in space_group:
         if line.startswith('_cell.length_a'):
-            a = line.split()[-1].strip()
+            a = str(round(float(line.split()[-1].strip()), 3))
+            if len(a) > 8:
+                decimal_places = 7-len(a.split('.')[0])
+                a = str(round(float(a), decimal_places))
         elif line.startswith('_cell.length_b'):
-            b = line.split()[-1].strip()
+            b = str(round(float(line.split()[-1].strip()), 3))
+            if len(b) > 8:
+                decimal_places = len(b.split('.')[0])
+                b = str(round(float(b), 7-decimal_places))
         elif line.startswith('_cell.length_c'):
-            c = line.split()[-1].strip()
+            c = str(round(float(line.split()[-1].strip()), 3))
+            if len(c) > 8:
+                decimal_places = 7-len(c.split('.')[0])
+                c = str(round(float(c), decimal_places))
         elif line.startswith('_cell.angle_alpha'):
-            alpha = line.split()[-1].strip()
+            alpha = str(round(float(line.split()[-1].strip()), 2))
+            if len(alpha) > 6:
+                decimal_places = 5-len(alpha.split('.')[0])
+                alpha = str(round(float(alpha), decimal_places))
         elif line.startswith('_cell.angle_beta'):
-            beta = line.split()[-1].strip()
+            beta = str(round(float(line.split()[-1].strip()), 2))
+            if len(beta) > 6:
+                decimal_places = 5-len(beta.split('.')[0])
+                beta = str(round(float(beta), decimal_places))
         elif line.startswith('_cell.angle_gamma'):
-            gamma = line.split()[-1].strip()
+            gamma = str(round(float(line.split()[-1].strip()), 2))
+            if len(gamma) > 6:
+                decimal_places = 5-len(gamma.split('.')[0])
+                gamma = str(round(float(gamma), decimal_places))
         elif line.startswith('_symmetry.space_group_name_H-M'):
             sGroup = line.replace('_symmetry.space_group_name_H-M', '')
             sGroup = sGroup.replace("'", '')
             sGroup = sGroup.strip()
         elif line.startswith('_cell.Z_PDB'):
             z = line.split()[-1].strip()
-    if any([a, b, c, alpha, beta, gamma, sGroup, z]) == '':
+    if any(x == '' for x in [a, b, c, alpha, beta, gamma, sGroup, z]):
         exit = True
         print('\n\nERROR: Failed to construct CRYST1 line')
     cryst1_line = ''.join(['CRYST1', a.rjust(9), b.rjust(9), c.rjust(9),
@@ -156,7 +184,7 @@ def convert_cif_to_pdb(pathToInput, convert_cif):
                 input_atom = atom()
                 input_atom.lineID = values[cif_column_labels.index('group_PDB')]
                 input_atom.atomNum = int(values[cif_column_labels.index('id')])
-                input_atom.atomType = values[cif_column_labels.index('auth_atom_id')]
+                input_atom.atomType = values[cif_column_labels.index('auth_atom_id')].strip('"')
                 input_atom.conformer = values[cif_column_labels.index('label_alt_id')]
                 input_atom.resiType = values[cif_column_labels.index('auth_comp_id')]
                 input_atom.chainID = values[cif_column_labels.index('auth_asym_id')]
@@ -179,7 +207,7 @@ def convert_cif_to_pdb(pathToInput, convert_cif):
             makePDB(pdb_header_lines, cif_atom_list, pdb_footer_lines,
                     pathToInput, 'Bfactor')
 
-    return (pathToInput, cif_header_lines, cif_footer_lines, exit)
+    return (pathToInput, aniso_rec, cif_header_lines, cif_footer_lines, exit)
 
 
 def clean_pdb_file(pathToInput, PDBdirectory, pdb_file_path):
@@ -232,13 +260,12 @@ def clean_pdb_file(pathToInput, PDBdirectory, pdb_file_path):
                                                    line[31:35], line[35:36]))
         # Extracsts unit cell parameters
         elif line[0:6].strip() == 'CRYST1':
-            params = line.split()
-            a = float(params[1])
-            b = float(params[2])
-            c = float(params[3])
-            alpha = math.radians(float(params[4]))
-            beta = math.radians(float(params[5]))
-            gamma = math.radians(float(params[6]))
+            a = float(line[6:15])
+            b = float(line[15:24])
+            c = float(line[24:33])
+            alpha = math.radians(float(line[33:40]))
+            beta = math.radians(float(line[40:47]))
+            gamma = math.radians(float(line[47:54]))
             unit_cell_params.extend((a, b, c, alpha, beta, gamma))
         # Extracts non-hydrogen, non-0 occupancy ATOM / HETATM records
         elif (line[0:6].strip() in ['ATOM', 'HETATM']
