@@ -377,6 +377,7 @@ class rabdam(object):
         else:
             cif_header_lines = ['#']
             cif_footer_lines = ['#']
+            aniso_rec = ['#']
         if exit is True:
             shutil.rmtree('%s' % PDBdirectory)
             if self.batchRun is False:
