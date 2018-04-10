@@ -31,9 +31,7 @@ def main():
     import numpy as np
     import argparse
 
-    if (__name__ == '__main__'
-        or '/Applications/ccp4-7.0' in os.environ
-        ):
+    if __name__ == '__main__' or 'CCP4' in list(os.environ.keys()):
         from Subroutines.CalculateBDamage import rabdam
         from Subroutines.checkDependencies import check_RABDAM_dependencies
     else:
@@ -394,5 +392,5 @@ def main():
         print('Program run time: %01.0f min %02.3f sec\n\n' % (mins, secs))
 
 # Runs 'main' function if rabdam.py is run as a script
-if __name__ == '__main__' or '/Applications/ccp4-7.0' in os.environ:
+if __name__ == '__main__':
     main()

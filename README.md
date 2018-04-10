@@ -6,8 +6,6 @@
 
 A program to calculate the *B*<sub>Damage</sub> and *B*<sub>net</sub> metrics to quantify the extent of specific radiation damage present within an individual MX structure. Suitable for running on any standard format PDB or mmCif file.
 
-\*\***NOTE:** There is currently an issue with the RABDAM bang line in CCP4. This is being fixed, in the meantime RABDAM can be run by downloading / cloning the program from GitHub or installing the PyPi package.\*\*
-
 \*\***NOTE:** These scripts are under development, and are updated regularly. The program is currently being extended to incorporate nucleic acids analysis. Whilst these new capabilities are being tested, presently RABDAM is restricted to assessing damage to (i) protein crystal structures and (ii) the protein component of protein / nucleic acid crystal structures. If in the meantime you would like to use RABDAM for nucleic acids analysis, please contact the authors at the email address provided at the bottom of the page.\*\*
 
 ___
