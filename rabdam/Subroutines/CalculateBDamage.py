@@ -181,8 +181,9 @@ class rabdam(object):
             compat_struct_list = rabdam_compatible_structures()
             if PDBcode not in compat_struct_list:
                 if self.batchRun is False:
-                    sys.exit('\n\nERROR: Supplied PDB accession code is not '
-                             'deposited with full isotropic\nB-factor values')
+                    sys.exit('\n\nERROR: Supplied PDB accession code does not '
+                             'exist / is not deposited with full isotropic\n'
+                             'B-factor values')
                 elif self.batchRun is True:
                     return
 

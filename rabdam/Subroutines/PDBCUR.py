@@ -89,41 +89,41 @@ def convert_cif_to_pdb(pathToInput, convert_cif):
     sGroup = ''
     z = ''
     for line in space_group:
-        if line.startswith('_cell.length_a'):
+        if line.startswith('_cell.length_a '):
             a = str(round(float(line.split()[-1].strip()), 3))
             if len(a) > 8:
                 decimal_places = 7-len(a.split('.')[0])
                 a = str(round(float(a), decimal_places))
-        elif line.startswith('_cell.length_b'):
+        elif line.startswith('_cell.length_b '):
             b = str(round(float(line.split()[-1].strip()), 3))
             if len(b) > 8:
                 decimal_places = len(b.split('.')[0])
                 b = str(round(float(b), 7-decimal_places))
-        elif line.startswith('_cell.length_c'):
+        elif line.startswith('_cell.length_c '):
             c = str(round(float(line.split()[-1].strip()), 3))
             if len(c) > 8:
                 decimal_places = 7-len(c.split('.')[0])
                 c = str(round(float(c), decimal_places))
-        elif line.startswith('_cell.angle_alpha'):
+        elif line.startswith('_cell.angle_alpha '):
             alpha = str(round(float(line.split()[-1].strip()), 2))
             if len(alpha) > 6:
                 decimal_places = 5-len(alpha.split('.')[0])
                 alpha = str(round(float(alpha), decimal_places))
-        elif line.startswith('_cell.angle_beta'):
+        elif line.startswith('_cell.angle_beta '):
             beta = str(round(float(line.split()[-1].strip()), 2))
             if len(beta) > 6:
                 decimal_places = 5-len(beta.split('.')[0])
                 beta = str(round(float(beta), decimal_places))
-        elif line.startswith('_cell.angle_gamma'):
+        elif line.startswith('_cell.angle_gamma '):
             gamma = str(round(float(line.split()[-1].strip()), 2))
             if len(gamma) > 6:
                 decimal_places = 5-len(gamma.split('.')[0])
                 gamma = str(round(float(gamma), decimal_places))
-        elif line.startswith('_symmetry.space_group_name_H-M'):
+        elif line.startswith('_symmetry.space_group_name_H-M '):
             sGroup = line.replace('_symmetry.space_group_name_H-M', '')
             sGroup = sGroup.replace("'", '')
             sGroup = sGroup.strip()
-        elif line.startswith('_cell.Z_PDB'):
+        elif line.startswith('_cell.Z_PDB '):
             z = line.split()[-1].strip()
     if any(x == '' for x in [a, b, c, alpha, beta, gamma, sGroup, z]):
         exit = True
