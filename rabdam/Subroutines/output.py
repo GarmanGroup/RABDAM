@@ -129,23 +129,34 @@ class generate_output_files(object):
         return cif_lines
 
     def generate_aniso_cif_lines(self, aniso_rec):
-        aniso_lines = ['#', 'loop_']
+        skip = False
 
-        columns = [line.split('.')[1] for line in aniso_rec if
-                   line.startswith('_atom_site_anisotrop')]
-        atomNum_index = columns.index('id')
+        if aniso_rec:
+            aniso_lines = ['#', 'loop_']
 
-        for label in columns:
-            label = '_atom_site_anisotrop.' + label
-            aniso_lines.append(label)
+            try:
+                columns = [line.split('.')[1] for line in aniso_rec if
+                           line.startswith('_atom_site_anisotrop')]
+                atomNum_index = columns.index('id')
+            except ValueError:
+                skip = True
+                print('\n\nERROR: mmCIF file _atom_site_anisotrop labels do '
+                      'not follow the expected format\n. Skipping cif file '
+                      'output\n.')
 
-        for line in aniso_rec:
-            if not line[0:5] in ['loop_', '_atom']:
-                values = line.split()
-                if int(values[atomNum_index]) in self.df.ATMNUM.tolist():
-                    aniso_lines.append(line)
+            for label in columns:
+                label = '_atom_site_anisotrop.' + label
+                aniso_lines.append(label)
 
-        return aniso_lines
+            for line in aniso_rec:
+                if not line[0:5] in ['loop_', '_atom']:
+                    values = line.split()
+                    if int(values[atomNum_index]) in self.df.ATMNUM.tolist():
+                        aniso_lines.append(line)
+        else:
+            aniso_lines = []
+
+        return aniso_lines, skip
 
     def write_output_cif(self, cif_header_lines, cif_lines, aniso_lines,
                          cif_footer_lines):
@@ -266,7 +277,7 @@ class generate_output_files(object):
             # considered for calculation of the Bnet summary metric from being
             # plotted on the same axes as the kernel density estimate of all
             # atoms considered for BDamage analysis.
-            plot = sns.distplot(prot.BDAM.values, hist=False, rug=True)
+            plot = sns.distplot(prot.BDAM.values, hist=False, rug=True, kde_kws={'bw':'scott'})
             plt.xlabel('B Damage')
             plt.ylabel('Normalised Frequency')
             plt.title(self.pdb_code + ' Bnet kernel density plot')

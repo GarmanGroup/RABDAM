@@ -20,7 +20,7 @@
 
 
 def convert_cif_to_pdb(pathToInput, convert_cif):
-    # If RABDAM is provided with an input mmCif file, converts it into PDB file
+    # If RABDAM is provided with an input mmCIF file, converts it into PDB file
     # format.
     import os
     import sys
@@ -178,27 +178,34 @@ def convert_cif_to_pdb(pathToInput, convert_cif):
                 if int(values[cif_column_labels.index('pdbx_PDB_model_num')]) > 1:
                     exit = True
                     print('\n\nERROR: More than one model present in input '
-                          'mmCif file.\nPlease submit an mmCif file containing '
+                          'mmCIF file.\nPlease submit an mmCIF file containing '
                           'a single model for BDamage analysis.\n')
 
-                input_atom = atom()
-                input_atom.lineID = values[cif_column_labels.index('group_PDB')]
-                input_atom.atomNum = int(values[cif_column_labels.index('id')])
-                input_atom.atomType = values[cif_column_labels.index('auth_atom_id')].strip('"')
-                input_atom.conformer = values[cif_column_labels.index('label_alt_id')]
-                input_atom.resiType = values[cif_column_labels.index('auth_comp_id')]
-                input_atom.chainID = values[cif_column_labels.index('auth_asym_id')]
-                input_atom.resiNum = int(values[cif_column_labels.index('auth_seq_id')])
-                input_atom.insCode = values[cif_column_labels.index('pdbx_PDB_ins_code')]
-                input_atom.xyzCoords = [[float(values[cif_column_labels.index('Cartn_x')])],
-                                        [float(values[cif_column_labels.index('Cartn_y')])],
-                                        [float(values[cif_column_labels.index('Cartn_z')])]]
-                input_atom.occupancy = float(values[cif_column_labels.index('occupancy')])
-                input_atom.bFactor = float(values[cif_column_labels.index('B_iso_or_equiv')])
-                input_atom.element = values[cif_column_labels.index('type_symbol')]
-                input_atom.charge = values[cif_column_labels.index('pdbx_formal_charge')]
+                try:
+                    input_atom = atom()
+                    input_atom.lineID = values[cif_column_labels.index('group_PDB')]
+                    input_atom.atomNum = int(values[cif_column_labels.index('id')])
+                    input_atom.atomType = values[cif_column_labels.index('auth_atom_id')].strip('"')
+                    input_atom.conformer = values[cif_column_labels.index('label_alt_id')]
+                    input_atom.resiType = values[cif_column_labels.index('auth_comp_id')]
+                    input_atom.chainID = values[cif_column_labels.index('auth_asym_id')]
+                    input_atom.resiNum = int(values[cif_column_labels.index('auth_seq_id')])
+                    input_atom.insCode = values[cif_column_labels.index('pdbx_PDB_ins_code')]
+                    input_atom.xyzCoords = [[float(values[cif_column_labels.index('Cartn_x')])],
+                                            [float(values[cif_column_labels.index('Cartn_y')])],
+                                            [float(values[cif_column_labels.index('Cartn_z')])]]
+                    input_atom.occupancy = float(values[cif_column_labels.index('occupancy')])
+                    input_atom.bFactor = float(values[cif_column_labels.index('B_iso_or_equiv')])
+                    input_atom.element = values[cif_column_labels.index('type_symbol')]
+                    input_atom.charge = values[cif_column_labels.index('pdbx_formal_charge')]
 
-                cif_atom_list.append(input_atom)
+                    cif_atom_list.append(input_atom)
+
+                except ValueError:
+                    exit = True
+                    print('\n\nERROR: mmCIF file _atom_site labels do not '
+                          'follow the expected format\n.')
+
 
             os.remove(pathToInput)
             pathToInput = pathToInput.replace('.cif', '.pdb')
