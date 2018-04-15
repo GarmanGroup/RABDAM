@@ -226,7 +226,7 @@ class generate_output_files(object):
 
         # Generates kernel density plot
         plot = sns.distplot(self.df.BDAM.values, hist=False, rug=True,
-                            kde_kws={'bw':'silverman'})
+                            kde_kws={'bw':'scott'})
 
         # Marks on the positions of any atoms whose numbers are listed in the
         # highlightAtoms option specified in the input file.
@@ -289,7 +289,7 @@ class generate_output_files(object):
             # plotted on the same axes as the kernel density estimate of all
             # atoms considered for BDamage analysis.
             plot = sns.distplot(prot.BDAM.values, hist=False, rug=True,
-                                kde_kws={'bw':'silverman'})
+                                kde_kws={'bw':'scott'})
             plt.xlabel('B Damage')
             plt.ylabel('Normalised Frequency')
             plt.title(self.pdb_code + ' Bnet kernel density plot')
@@ -357,7 +357,7 @@ class generate_output_files(object):
             # plotted on the same axes as the kernel density estimate of all
             # atoms considered for BDamage analysis.
             plot = sns.distplot(na.BDAM.values, hist=False, rug=True,
-                                kde_kws={'bw':'silverman'})
+                                kde_kws={'bw':'scott'})
             plt.xlabel('B Damage')
             plt.ylabel('Normalised Frequency')
             plt.title(self.pdb_code + ' Bnet kernel density plot')
