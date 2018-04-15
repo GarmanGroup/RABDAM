@@ -209,8 +209,13 @@ class generate_output_files(object):
         # colour scheme will repeat itself, and in addition the key may not fit
         # onto the graph).)
 
+        import sys
+        # Ensures that seaborn uses scipy for kde bandwidth calculation rather
+        # than statsmodels
+        sys.modules['statsmodels']=None
         import matplotlib.pyplot as plt
         import seaborn as sns
+
         # Sets figure aesthetics to seaborn defaults
         sns.set()
 
@@ -220,7 +225,8 @@ class generate_output_files(object):
         # calculation of the Bnet summary metric
 
         # Generates kernel density plot
-        plot = sns.distplot(self.df.BDAM.values, hist=False, rug=True)
+        plot = sns.distplot(self.df.BDAM.values, hist=False, rug=True,
+                            kde_kws={'bw':'silverman'})
 
         # Marks on the positions of any atoms whose numbers are listed in the
         # highlightAtoms option specified in the input file.
@@ -253,9 +259,14 @@ class generate_output_files(object):
         # overall BDamage distribution).
 
         import os
+        import sys
+        # Ensures that seaborn uses scipy for kde bandwidth calculation rather
+        # than statsmodels
+        sys.modules['statsmodels']=None
         import pandas as pd
         import matplotlib.pyplot as plt
         import seaborn as sns
+
         # Sets figure aesthetics to seaborn defaults
         sns.set()
 
@@ -277,7 +288,8 @@ class generate_output_files(object):
             # considered for calculation of the Bnet summary metric from being
             # plotted on the same axes as the kernel density estimate of all
             # atoms considered for BDamage analysis.
-            plot = sns.distplot(prot.BDAM.values, hist=False, rug=True, kde_kws={'bw':'scott'})
+            plot = sns.distplot(prot.BDAM.values, hist=False, rug=True,
+                                kde_kws={'bw':'silverman'})
             plt.xlabel('B Damage')
             plt.ylabel('Normalised Frequency')
             plt.title(self.pdb_code + ' Bnet kernel density plot')
@@ -344,7 +356,8 @@ class generate_output_files(object):
             # considered for calculation of the Bnet summary metric from being
             # plotted on the same axes as the kernel density estimate of all
             # atoms considered for BDamage analysis.
-            plot = sns.distplot(na.BDAM.values, hist=False, rug=True)
+            plot = sns.distplot(na.BDAM.values, hist=False, rug=True,
+                                kde_kws={'bw':'silverman'})
             plt.xlabel('B Damage')
             plt.ylabel('Normalised Frequency')
             plt.title(self.pdb_code + ' Bnet kernel density plot')
