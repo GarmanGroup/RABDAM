@@ -21,21 +21,17 @@
 import numpy as np
 
 
-def get_xyz_from_objects(bdamAtomList, trimmedAtomList):
+def get_xyz_from_objects(bdamAtomList):
     # Returns numpy arrays of the x, y and z coordinates of the atoms to be
     # included in the BDamage calculation.
 
     au_atom_coords = np.zeros([len(bdamAtomList), 3])
-    surrounding_atom_coords = np.zeros([len(trimmedAtomList), 3])
     for i, atom in enumerate(bdamAtomList):
         au_atom_coords[i, :] = np.array([atom.xyzCoords[0][0],
                                          atom.xyzCoords[1][0],
                                          atom.xyzCoords[2][0]])
-    for j, surr_atom in enumerate(trimmedAtomList):
-        surrounding_atom_coords[j, :] = np.array([surr_atom.xyzCoords[0][0],
-                                                  surr_atom.xyzCoords[1][0],
-                                                  surr_atom.xyzCoords[2][0]])
-    return au_atom_coords, surrounding_atom_coords
+
+    return au_atom_coords
 
 
 def calc_packing_density(xyz_au_atom, xyz_surr_atom, pack_dens_thresh):

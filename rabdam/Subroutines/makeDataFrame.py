@@ -19,6 +19,29 @@
 # <http://www.gnu.org/licenses/>.
 
 
+def convert_array_to_atom_list(array, atom_id_list, atom_list):
+    # Converts numpy array of xyz coordinates into a list of Atom() objects,
+    # for use in writing a PDB file
+
+    import copy
+    duplicate = copy.copy
+    import numpy as np
+
+    pdb_atom_list = []
+    for index, atom_id in enumerate(atom_id_list):
+        for atom in atom_list:
+            if atom.atomNum == atom_id:
+                new_atom = duplicate(atom)
+                newXYZ = np.array([[array[index][0]],
+                                   [array[index][1]],
+                                   [array[index][2]]])
+                new_atom.xyzCoords = newXYZ
+                pdb_atom_list.append(new_atom)
+                break
+
+    return pdb_atom_list
+
+
 def makePDB(header_lines, atomList, footer_lines, newPDBfilename, Bfac):
     # Writes a PDB file containing a complete set of atom information for all
     # atoms in 'atomList', plus header and footer information.
@@ -30,7 +53,7 @@ def makePDB(header_lines, atomList, footer_lines, newPDBfilename, Bfac):
     for line in header_lines:
         newPDBfile.write(line)
 
-    for atm in atomList:
+    for index, atm in enumerate(atomList):
         a = atm.lineID
         b = atm.atomNum
         c = atm.atomType
@@ -59,6 +82,18 @@ def makePDB(header_lines, atomList, footer_lines, newPDBfilename, Bfac):
             a, b, c, d, e, f, g, h, i, j, k, l, m, n, o
             )
         newPDBfile.write(newLine)
+
+        # Inserts TER cards
+        if index != (len(atomList) - 1):
+            if (
+                atm.chainID != atomList[index+1].chainID
+                and (atm.resiNum+1) != atomList[index+1].resiNum
+                and not (atm.lineID == 'HETATM' and atomList[index+1].lineID == 'HETATM')
+                ):
+                newPDBfile.write('TER\n')
+        else:
+            if atm.lineID != 'HETATM':
+                newPDBfile.write('TER\n')
 
     for line in footer_lines:
         newPDBfile.write(line)

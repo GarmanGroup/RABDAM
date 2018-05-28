@@ -278,7 +278,7 @@ def clean_pdb_file(pathToInput, PDBdirectory, pdb_file_path):
         elif (line[0:6].strip() in ['ATOM', 'HETATM']
             and line[76:78].strip() != 'H'
             and float(line[54:60].strip()) > 0
-             ):
+            ):
             filtered_pdb_lines.append(line)
             header = False
             # Checks that all disulfide bonds have been refined with 100% occupancy.
@@ -291,7 +291,7 @@ def clean_pdb_file(pathToInput, PDBdirectory, pdb_file_path):
                           'enable damage detection, disulfide bonds should be '
                           'refined as single occupancy\nrather than in '
                           'alternate oxidised and reduced conformations.')
-        elif line[0:6].strip() == 'CONECT':
+        elif line[0:6].strip() in ['CONECT', 'MASTER', 'END']:
             footer = True
 
         if header is True:

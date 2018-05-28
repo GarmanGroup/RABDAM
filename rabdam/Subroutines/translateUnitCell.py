@@ -72,13 +72,12 @@ def convertToCartesian(unit_cell_params):
     return cartesianVectors
 
 
-def translateUnitCell(ucAtomList, transAtomList, cartesianVectors,
-                      aTrans, bTrans, cTrans):
+def translateUnitCell(ucAtomList, transAtomList, transAtomIDList,
+                      cartesianVectors, aTrans, bTrans, cTrans, count,
+                      createAUCpdb, createTApdb):
     # Translates the unit cell +/- 1 units in all dimensions (a, b and c) to
     # generate a 3x3 assembly.
 
-    import copy
-    duplicate = copy.copy
     import numpy as np
 
     # Converts input unit vectors into matrices.
@@ -100,11 +99,16 @@ def translateUnitCell(ucAtomList, transAtomList, cartesianVectors,
     # matrix, and its new xyz coordinates stored in a list of all atoms in
     # the 3x3 assembly.
     for item in ucAtomList:
-        new_item = duplicate(item)
-        new_item.xyzCoords = np.add(item.xyzCoords, transVector)
-        transAtomList.append(new_item)
+        new_atom_xyz = np.add(item.xyzCoords, transVector)
+        transAtomList[count][0] = new_atom_xyz[0][0]
+        transAtomList[count][1] = new_atom_xyz[1][0]
+        transAtomList[count][2] = new_atom_xyz[2][0]
+        if createAUCpdb is True or createTApdb is True:
+            transAtomIDList[count] = item.atomNum
+        count += 1
 
     print('Successfully translated by (%2sa,%2sb,%2sc) unit cells' % (
         aTrans, bTrans, cTrans
         ))
-    return transAtomList
+
+    return transAtomList, transAtomIDList, count

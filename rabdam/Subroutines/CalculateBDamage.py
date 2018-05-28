@@ -52,6 +52,7 @@ class rabdam(object):
         import requests
         import copy
         duplicate = copy.copy
+        import numpy as np
         import pickle
 
         if sys.version_info[0] < 3:
@@ -74,7 +75,9 @@ class rabdam(object):
             from Subroutines.trimUnitCellAssembly import (
                 getAUparams, convertParams, trimAtoms
                 )
-            from Subroutines.makeDataFrame import makePDB, writeDataFrame
+            from Subroutines.makeDataFrame import (
+                convert_array_to_atom_list, makePDB, writeDataFrame
+            )
             from Subroutines.BDamage import (
                 get_xyz_from_objects, calc_packing_density,
                 write_pckg_dens_to_atoms, calcBDam
@@ -471,23 +474,37 @@ class rabdam(object):
         # file of this 3x3 parallelepiped is output if createAUCpdb is set
         # equal to True in the input file (default = False).
 
-        transAtomList = duplicate(ucAtomList)
+        transAtomList = np.empty([len(ucAtomList)*27, 3])
+        transAtomIDList = ['']*(len(ucAtomList)*27)
         cartesianVectors = convertToCartesian(unit_cell_params)
+        count = 0
         for a in range(-1, 2):
             for b in range(-1, 2):
                 for c in range(-1, 2):
-                    if a == 0 and b == 0 and c == 0:
-                        pass  # No identity translation
-                    else:
-                        transAtomList = translateUnitCell(ucAtomList,
-                                                          transAtomList,
-                                                          cartesianVectors,
-                                                          a, b, c)
+                    transAtomList, transAtomIDList, count = translateUnitCell(
+                        ucAtomList, transAtomList, transAtomIDList,
+                        cartesianVectors, a, b, c, count, self.createAUCpdb,
+                        self.createTApdb
+                    )
+        # Halts program if error in unit cell translation
+        if count != len(ucAtomList)*27:
+            print('\n\nERROR: Failed to translate all unit cell atoms to '
+                  'create 3x3 unit cell assembly')
+            shutil.rmtree('%s' % PDBdirectory)
+            if self.batchRun is False:
+                sys.exit()
+            elif self.batchRun is True:
+                return
 
+        # Creates PDB file of 3x3 unit cell assembly. WARNING: VERY slow and
+        # RAM-consuming for large structures!
         if self.createAUCpdb is True:
             aucPDBfilepath = '%s_all_unit_cells.pdb' % pdb_file_path
-            makePDB(header_lines, transAtomList, footer_lines, aucPDBfilepath,
-                    'Bfactor')
+            auc_pdb_atom_list = convert_array_to_atom_list(
+                transAtomList, transAtomIDList, ucAtomList
+            )
+            makePDB(header_lines, auc_pdb_atom_list, footer_lines,
+                    aucPDBfilepath, 'Bfactor')
 
         print('\n************** End of Translate Unit Cell Section **************\n'
               '****************************************************************\n')
@@ -523,12 +540,20 @@ class rabdam(object):
 
         print('Removing atoms outside of packing density threshold')
         keepParams = convertParams(auParams, self.PDT)
-        trimmedAtomList = trimAtoms(transAtomList, keepParams)
+        trimmedAtomList, trimmedAtomIDList = trimAtoms(
+            transAtomList, keepParams, transAtomIDList, self.createAUCpdb,
+            self.createTApdb
+        )
 
+        # Creates PDB file of trimmed 3x3 unit cell assembly. WARNING: VERY
+        # slow and RAM-consuming for large structures!
         if self.createTApdb is True:
             taPDBfilepath = '%s_trimmed_atoms.pdb' % pdb_file_path
-            makePDB(header_lines, trimmedAtomList, footer_lines, taPDBfilepath,
-                    'Bfactor')
+            ta_pdb_atom_list = convert_array_to_atom_list(
+                trimmedAtomList, trimmedAtomIDList, ucAtomList
+            )
+            makePDB(header_lines, ta_pdb_atom_list, footer_lines,
+                    taPDBfilepath, 'Bfactor')
 
         print('\n****************** End of Trim Crystal Section *****************\n'
               '****************************************************************\n')
@@ -539,10 +564,9 @@ class rabdam(object):
         # in the asymmetric unit.
 
         print('Calculating packing density values\n')
-        au_atom_xyz, trim_atom_xyz = get_xyz_from_objects(bdamAtomList,
-                                                          trimmedAtomList)
+        au_atom_xyz = get_xyz_from_objects(bdamAtomList)
         packing_density_array = calc_packing_density(au_atom_xyz,
-                                                     trim_atom_xyz, self.PDT)
+                                                     trimmedAtomList, self.PDT)
         write_pckg_dens_to_atoms(bdamAtomList, packing_density_array)
 
         print('*********** End of Calculate Packing Density Section ***********\n'

@@ -82,8 +82,8 @@ def isInXYZparams(atomXYZ, params):
     # assembly lie within the boundaries of the trimmed atoms box.
 
     x = atomXYZ[0][0]
-    y = atomXYZ[1][0]
-    z = atomXYZ[2][0]
+    y = atomXYZ[0][1]
+    z = atomXYZ[0][2]
     if params[0] < x < params[1]:
         if params[2] < y < params[3]:
             if params[4] < z < params[5]:
@@ -92,18 +92,26 @@ def isInXYZparams(atomXYZ, params):
         return False
 
 
-def trimAtoms(atomList, params):
+def trimAtoms(atomList, params, atom_id_list, createAUCpdb, createTApdb):
     # Removes all atoms with coordinates which lie outside of the trimmed
     # atoms box from the list of atoms in the 3x3 unit cell assembly.
+
+    import numpy as np
 
     print('Discarding atoms that lie further than 14 Angstroms from the\n'
           'asymmetric unit')
 
-    trimmedAtomList = []
-    for atom in atomList:
-        atomXYZ = atom.xyzCoords
+    trimmedAtomList = np.array([[0, 0, 0]])
+    trimmedAtomIDList = []
+    for num in range(atomList.shape[0]):
+        atomXYZ = np.array([[atomList[num][0],
+                             atomList[num][1],
+                             atomList[num][2]]])
         if isInXYZparams(atomXYZ, params):
-            trimmedAtomList.append(atom)
+            trimmedAtomList = np.append(trimmedAtomList, atomXYZ, axis=0)
+            if createAUCpdb is True or createTApdb is True:
+                trimmedAtomIDList.append(atom_id_list[num])
+    trimmedAtomList = np.delete(trimmedAtomList, 0, axis=0)
 
-    print('--> %s atoms have been retained' % len(trimmedAtomList))
-    return trimmedAtomList
+    print('--> %s atoms have been retained' % trimmedAtomList.shape[0])
+    return trimmedAtomList, trimmedAtomIDList
