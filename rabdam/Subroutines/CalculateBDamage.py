@@ -182,7 +182,7 @@ class rabdam(object):
             # containing full isotropic B-factor values - if the code is not in
             # this list, RABDAM throws an error
             compat_struct_list = rabdam_compatible_structures()
-            if PDBcode not in compat_struct_list:
+            if PDBcode.lower() not in compat_struct_list:
                 if self.batchRun is False:
                     sys.exit('\n\nERROR: Supplied PDB accession code does not '
                              'exist / is not deposited with full isotropic\n'
