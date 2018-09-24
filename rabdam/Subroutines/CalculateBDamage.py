@@ -168,7 +168,7 @@ class rabdam(object):
 
         # If 4 digit PDB accession code has been supplied:
         if len(self.pathToInput) == 4:
-            print('Accession code supplied\n')
+            print('Accession code supplied')
             PDBcode = self.pathToInput.upper()
             window_name = 100*self.windowSize
             window_name = str(window_name).replace('.', '_')
@@ -183,12 +183,33 @@ class rabdam(object):
             # this list, RABDAM throws an error
             compat_struct_list = rabdam_compatible_structures()
             if PDBcode.lower() not in compat_struct_list:
-                if self.batchRun is False:
-                    sys.exit('\n\nERROR: Supplied PDB accession code does not '
-                             'exist / is not deposited with full isotropic\n'
-                             'B-factor values')
-                elif self.batchRun is True:
-                    return
+                print('%s not in list of PDB accession codes (last updated 25 '
+                      'September 2018) determined to be refined with full\n'
+                      'isotropic B-factors by the BDB (http://www.cmbi.ru.nl/'
+                      'bdb/about/).' % (PDBcode))
+                print('Please check the structure to ensure it meets the '
+                      'requirements for RABDAM analysis.\n'
+                      'Do you want to continue with RABDAM run?\n'
+                      '--USER INPUT-- type your choice and press RETURN\n'
+                      'yes = continue RABDAM run\n'
+                      'no = terminate RABDAM run\n')
+                owChoice = None
+                while owChoice not in ['yes', 'no', 'y', 'n']:
+                    if self.overwrite is True:
+                        owChoice = 'yes'
+                    elif self.overwrite is False:
+                        owChoice = user_input(prompt).lower()
+
+                    if owChoice == 'yes' or owChoice == 'y':
+                        break
+                    elif owChoice == 'no' or owChoice == 'n':
+                        if self.batchRun is False:
+                            sys.exit('\nExiting RABDAM')
+                        elif self.batchRun is True:
+                            return
+                        break
+                    else:
+                        print('Unrecognised input - please answer "yes" or "no"')
 
             # Checks whether accession code exists - if not, exit program
             # with error message
@@ -216,7 +237,7 @@ class rabdam(object):
             # copy of the PDB file is downloaded from the RSCB PDB website and
             # saved to the new directory.
             if os.path.isdir(PDBdirectory):
-                print('Folder %s already exists locally at %s' % (
+                print('\nFolder %s already exists locally at %s' % (
                     PDBcode, PDBdirectory
                     ))
                 print('Do you want to overwrite the existing folder?\n'
@@ -331,7 +352,7 @@ class rabdam(object):
                         if self.overwrite is True:
                             owChoice = 'yes'
                         elif self.overwrite is False:
-                            owChoice = input(prompt).lower()
+                            owChoice = user_input(prompt).lower()
 
                         if owChoice == 'yes' or owChoice == 'y':
                             print('\nOverwriting existing folder')

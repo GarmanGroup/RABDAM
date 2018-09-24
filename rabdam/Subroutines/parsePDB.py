@@ -56,7 +56,7 @@ def download_pdb_and_mmcif(PDBcode, PDBdirectory, pathToPDB, pathToCif):
     cif_url = 'http://www.rcsb.org/pdb/files/%s.cif' % PDBcode
 
     os.makedirs(PDBdirectory)
-    print('Directory %s created' % PDBdirectory)
+    print('\nDirectory %s created' % PDBdirectory)
 
     origPDB = requests.get(pdb_url)
     print('Downloaded PDB file from %s' % pdb_url)
