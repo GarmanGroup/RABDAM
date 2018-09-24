@@ -229,6 +229,7 @@ def clean_pdb_file(pathToInput, PDBdirectory, pdb_file_path):
     import sys
     import shutil
     import math
+    import numpy as np
     import pandas as pd
 
     if __name__ == 'Subroutines.PDBCUR':
@@ -242,30 +243,48 @@ def clean_pdb_file(pathToInput, PDBdirectory, pdb_file_path):
     # that any disulphide bonds have been refined with 100% occupancy. Then
     # removes anisotropic Bfactors, hydrogen atoms and 0 occupancy atoms.
     exit = False
+    pause = False
 
-    disulfide_bonds = []
     filtered_pdb_lines = []
     header_lines = []
     footer_lines = []
     unit_cell_params = []
 
     orig_pdb = open('%s' % pathToInput, 'r')
+    orig_pdb_lines = orig_pdb.readlines()
     header = True
     footer = False
-    for line in orig_pdb:
+
+    disulfide_bonds = []
+    seqres = []
+    atom_ids = []
+    conformers = [[] for i in range(len(orig_pdb_lines))]
+    occupancies = [[] for i in range(len(orig_pdb_lines))]
+
+    for line in orig_pdb_lines:
         # Checks for single model
         if line.replace(' ', '').startswith('MODEL2'):
             exit = True
             print('\n\nERROR: More than one model present in input PDB file.\n'
                   'Please submit a PDB file containing a single model for '
-                  'BDamage analysis.\n')
+                  'BDamage analysis.\n'
+                  'Terminating RABDAM run.\n')
+
+        # Extracts list of macromolecular residue ids
+        elif line.startswith('SEQRES'):
+            chain_id = line[11:12]
+            res = ['{}_{}'.format(chain_id, resid) for resid in
+                   line[19:].split() if not resid in ['', ' ', '\n']]
+            seqres += res
+
         # Extracts ids of sulfur atoms involved in disulfide bonds
         elif line.startswith('SSBOND'):
             disulfide_bonds.append('%s %s%s%s' % (line[11:14], line[15:16],
                                                    line[17:21], line[21:22]))
             disulfide_bonds.append('%s %s%s%s' % (line[25:28], line[29:30],
                                                    line[31:35], line[35:36]))
-        # Extracsts unit cell parameters
+
+        # Extracts unit cell parameters
         elif line[0:6].strip() == 'CRYST1':
             a = float(line[6:15])
             b = float(line[15:24])
@@ -274,23 +293,45 @@ def clean_pdb_file(pathToInput, PDBdirectory, pdb_file_path):
             beta = math.radians(float(line[40:47]))
             gamma = math.radians(float(line[47:54]))
             unit_cell_params.extend((a, b, c, alpha, beta, gamma))
+
         # Extracts non-hydrogen, non-0 occupancy ATOM / HETATM records
-        elif (line[0:6].strip() in ['ATOM', 'HETATM']
+        elif (
+                line[0:6].strip() in ['ATOM', 'HETATM']
             and line[76:78].strip() != 'H'
             and float(line[54:60].strip()) > 0
             ):
-            filtered_pdb_lines.append(line)
             header = False
+            filtered_pdb_lines.append(line)
+
             # Checks that all disulfide bonds have been refined with 100% occupancy.
-            occupancy = float(line[54:60])
             for bond in disulfide_bonds:
-                if bond in line and occupancy != 1.0:
+                if bond in line and float(line[54:60]) != 1.0:
                     exit = True
                     print('\n\nERROR: One or more disulfide bonds has been '
                           'refined with an occupancy of less than 1.\nTo '
                           'enable damage detection, disulfide bonds should be '
                           'refined as single occupancy\nrather than in '
-                          'alternate oxidised and reduced conformations.')
+                          'alternate oxidised and reduced conformations.\n'
+                          'Terminating RABDAM run.\n')
+
+            # Checks that all macromolecular atoms in single conformers have an
+            # occupancy of 1, and that the occupancies of counterpart atoms in
+            # alternate conformers sum to 1.
+            if (
+                    '{}_{}'.format(line[21:22], line[17:20]) in seqres
+                and float(line[54:60]) != 1.0
+            ):
+                atom_id = '{}_{}_{}_{}'.format(
+                    line[21:22], line[22:27].replace(' ', ''),
+                    line[17:20].strip(), line[12:16].strip()
+                )
+                if not atom_id in atom_ids:
+                    atom_ids.append(atom_id)
+                index = atom_ids.index(atom_id)
+                if not line[16:17] in conformers[index]:
+                    conformers[index].append(line[16:17])
+                    occupancies[index].append(float(line[54:60]))
+
         elif line[0:6].strip() in ['CONECT', 'MASTER', 'END']:
             footer = True
 
@@ -298,74 +339,86 @@ def clean_pdb_file(pathToInput, PDBdirectory, pdb_file_path):
             header_lines.append(line)
         elif footer is True:
             footer_lines.append(line)
+
     orig_pdb.close()
 
-    # Retains only the most probable alternate conformers. In the case where
-    # more than one conformer is equally most probable, (only) that which is
-    # listed first in the input PDB file is retained.
-    alternate_conformers_chainresnum = []
-    alternate_conformers_label = []
-    alternate_conformers_occupancy = []
-    for line in filtered_pdb_lines:
-        if line[16:17].strip() != '':
-            alternate_conformers_chainresnum.append(line[21:27].replace(' ', ''))
-            alternate_conformers_label.append(line[16:17].strip())
-            alternate_conformers_occupancy.append(float(line[54:60].strip()))
-
-    df = pd.DataFrame({'chainresnum': alternate_conformers_chainresnum,
-                       'conformer': alternate_conformers_label,
-                       'occupancy': alternate_conformers_occupancy})
-    df = df.drop_duplicates()
-    chainresnum = df['chainresnum'].tolist()
-    conformer = df['conformer'].tolist()
-    occupancy = df['occupancy'].tolist()
-
-    alternate_conformers = {}
-    chainresnum_set = set(chainresnum)
-    for number in chainresnum_set:
-        indices = []
-        a = 'A1'
-        b = 'A'
-        c = 0
-        for index_1, value_1 in enumerate(chainresnum):
-            if value_1 == number:
-                indices.append(index_1)
-        for index_2 in indices:
-            if occupancy[index_2] > c:
-                a = chainresnum[index_2]
-                b = conformer[index_2]
-                c = occupancy[index_2]
-        alternate_conformers[a] = b
-
+    clean_au_file = ''
     clean_au_list = []
-    for line in filtered_pdb_lines:
-        if ((line[16:17].strip() == '')
-            or (line[16:17].strip() != ''
-                and alternate_conformers[line[21:27].replace(' ', '')] == line[16:17].strip())
-            ):
-            new_atom = atom()
-            new_atom.lineID = line[0:6].strip()
-            new_atom.atomNum = int(line[6:11].strip())
-            new_atom.atomType = line[12:16].strip()
-            new_atom.conformer = line[16:17].strip()
-            new_atom.resiType = line[17:20].strip()
-            new_atom.chainID = line[21:22].strip()
-            new_atom.resiNum = int(line[22:26].strip())
-            new_atom.insCode = line[26:27].strip()
-            new_atom.xyzCoords = [[float(line[30:38].strip())],
-                                  [float(line[38:46].strip())],
-                                  [float(line[46:54].strip())]]
-            new_atom.occupancy = float(line[54:60].strip())
-            new_atom.bFactor = float(line[60:66].strip())
-            new_atom.atomID = line[76:78].strip()
-            new_atom.charge = line[78:80].strip()
-            clean_au_list.append(new_atom)
+    if exit is False:
+        # Completes check for alternate conformer occupancies summing to 1
+        for index, atom_id in enumerate(atom_ids):
+            if np.sum(occupancies[index]) != 1.0:
+                pause = True
+                print('ERROR: Atom {} has been refined with sub-1 '
+                      'occupancy.'.format(atom_id))
+        if pause is True:
+            print('')
 
-    clean_au_file = '%s_asymmetric_unit.pdb' % pdb_file_path
-    makePDB(header_lines, clean_au_list, footer_lines, clean_au_file, 'Bfactor')
+        # Retains only the most probable alternate conformers. In the case
+        # where more than one conformer is equally most probable, (only) that
+        # which is listed first in the input PDB file is retained.
+        alternate_conformers_chainresnum = []
+        alternate_conformers_label = []
+        alternate_conformers_occupancy = []
+        for line in filtered_pdb_lines:
+            if line[16:17].strip() != '':
+                alternate_conformers_chainresnum.append(line[21:27].replace(' ', ''))
+                alternate_conformers_label.append(line[16:17].strip())
+                alternate_conformers_occupancy.append(float(line[54:60].strip()))
 
-    return (exit, clean_au_file, clean_au_list, header_lines, footer_lines,
-            unit_cell_params)
+        df = pd.DataFrame({'chainresnum': alternate_conformers_chainresnum,
+                           'conformer': alternate_conformers_label,
+                           'occupancy': alternate_conformers_occupancy})
+        df = df.drop_duplicates()
+        chainresnum = df['chainresnum'].tolist()
+        conformer = df['conformer'].tolist()
+        occupancy = df['occupancy'].tolist()
+
+        alternate_conformers = {}
+        chainresnum_set = set(chainresnum)
+        for number in chainresnum_set:
+            indices = []
+            a = 'A1'
+            b = 'A'
+            c = 0
+            for index_1, value_1 in enumerate(chainresnum):
+                if value_1 == number:
+                    indices.append(index_1)
+            for index_2 in indices:
+                if occupancy[index_2] > c:
+                    a = chainresnum[index_2]
+                    b = conformer[index_2]
+                    c = occupancy[index_2]
+            alternate_conformers[a] = b
+
+        for line in filtered_pdb_lines:
+            if ((line[16:17].strip() == '')
+                or (line[16:17].strip() != ''
+                    and alternate_conformers[line[21:27].replace(' ', '')] == line[16:17].strip())
+                ):
+                new_atom = atom()
+                new_atom.lineID = line[0:6].strip()
+                new_atom.atomNum = int(line[6:11].strip())
+                new_atom.atomType = line[12:16].strip()
+                new_atom.conformer = line[16:17].strip()
+                new_atom.resiType = line[17:20].strip()
+                new_atom.chainID = line[21:22].strip()
+                new_atom.resiNum = int(line[22:26].strip())
+                new_atom.insCode = line[26:27].strip()
+                new_atom.xyzCoords = [[float(line[30:38].strip())],
+                                      [float(line[38:46].strip())],
+                                      [float(line[46:54].strip())]]
+                new_atom.occupancy = float(line[54:60].strip())
+                new_atom.bFactor = float(line[60:66].strip())
+                new_atom.atomID = line[76:78].strip()
+                new_atom.charge = line[78:80].strip()
+                clean_au_list.append(new_atom)
+
+        clean_au_file = '%s_asymmetric_unit.pdb' % pdb_file_path
+        makePDB(header_lines, clean_au_list, footer_lines, clean_au_file, 'Bfactor')
+
+    return (exit, pause, clean_au_file, clean_au_list, header_lines,
+            footer_lines, unit_cell_params)
 
 
 def genPDBCURinputs(PDBCURinputFile):

@@ -189,22 +189,19 @@ class rabdam(object):
                       'bdb/about/).' % (PDBcode))
                 print('Please check the structure to ensure it meets the '
                       'requirements for RABDAM analysis.\n'
-                      'Do you want to continue with RABDAM run?\n'
+                      'Continue with RABDAM run?\n'
                       '--USER INPUT-- type your choice and press RETURN\n'
                       'yes = continue RABDAM run\n'
                       'no = terminate RABDAM run\n')
                 owChoice = None
                 while owChoice not in ['yes', 'no', 'y', 'n']:
-                    if self.overwrite is True:
-                        owChoice = 'yes'
-                    elif self.overwrite is False:
-                        owChoice = user_input(prompt).lower()
+                    owChoice = user_input(prompt).lower()
 
                     if owChoice == 'yes' or owChoice == 'y':
                         break
                     elif owChoice == 'no' or owChoice == 'n':
                         if self.batchRun is False:
-                            sys.exit('\nExiting RABDAM')
+                            sys.exit('\nExiting RABDAM\n')
                         elif self.batchRun is True:
                             return
                         break
@@ -260,7 +257,7 @@ class rabdam(object):
                     elif owChoice == 'no' or owChoice == 'n':
                         if self.batchRun is False:
                             sys.exit('\nKeeping original folder\n'
-                                     'Exiting RABDAM')
+                                     'Exiting RABDAM\n')
                         elif self.batchRun is True:
                             return
                         break
@@ -363,7 +360,7 @@ class rabdam(object):
                         elif owChoice == 'no' or owChoice == 'n':
                             if self.batchRun is False:
                                 sys.exit('\nKeeping original folder\n'
-                                         'Exiting RABDAM')
+                                         'Exiting RABDAM\n')
                             elif self.batchRun is True:
                                 return
                             break
@@ -422,7 +419,7 @@ class rabdam(object):
         print('\nProcessing input file to remove hydrogen atoms, anisotropic '
               '\nB factor records, and atoms with zero occupancy, as well as '
               '\nretaining only the most probable alternate conformations\n')
-        (exit, clean_au_file, clean_au_list, header_lines, footer_lines,
+        (exit, pause, clean_au_file, clean_au_list, header_lines, footer_lines,
          unit_cell_params) = clean_pdb_file(pathToInput, PDBdirectory,
                                             pdb_file_path)
         if exit is True:
@@ -431,6 +428,33 @@ class rabdam(object):
                 sys.exit()
             elif self.batchRun is True:
                 return
+
+        if pause is True:
+            print('\nTo enable damage detection, all macromolecule atoms '
+                  'should be refined as full occupancy (i.e. 1),\n'
+                  'except for alternate conformers (whose occupancy should sum '
+                  'to 1).\n'
+                  'One or more atoms in the structure does not meet these '
+                  'requirements (see ERRORs listed above).\n'
+                  'Continue with RABDAM run?\n'
+                  '--USER INPUT-- type your choice and press RETURN\n'
+                  'yes = continue RABDAM run\n'
+                  'no = terminate RABDAM run\n')
+            owChoice = None
+            while owChoice not in ['yes', 'no', 'y', 'n']:
+                owChoice = user_input(prompt).lower()
+
+                if owChoice == 'yes' or owChoice == 'y':
+                    break
+                elif owChoice == 'no' or owChoice == 'n':
+                    shutil.rmtree('%s' % PDBdirectory)
+                    if self.batchRun is False:
+                        sys.exit('\nExiting RABDAM\n')
+                    elif self.batchRun is True:
+                        return
+                    break
+                else:
+                    print('Unrecognised input - please answer "yes" or "no"')
 
         # Deletes input file fed into the program unless createOrigpdb
         # is set equal to True in the input file (default=False).
@@ -698,7 +722,7 @@ class rabdam(object):
         if not os.path.isdir(storage_directory):
             print('\n\nERROR: Folder %s not found\n' % storage_directory)
             if self.batchRun is False:
-                sys.exit('Exiting RABDAM analysis')
+                sys.exit('Exiting RABDAM\n')
             elif self.batchRun is True:
                 return
 
@@ -732,7 +756,7 @@ class rabdam(object):
                 elif owChoice == 'no' or owChoice == 'n':
                     if self.batchRun is False:
                         sys.exit('Keeping original analysis files\n'
-                                 'Exiting RABDAM')
+                                 'Exiting RABDAM\n')
                     elif self.batchRun is True:
                         return
                     break
