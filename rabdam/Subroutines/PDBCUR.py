@@ -270,11 +270,17 @@ def clean_pdb_file(pathToInput, PDBdirectory, pdb_file_path):
                   'BDamage analysis.\n'
                   'Terminating RABDAM run.\n')
 
-        # Extracts list of macromolecular residue ids
+        # Extracts list of macromolecular residue ids . NOTE that this method
+        # will cause ligand molecules that are also found in the macromolecule
+        # (e.g. a TRP ligand) to raise a warning for sub-1 occupancy. RABDAM
+        # will request user-input to decide whether to continue or terminate
+        # the run, except when batchContinue is set to False (in which case the
+        # run will be automatically be terminated)).
         elif line.startswith('SEQRES'):
+            line = line.strip('\n')
             chain_id = line[11:12]
             res = ['{}_{}'.format(chain_id, resid) for resid in
-                   line[19:].split() if not resid in ['', ' ', '\n']]
+                   line[19:].split()]
             seqres += res
 
         # Extracts ids of sulfur atoms involved in disulfide bonds
