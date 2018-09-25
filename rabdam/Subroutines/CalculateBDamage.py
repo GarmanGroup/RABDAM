@@ -442,7 +442,10 @@ class rabdam(object):
                   'no = terminate RABDAM run\n')
             owChoice = None
             while owChoice not in ['yes', 'no', 'y', 'n']:
-                owChoice = user_input(prompt).lower()
+                if self.batchRun is True:
+                    owChoice = 'no'
+                else:
+                    owChoice = user_input(prompt).lower()
 
                 if owChoice == 'yes' or owChoice == 'y':
                     break

@@ -1,4 +1,4 @@
-2BLP, 2BLZ,
+4H8X, 4H9I,
 dir=C:\Users\UserName\Documents\RABDAM_test_output,
 batchContinue=False,
 overwrite=False,

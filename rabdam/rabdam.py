@@ -387,9 +387,12 @@ def main():
     mins = math.floor(runtime/60)
     secs = math.fmod(runtime, 60)
     if mins == 0:
-        print('Program run time: %02.3f sec\n\n' % secs)
+        print('Program run time: %02.3f sec\n' % secs)
     elif mins >= 1:
-        print('Program run time: %01.0f min %02.3f sec\n\n' % (mins, secs))
+        print('Program run time: %01.0f min %02.3f sec\n' % (mins, secs))
+
+    print('Please cite:\nShelley, K. L., Dixon, T. P. E., Brooks-Bartlett, '
+          'J. C. & Garman, E. F. (2018). J. Appl. Cryst. 51, 552–559\n\n')
 
 # Runs 'main' function if rabdam.py is run as a script
 if __name__ == '__main__':

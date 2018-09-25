@@ -84,10 +84,10 @@ ___
 1. RABDAM can be downloaded / cloned from GitHub. You can then either run RABDAM as a script from the RABDAM directory, or alternatively you can install RABDAM as a package (which can be run from any directory) by navigating to the RABDAM directory and executing:<br>
 `python setup.py install`<br>
 
-2. RABDAM can be installed (as a package) straight from [PyPi](https://pypi.python.org/pypi/rabdam) with `pip`:<br>
+2. RABDAM can be installed (as a package) directly from [PyPi](https://pypi.python.org/pypi/rabdam) with `pip`:<br>
 `pip install rabdam`<br>
 
-3. RABDAM will also shortly be available as part of the [CCP4 software suite](http://www.ccp4.ac.uk/).
+3. RABDAM is incorporated as part of the [CCP4 software suite](http://www.ccp4.ac.uk/). It is currently available as a command line package, and will shortly be incorporated into the GUI.
 
 ___
 
@@ -102,17 +102,17 @@ To check whether your computer is missing any of the packages / programs require
 
 \*\***NOTE:** Owing to its PDBCUR dependence, RABDAM can only be run in a terminal / command prompt in which CCP4 programs can also be run (*e.g.* the CCP4 console).\*\*
 
-RABDAM will take approximately 1 min to run a 200 kDa structure on a single processor (as estimated from tests performed under Windows 7 on a 3.70 GHz Intel i3-4170 processor). It is compatible with Windows, Mac and Linux operating systems.
+RABDAM will take approximately 1 min to run a 200 kDa structure on a single processor (as estimated from tests performed under a Macintosh Operating System on a 1.8 GHz Intel Core i5 processor). It is compatible with Windows, Macintosh and Linux operating systems.
 
 ___
 
 #### Data requirements
-RABDAM can be run on any standard format PDB or mmCif file of a single model of your MX structure of interest (specifically, it requires the CRYST1 line from the header information, as well as the ATOM / HETATM records). Note however that because *B*<sub>Damage</sub> is a per-atom metric, it should only be calculated for structures for which *B*-factor values have been refined per-atom. Furthermore, owing to the correlation between *B*-factor and occupancy values, the only non-ligand atoms subject to occupancy refinement should be those in alternate conformers (whose occupancy should sum to 1).
+RABDAM can be run on any standard format PDB or mmCif file of a single model of your MX structure of interest (specifically, it requires the CRYST1 and, if present, the SSBOND lines from the header information, as well as the ATOM / HETATM records). Note however that because *B*<sub>Damage</sub> is a per-atom metric, it should only be calculated for structures for which *B*-factor values have been refined per-atom. Furthermore, owing to the correlation between *B*-factor and occupancy values, the only non-ligand atoms subject to occupancy refinement should be those in alternate conformers (whose occupancy should sum to 1).
 
 ____
 
 #### Running RABDAM
-\*\*RABDAM can be run either as a script or as a package (see the [Installation](#installation) section for further details). The example commands provided below are for running the program as a script. If you are running RABDAM as a package, simply replace `python rabdam.py` with `rabdam`.\*\*
+\*\*RABDAM can be run either as a script or as a package (see the [Installation](#installation) section for further details). The example commands provided below are for running the program as a script. If you are running RABDAM as a package (either the PyPi or CCP4 package), simply replace `python rabdam.py` with `rabdam`.\*\*
 
 RABDAM is a command line program. There are four main command line flags that control the program run:
 
@@ -246,10 +246,10 @@ In order for RABDAM to successfully parse in an input file, it must comply with 
 -	Keywords and their associated values must be separated by “=”. Successive keyword / value pairs must be separated by “,”.
 -	Multiple values for the same keyword must be separated by “;”. Alternatively, it is possible to specify a range of consecutive (numerical) values by providing the minimum and maximum values of the range separated by “-”. So, you could direct RABDAM to highlight atoms 2, 3 and 4 on the output *B*<sub>Damage</sub> kernel density estimate via either *highlightAtoms=2;3;4* or *highlightAtoms=2-4*.
 
-Below is an example input file instructing RABDAM to analyse the RNase structures 2BLP and 2BLZ, writing the output files to the directory C:\Users\UserName\Documents\RABDAM_test_output, and highlighting atoms 14, 15, 16 and 30 on the output *B*<sub>Damage</sub> kernel density estimate. All other parameters are set to their default values. This example input file ("*example_input.txt*") is provided along with the RABDAM Python scripts that can be downloaded from this web page.
+Below is an example input file instructing RABDAM to analyse the lysozyme structures 4H8X and 4H9I, writing the output files to the directory C:\Users\UserName\Documents\RABDAM_test_output, and highlighting atoms 14, 15, 16 and 30 on the output *B*<sub>Damage</sub> kernel density estimate. All other parameters are set to their default values. This example input file ("*example_input.txt*") is provided along with the RABDAM Python scripts that can be downloaded from this web page.
 
 ```
-2BLP, 2BLZ,
+4H8X, 4H9I,
 dir=C:\Users\UserName\Documents\RABDAM_test_output,
 batchContinue=False,
 overwrite=False,
@@ -284,11 +284,17 @@ This software was developed in the lab of Professor Elspeth Garman at the Univer
 ___
 
 ## Citing RABDAM
-The initial development and testing of the *B*<sub>Damage</sub> metric is described in:
+The RABDAM software is described in:
 
-- Gerstel M, Deane CM, Garman EF (2015) Identifying and quantifying radiation damage at the atomic level. *J Synchrotron Radiat* **22**: 201-212. [http://dx.doi.org/doi:10.1107/S1600577515002131](http://dx.doi.org/doi:10.1107/S1600577515002131)
+- Shelley KL, Dixon TPE, Brooks-Bartlett JC, Garman EF (2018) RABDAM: quantifying specific radiation damage in individual protein crystal structures. *J Appl Cryst* **51**: 552-559
+[https://doi.org/10.1107/S1600576718002509](https://doi.org/10.1107/S1600576718002509)
 
 Please cite this paper if you use RABDAM to analyse specific radiation damage in your MX structure.
+
+<br></br>
+The *B*<sub>Damage</sub> metric is defined and validated in:
+
+- Gerstel M, Deane CM, Garman EF (2015) Identifying and quantifying radiation damage at the atomic level. *J Synchrotron Radiat* **22**: 201-212. [https://doi.org/10.1107/S1600577515002131](https://doi.org/10.1107/S1600577515002131)
 
 <br></br>
 RABDAM is dependent upon the CCP4 suite program PDBCUR:
@@ -298,6 +304,7 @@ RABDAM is dependent upon the CCP4 suite program PDBCUR:
 
 <br></br>
 RABDAM extracts a list of PDB accession codes with full isotropic (\*but not necessarily atomic) *B*-factors from the *B*-factor Databank:
+
 - Touw WG, Vriend G (2014) BDB: Databank of PDB files with consistent *B*-factors. *Protein Eng Des Sel* **27**: 457-462
 [https://doi.org/10.1093/protein/gzu044](https://doi.org/10.1093/protein/gzu044)
 
