@@ -182,7 +182,7 @@ class rabdam(object):
             # containing full isotropic B-factor values - if the code is not in
             # this list, RABDAM throws an error
             compat_struct_list = rabdam_compatible_structures()
-            if PDBcode.lower() not in compat_struct_list:
+            if PDBcode not in compat_struct_list:
                 print('%s not in list of PDB accession codes (last updated 25 '
                       'September 2018) determined to be refined with full\n'
                       'isotropic B-factors by the BDB (http://www.cmbi.ru.nl/'
