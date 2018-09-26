@@ -270,7 +270,7 @@ def clean_pdb_file(pathToInput, PDBdirectory, pdb_file_path):
                   'BDamage analysis.\n'
                   'Terminating RABDAM run.\n')
 
-        # Extracts list of macromolecular residue ids . NOTE that this method
+        # Extracts list of macromolecular residue ids. NOTE that this method
         # will cause ligand molecules that are also found in the macromolecule
         # (e.g. a TRP ligand) to raise a warning for sub-1 occupancy. RABDAM
         # will request user-input to decide whether to continue or terminate
