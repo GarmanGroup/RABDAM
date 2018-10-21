@@ -183,8 +183,8 @@ class rabdam(object):
             # this list, RABDAM throws an error
             compat_struct_list = rabdam_compatible_structures()
             if PDBcode not in compat_struct_list:
-                print('%s not in list of PDB accession codes (last updated 25 '
-                      'September 2018) determined to be refined with full\n'
+                print('%s not in list of PDB accession codes (last updated 19 '
+                      'October 2018) determined to be refined with full\n'
                       'isotropic B-factors by the BDB (http://www.cmbi.ru.nl/'
                       'bdb/about/).' % (PDBcode))
                 print('Please check the structure to ensure it meets the '
