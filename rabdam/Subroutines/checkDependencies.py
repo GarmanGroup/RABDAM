@@ -20,8 +20,10 @@
 
 
 def check_RABDAM_dependencies():
-    # Checks whether the system has the required packages / programs installed
-    # in order to be able to run RABDAM
+    """
+    Checks whether the system has the required packages / programs installed
+    in order to be able to run RABDAM
+    """
 
     import imp
     import os

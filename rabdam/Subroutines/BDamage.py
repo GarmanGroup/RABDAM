@@ -22,8 +22,10 @@ import numpy as np
 
 
 def get_xyz_from_objects(bdamAtomList):
-    # Returns numpy arrays of the x, y and z coordinates of the atoms to be
-    # included in the BDamage calculation.
+    """
+    Returns numpy arrays of the x, y and z coordinates of the atoms to be
+    included in the BDamage calculation.
+    """
 
     au_atom_coords = np.zeros([len(bdamAtomList), 3])
     for i, atom in enumerate(bdamAtomList):
@@ -35,8 +37,10 @@ def get_xyz_from_objects(bdamAtomList):
 
 
 def calc_packing_density(xyz_au_atom, xyz_surr_atom, pack_dens_thresh):
-    # Calculates the packing density of each atom in the subset of atoms to
-    # be considered for BDamage analysis.
+    """
+    Calculates the packing density of each atom in the subset of atoms to
+    be considered for BDamage analysis.
+    """
 
     num_au_atoms = xyz_au_atom.shape[0]
     packing_density_array = np.zeros([num_au_atoms, 1])
@@ -50,17 +54,21 @@ def calc_packing_density(xyz_au_atom, xyz_surr_atom, pack_dens_thresh):
 
 
 def write_pckg_dens_to_atoms(bdamAtomList, packing_density_array):
-    # Writes packing density values to their corresponding atom objects.
+    """
+    Writes packing density values to their corresponding atom objects.
+    """
 
     for i, atom in enumerate(bdamAtomList):
         atom.pd = packing_density_array[i][0]
 
 
 def calcBDam(bdamAtomList, window):
-    # All atoms to be considered for BDamage analysis are ordered via their
-    # packing density values; the BDamage value of each atom is then
-    # calculated as the ratio of its B-factor as compared to the average of the
-    # B-factor values of similarly (identified via sliding window) packed atoms.
+    """
+    All atoms to be considered for BDamage analysis are ordered via their
+    packing density values; the BDamage value of each atom is then
+    calculated as the ratio of its B-factor as compared to the average of the
+    B-factor values of similarly (identified via sliding window) packed atoms.
+    """
 
     import pandas as pd
     import math
@@ -71,8 +79,8 @@ def calcBDam(bdamAtomList, window):
     PD = [None]*len(bdamAtomList)
 
     # Lists are filled with property values associated with each of the atoms
-    # considered for BDamage analysis, then concatenated into the columns
-    # of a DataFrame.
+    # considered for BDamage analysis, then concatenated into the columns of a
+    # DataFrame.
     for index, atm in enumerate(bdamAtomList):
         ATMNUM[index] = atm.atomNum
         BFAC[index] = atm.bFactor
@@ -92,7 +100,7 @@ def calcBDam(bdamAtomList, window):
     df = df.sort_values(by=['PD', 'ATMNUM'], ascending=[True, True])
     df = df.reset_index(drop=True)
 
-    ser = df[df.columns[1]]
+    ser = df['BFAC']
     ser = ser.rename('AVRG_BF')
     ser = ser.rolling(window=window, center=True).mean()
     ser = ser.fillna(0)
@@ -108,11 +116,11 @@ def calcBDam(bdamAtomList, window):
     df.loc[(df.AVRG_BF == 0) & (df.INDEX >= (len(bdamAtomList) - math.floor(window/2))),
            'AVRG_BF'] += df.BFAC.values[(len(bdamAtomList)-window):len(bdamAtomList)].mean(axis=0)
 
-    df = df.sort_values(by='ATMNUM', ascending=True)
-    df = df.reset_index(drop=True)
-
     # The BDamage value of each atom in the DataFrame is calculated as the
     # ratio of its B factor value to its associated average B factor value.
-    for index, atm in enumerate(bdamAtomList):
-        atm.avrg_bf = df.AVRG_BF.values[index]
+    atmnum_list = df.ATMNUM.tolist()
+    for atm in bdamAtomList:
+        atmnum = atm.atomNum
+        index = atmnum_list.index(atm.atomNum)
+        atm.avrg_bf = df.AVRG_BF[index]
         atm.bd = atm.bFactor / atm.avrg_bf

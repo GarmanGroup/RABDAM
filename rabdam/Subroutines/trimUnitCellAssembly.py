@@ -20,15 +20,15 @@
 
 
 def getAUparams(atomList):
-    # Determines the min. and max. values of the x, y and z coordinates in the
-    # asymmetric unit. (These are required later when calculating the size
-    # of the trimmed atoms box.)
+    """
+    Determines the min. and max. values of the x, y and z coordinates in the
+    asymmetric unit. (These are required later when calculating the size
+    of the trimmed atoms box.)
+    """
 
     # Initialises x, y and z minima and maxima using values from first atom in
     # atomList.
-    xMin = atomList[0].xyzCoords[0][0]  # xyzCoords is a list of lists, hence
-    # the first slice extracts the first list, the second slice extracts the
-    # first number in this (single item) list
+    xMin = atomList[0].xyzCoords[0][0]
     xMax = atomList[0].xyzCoords[0][0]
     yMin = atomList[0].xyzCoords[1][0]
     yMax = atomList[0].xyzCoords[1][0]
@@ -61,10 +61,11 @@ def getAUparams(atomList):
 
 
 def convertParams(params, pdt):
-    # Adds/subtracts the packing density threshold to/from the
-    # maximum/minimum x, y and z coordinate values of atoms in the
-    # asymmetric unit. The values returned define the boundaries of the
-    # trimmed atoms box.
+    """
+    Adds/subtracts the packing density threshold to/from the maximum/minimum x,
+    y and z coordinate values of atoms in the asymmetric unit. The values
+    returned define the boundaries of the trimmed atoms box.
+    """
 
     xMin = params[0] - pdt
     xMax = params[1] + pdt
@@ -78,40 +79,43 @@ def convertParams(params, pdt):
 
 
 def isInXYZparams(atomXYZ, params):
-    # Determines whether the xyz coordinates of atoms in the unit cell 3x3
-    # assembly lie within the boundaries of the trimmed atoms box.
+    """
+    Determines whether the xyz coordinates of atoms in the unit cell 3x3
+    assembly lie within the boundaries of the trimmed atoms box.
+    """
 
-    x = atomXYZ[0][0]
-    y = atomXYZ[0][1]
-    z = atomXYZ[0][2]
-    if params[0] < x < params[1]:
-        if params[2] < y < params[3]:
-            if params[4] < z < params[5]:
-                return True
+    x = atomXYZ[0]
+    y = atomXYZ[1]
+    z = atomXYZ[2]
+    if (    (params[0] < x < params[1])
+        and (params[2] < y < params[3])
+        and (params[4] < z < params[5])
+    ):
+        return True
     else:
         return False
 
 
-def trimAtoms(atomList, params, atom_id_list, createAUCpdb, createTApdb):
-    # Removes all atoms with coordinates which lie outside of the trimmed
-    # atoms box from the list of atoms in the 3x3 unit cell assembly.
+def trimAtoms(atomList, params, atom_id_list, createAUCpdb, createTApdb, pdt):
+    """
+    Removes all atoms with coordinates which lie outside of the trimmed atoms
+    box from the list of atoms in the 3x3 unit cell assembly.
+    """
 
     import numpy as np
 
-    print('Discarding atoms that lie further than 14 Angstroms from the\n'
-          'asymmetric unit')
+    print('Discarding atoms that lie further than %s Angstroms from the\n'
+          'asymmetric unit' % pdt)
 
-    trimmedAtomList = np.array([[0, 0, 0]])
+    trimmedAtomList = []
     trimmedAtomIDList = []
     for num in range(atomList.shape[0]):
-        atomXYZ = np.array([[atomList[num][0],
-                             atomList[num][1],
-                             atomList[num][2]]])
+        atomXYZ = [atomList[num][0], atomList[num][1], atomList[num][2]]
         if isInXYZparams(atomXYZ, params):
-            trimmedAtomList = np.append(trimmedAtomList, atomXYZ, axis=0)
+            trimmedAtomList.append(atomXYZ)
             if createAUCpdb is True or createTApdb is True:
                 trimmedAtomIDList.append(atom_id_list[num])
-    trimmedAtomList = np.delete(trimmedAtomList, 0, axis=0)
+    trimmedAtomList = np.array(trimmedAtomList)
 
     print('--> %s atoms have been retained' % trimmedAtomList.shape[0])
     return trimmedAtomList, trimmedAtomIDList

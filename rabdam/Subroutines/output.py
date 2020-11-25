@@ -20,19 +20,21 @@
 
 
 class generate_output_files(object):
-    def __init__(self, pdb_file_path, df):
-        self.pdb_file_path = pdb_file_path
-        self.pdb_code = pdb_file_path.split('/')[-1]
+    def __init__(self, out_file_start, pdb_code, df):
+        self.out_file_start = out_file_start
+        self.pdb_code = pdb_code
         self.df = df
 
-    def make_csv(self, bdamatomList, window):
-        # Returns a csv file containing a complete set of atom information
-        # (including both that provided in the input PDB / mmCif file and also
-        # the BDamage values calculated by RABDAM) for all atoms considered for
-        # BDamage analysis. (This provides the user with a copy of the raw data
-        # which they can manipulate as they wish.)
+    def make_csv(self, window):
+        """
+        Returns a csv file containing a complete set of atom information
+        (including both that provided in the input PDB / mmCif file and also
+        the BDamage values calculated by RABDAM) for all atoms considered for
+        BDamage analysis. (This provides the user with a copy of the raw data
+        which they can manipulate as they wish.)
+        """
 
-        newFile = open('%s_BDamage.csv' % self.pdb_file_path, 'w')
+        newFile = open('%s_BDamage.csv' % self.out_file_start, 'w')
 
         # Defines column header abbreviations
         newFile.write('REC = RECORD NAME\n'
@@ -56,158 +58,211 @@ class generate_output_files(object):
                       '= %s)\n' % window)
         newFile.write('BDAM = B DAMAGE VALUE\n'
                       '\n')
-        # Writes column headers
-        newFile.write('REC' + ','
-                      'ATMNUM' + ','
-                      'ATMNAME' + ','
-                      'CONFORMER' + ','
-                      'RESNAME' + ','
-                      'CHAIN' + ','
-                      'RESNUM' + ','
-                      'INSCODE' + ','
-                      'XPOS' + ','
-                      'YPOS' + ','
-                      'ZPOS' + ','
-                      'OCC' + ','
-                      'BFAC' + ','
-                      'ELEMENT' + ','
-                      'CHARGE' + ','
-                      'PD' + ','
-                      'AVRG_BF' + ','
-                      'BDAM' + '\n')
 
         # Writes properties of each atom considered for BDamage analysis.
-        for atm in bdamatomList:
-            newFile.write(atm.lineID + ',')
-            newFile.write(str(atm.atomNum) + ',')
-            newFile.write(atm.atomType + ',')
-            newFile.write(atm.conformer + ',')
-            newFile.write(atm.resiType + ',')
-            newFile.write(atm.chainID + ',')
-            newFile.write(str(atm.resiNum) + ',')
-            newFile.write(atm.insCode + ',')
-            newFile.write(str(atm.xyzCoords[0][0]) + ',')
-            newFile.write(str(atm.xyzCoords[1][0]) + ',')
-            newFile.write(str(atm.xyzCoords[2][0]) + ',')
-            newFile.write(str(atm.occupancy) + ',')
-            newFile.write(str(atm.bFactor) + ',')
-            newFile.write(atm.atomID + ',')
-            newFile.write(str(atm.charge) + ',')
-            newFile.write(str(atm.pd) + ',')
-            newFile.write(str(atm.avrg_bf) + ',')
-            newFile.write(str(atm.bd) + '\n')
-
+        newFile.write(self.df.to_csv(index=False))
         newFile.close()
 
-    def generate_cif_lines(self, cif_column_widths):
-        cif_lines = []
+    def write_output_cif(self, atom_list):
+        """
+        Writes an mmCIF file for the input structure with an additional
+        column of BDamage values for those atoms included in the calculation.
+        """
 
-        for row in range(self.df.shape[0]):
-            lineID = self.df.REC[row].ljust(cif_column_widths['REC']) + ' '
-            atomNum = str(self.df.ATMNUM[row]).ljust(cif_column_widths['ATMNUM']) + ' '
-            atomType = self.df.ATMNAME[row].ljust(cif_column_widths['ATMNAME']) + ' '
-            conformer = self.df.CONFORMER[row].ljust(cif_column_widths['CONFORMER']) + ' '
-            resiType = self.df.RESNAME[row].ljust(cif_column_widths['RESNAME']) + ' '
-            chainID = self.df.CHAIN[row].ljust(cif_column_widths['CHAIN']) + ' '
-            resiNum = str(self.df.RESNUM[row]).ljust(cif_column_widths['RESNUM']) + ' '
-            insCode = self.df.INSCODE[row].ljust(cif_column_widths['INSCODE']) + ' '
-            x_coord = str(self.df.XPOS[row]).ljust(cif_column_widths['XPOS']) + ' '
-            y_coord = str(self.df.YPOS[row]).ljust(cif_column_widths['YPOS']) + ' '
-            z_coord = str(self.df.ZPOS[row]).ljust(cif_column_widths['ZPOS']) + ' '
-            occupancy = str(self.df.OCC[row]).ljust(cif_column_widths['OCC']) + ' '
-            bFactor = str(self.df.BFAC[row]).ljust(cif_column_widths['BFAC']) + ' '
-            bDamage = '{0:.2f}'.format(self.df.BDAM[row]).ljust(cif_column_widths['BDAM']) + ' '
-            element = self.df.ELEMENT[row].ljust(cif_column_widths['ELEMENT']) + ' '
-            charge = self.df.CHARGE[row].ljust(cif_column_widths['CHARGE'])
+        import copy
+        import pandas as pd
 
-            cif_line = (lineID + atomNum + atomType + conformer + resiType
-                        + chainID + resiNum + insCode + x_coord + y_coord
-                        + z_coord + occupancy + bFactor + bDamage + element
-                        + charge)
-            cif_lines.append(cif_line)
+        cif_data = {'lineID': [None]*len(atom_list),
+                    'atomNum': [None]*len(atom_list),
+                    'atomType': [None]*len(atom_list),
+                    'conformer': [None]*len(atom_list),
+                    'resiType': [None]*len(atom_list),
+                    'chainID': [None]*len(atom_list),
+                    'resiNum': [None]*len(atom_list),
+                    'insCode': [None]*len(atom_list),
+                    'x': [None]*len(atom_list),
+                    'y': [None]*len(atom_list),
+                    'z': [None]*len(atom_list),
+                    'occupancy': [None]*len(atom_list),
+                    'bFactor': [None]*len(atom_list),
+                    'element': [None]*len(atom_list),
+                    'charge': [None]*len(atom_list),
+                    'origResiNum': [None]*len(atom_list),
+                    'origResiType': [None]*len(atom_list),
+                    'origChainID': [None]*len(atom_list),
+                    'origAtomType': [None]*len(atom_list),
+                    'pd': [None]*len(atom_list),
+                    'avrg_bf': [None]*len(atom_list),
+                    'bd': [None]*len(atom_list)}
+        cif_column_widths = {'lineID': 0,
+                             'atomNum': 0,
+                             'atomType': 0,
+                             'conformer': 0,
+                             'resiType': 0,
+                             'chainID': 0,
+                             'resiNum': 0,
+                             'insCode': 0,
+                             'x': 0,
+                             'y': 0,
+                             'z': 0,
+                             'occupancy': 0,
+                             'bFactor': 0,
+                             'element': 0,
+                             'charge': 0,
+                             'origResiNum': 0,
+                             'origResiType': 0,
+                             'origChainID': 0,
+                             'origAtomType': 0,
+                             'pd': 0,
+                             'avrg_bf': 0,
+                             'bd': 0}
 
-        return cif_lines
+        for index, atom in enumerate(atom_list):
+            cif_data['lineID'][index] = atom.lineID
+            if len(cif_data['lineID'][index]) > cif_column_widths['lineID']:
+                cif_column_widths['lineID'] = len(cif_data['lineID'][index])
+            cif_data['atomNum'][index] = str(atom.atomNum)
+            if len(cif_data['atomNum'][index]) > cif_column_widths['atomNum']:
+                cif_column_widths['atomNum'] = len(cif_data['atomNum'][index])
+            cif_data['atomType'][index] = atom.atomType
+            if len(cif_data['atomType'][index]) > cif_column_widths['atomType']:
+                cif_column_widths['atomType'] = len(cif_data['atomType'][index])
+            cif_data['conformer'][index] = atom.conformer
+            if len(cif_data['conformer'][index]) > cif_column_widths['conformer']:
+                cif_column_widths['conformer'] = len(cif_data['conformer'][index])
+            cif_data['resiType'][index] = atom.resiType
+            if len(cif_data['resiType'][index]) > cif_column_widths['resiType']:
+                cif_column_widths['resiType'] = len(cif_data['resiType'][index])
+            cif_data['chainID'][index] = atom.chainID
+            if len(cif_data['chainID'][index]) > cif_column_widths['chainID']:
+                cif_column_widths['chainID'] = len(cif_data['chainID'][index])
+            cif_data['resiNum'][index] = str(atom.resiNum)
+            if len(cif_data['resiNum'][index]) > cif_column_widths['resiNum']:
+                cif_column_widths['resiNum'] = len(cif_data['resiNum'][index])
+            cif_data['insCode'][index] = atom.insCode
+            if len(cif_data['insCode'][index]) > cif_column_widths['insCode']:
+                cif_column_widths['insCode'] = len(cif_data['insCode'][index])
+            cif_data['x'][index] = str(atom.xyzCoords[0][0])
+            if len(cif_data['x'][index]) > cif_column_widths['x']:
+                cif_column_widths['x'] = len(cif_data['x'][index])
+            cif_data['y'][index] = str(atom.xyzCoords[1][0])
+            if len(cif_data['y'][index]) > cif_column_widths['y']:
+                cif_column_widths['y'] = len(cif_data['y'][index])
+            cif_data['z'][index] = str(atom.xyzCoords[2][0])
+            if len(cif_data['z'][index]) > cif_column_widths['z']:
+                cif_column_widths['z'] = len(cif_data['z'][index])
+            cif_data['occupancy'][index] = str(atom.occupancy)
+            if len(cif_data['occupancy'][index]) > cif_column_widths['occupancy']:
+                cif_column_widths['occupancy'] = len(cif_data['occupancy'][index])
+            cif_data['bFactor'][index] = str(atom.bFactor)
+            if len(cif_data['bFactor'][index]) > cif_column_widths['bFactor']:
+                cif_column_widths['bFactor'] = len(cif_data['bFactor'][index])
+            cif_data['element'][index] = atom.element
+            if len(cif_data['element'][index]) > cif_column_widths['element']:
+                cif_column_widths['element'] = len(cif_data['element'][index])
+            cif_data['charge'][index] = atom.charge
+            if len(cif_data['charge'][index]) > cif_column_widths['charge']:
+                cif_column_widths['charge'] = len(cif_data['charge'][index])
+            cif_data['origResiNum'][index] = atom.origResiNum
+            if len(cif_data['origResiNum'][index]) > cif_column_widths['origResiNum']:
+                cif_column_widths['origResiNum'] = len(cif_data['origResiNum'][index])
+            cif_data['origResiType'][index] = atom.origResiType
+            if len(cif_data['origResiType'][index]) > cif_column_widths['origResiType']:
+                cif_column_widths['origResiType'] = len(cif_data['origResiType'][index])
+            cif_data['origChainID'][index] = atom.origChainID
+            if len(cif_data['origChainID'][index]) > cif_column_widths['origChainID']:
+                cif_column_widths['origChainID'] = len(cif_data['origChainID'][index])
+            cif_data['origAtomType'][index] = atom.origAtomType
+            if len(cif_data['origAtomType'][index]) > cif_column_widths['origAtomType']:
+                cif_column_widths['origAtomType'] = len(cif_data['origAtomType'][index])
+            cif_data['pd'][index] = str(atom.pd)
+            if len(cif_data['pd'][index]) > cif_column_widths['pd']:
+                cif_column_widths['pd'] = len(cif_data['pd'][index])
+            cif_data['avrg_bf'][index] = str(atom.avrg_bf)
+            if len(cif_data['avrg_bf'][index]) > cif_column_widths['avrg_bf']:
+                cif_column_widths['avrg_bf'] = len(cif_data['avrg_bf'][index])
+            cif_data['bd'][index] = str(atom.bd)
+            if len(cif_data['bd'][index]) > cif_column_widths['bd']:
+                cif_column_widths['bd'] = len(cif_data['bd'][index])
 
-    def generate_aniso_cif_lines(self, aniso_rec):
-        skip = False
+        for key, value_list in copy.deepcopy(cif_data).items():
+            if set(value_list) == {''}:
+                cif_data[key] = ['?']*len(atom_list)
+            else:
+                repl_value_list = []
+                for val in value_list:
+                    if val == '':
+                        repl_value_list.append('.'.ljust(cif_column_widths[key]))
+                    else:
+                        repl_value_list.append(val.ljust(cif_column_widths[key]))
+                cif_data[key] = repl_value_list
+        cif_df = pd.DataFrame(cif_data)
 
-        if aniso_rec:
-            aniso_lines = ['#', 'loop_']
+        # Writes output mmCIF file
+        new_cif = open('%s_BDamage.cif' % self.out_file_start, 'w')
 
-            try:
-                columns = [line.split('.')[1] for line in aniso_rec if
-                           line.startswith('_atom_site_anisotrop')]
-                atomNum_index = columns.index('id')
-            except ValueError:
-                skip = True
-                print('\n\nERROR: mmCIF file _atom_site_anisotrop labels do '
-                      'not follow the expected format\n. Skipping cif file '
-                      'output\n.')
-
-            for label in columns:
-                label = '_atom_site_anisotrop.' + label
-                aniso_lines.append(label)
-
-            for line in aniso_rec:
-                if not line[0:5] in ['loop_', '_atom']:
-                    values = line.split()
-                    if int(values[atomNum_index]) in self.df.ATMNUM.tolist():
-                        aniso_lines.append(line)
-        else:
-            aniso_lines = []
-
-        return aniso_lines, skip
-
-    def write_output_cif(self, cif_header_lines, cif_lines, aniso_lines,
-                         cif_footer_lines):
-        # Writes an mmCif file for the input structure with an additional
-        # column of BDamage values for those atoms included in the calculation.
-        new_cif = open('%s_BDamage.cif' % self.pdb_file_path, 'w')
-
-        for line in cif_header_lines:
-            if line.replace(' ', '') != '':
-                new_cif.write('%s\n' % line)
-
-        new_cif.write('loop_\n')
-
-        # Writes column labels to output cif file
-        new_cif.write('_atom_site.group_PDB\n' +
-                      '_atom_site.id\n' +
-                      '_atom_site.auth_atom_id\n' +
-                      '_atom_site.label_alt_id\n' +
-                      '_atom_site.auth_comp_id\n' +
-                      '_atom_site.auth_asym_id\n' +
-                      '_atom_site.auth_seq_id\n' +
-                      '_atom_site.pdbx_PDB_ins_code\n' +
-                      '_atom_site.Cartn_x\n' +
-                      '_atom_site.Cartn_y\n' +
-                      '_atom_site.Cartn_z\n' +
-                      '_atom_site.occupancy\n' +
-                      '_atom_site.B_iso_or_equiv\n' +
-                      '_atom_site.B_Damage\n' +
-                      '_atom_site.type_symbol\n' +
-                      '_atom_site.pdbx_formal_charge\n')
-
-        # Writes ATOM / HETATM records to output cif file
-        for line in cif_lines:
-            new_cif.write('%s\n' % line)
-
-        for line in aniso_lines:
-            new_cif.write('%s\n' % line)
-
-        for line in cif_footer_lines:
-            new_cif.write('%s\n' % line)
+        new_cif.write('#\nloop_\n')
+        new_cif.write('_atom_site.group_PDB\n'
+                      '_atom_site.id\n'
+                      '_atom_site.type_symbol\n'
+                      '_atom_site.label_atom_id\n'
+                      '_atom_site.label_alt_id\n'
+                      '_atom_site.label_comp_id\n'
+                      '_atom_site.label_asym_id\n'
+                      '_atom_site.label_seq_id\n'
+                      '_atom_site.pdbx_PDB_ins_code\n'
+                      '_atom_site.Cartn_x\n'
+                      '_atom_site.Cartn_y\n'
+                      '_atom_site.Cartn_z\n'
+                      '_atom_site.occupancy\n'
+                      '_atom_site.B_iso_or_equiv\n'
+                      '_atom_site.B_Damage\n'
+                      '_atom_site.packing_density\n'
+                      '_atom_site.average_B_factor\n'
+                      '_atom_site.pdbx_formal_charge\n'
+                      '_atom_site.auth_seq_id\n'
+                      '_atom_site.auth_comp_id\n'
+                      '_atom_site.auth_asym_id\n'
+                      '_atom_site.auth_atom_id\n')
+        for index in range(len(atom_list)):
+            cif_line = [cif_data['lineID'][index],
+                        cif_data['atomNum'][index],
+                        cif_data['element'][index],
+                        cif_data['atomType'][index],
+                        cif_data['conformer'][index],
+                        cif_data['resiType'][index],
+                        cif_data['chainID'][index],
+                        cif_data['resiNum'][index],
+                        cif_data['insCode'][index],
+                        cif_data['x'][index],
+                        cif_data['y'][index],
+                        cif_data['z'][index],
+                        cif_data['occupancy'][index],
+                        cif_data['bFactor'][index],
+                        cif_data['bd'][index],
+                        cif_data['pd'][index],
+                        cif_data['avrg_bf'][index],
+                        cif_data['charge'][index],
+                        cif_data['origResiNum'][index],
+                        cif_data['origResiType'][index],
+                        cif_data['origChainID'][index],
+                        cif_data['origAtomType'][index]]
+            cif_line = ' '.join(cif_line)
+            new_cif.write('{}\n'.format(cif_line))
+        new_cif.write('#\n')
 
         new_cif.close()
 
     def make_histogram(self, highlightAtoms):
-        # Returns a kernel density estimate of the BDamage values of every atom
-        # considered for BDamage analysis. Any atom whose number is listed
-        # in the highlightAtoms option in the input file will be marked on the
-        # plot. (Note that it is recommended no more than 6 atoms are listed
-        # in the highlightAtoms option in the input file (beyond 6 atoms, the
-        # colour scheme will repeat itself, and in addition the key may not fit
-        # onto the graph).)
+        """
+        Returns a kernel density estimate of the BDamage values of every atom
+        considered for BDamage analysis. Any atom whose number is listed
+        in the highlightAtoms option in the input file will be marked on the
+        plot. (Note that it is recommended no more than 6 atoms are listed
+        in the highlightAtoms option in the input file (beyond 6 atoms, the
+        colour scheme will repeat itself, and in addition the key may not fit
+        onto the graph).)
+        """
 
         import sys
         # Ensures that seaborn uses scipy for kde bandwidth calculation rather
@@ -235,33 +290,112 @@ class generate_output_files(object):
 
         highlighted_atoms = []
         for number in highlightAtoms:
-            for index, value in enumerate(self.df.ATMNUM.values):
-                if int(number) == value:
-                    b_dam_value = self.df.BDAM.values[index]
-                    line, = plt.plot([b_dam_value, b_dam_value],
-                                     [0, max(y_values)], linewidth=2,
-                                     label=' atom ' + str(number) +
-                                     '\n BDamage = {:.2f}'.format(b_dam_value))
-                    highlighted_atoms.append(line)
-                    break
+            index = self.df.ATMNUM.tolist().index(int(number))
+            b_dam_value = self.df.BDAM.values[index]
+            line, = plt.plot([b_dam_value, b_dam_value], [0, max(y_values)],
+                             linewidth=2, label=' atom ' + str(number) +
+                             '\n BDamage = {:.2f}'.format(b_dam_value))
+            highlighted_atoms.append(line)
 
         if len(highlighted_atoms) >= 1:
             plt.legend(handles=highlighted_atoms)
         plt.xlabel('B Damage')
         plt.ylabel('Normalised Frequency')
         plt.title(self.pdb_code + ' BDamage kernel density plot')
-        plt.savefig(self.pdb_file_path + '_BDamage.svg')
+        plt.savefig(self.out_file_start + '_BDamage.svg')
+
+    def plot_Bnet_histogram(self, bnet_df, median, prot_or_na):
+        """
+        """
+
+        import os
+        import matplotlib.pyplot as plt
+        import pandas as pd
+        import seaborn as sns
+
+        plt.clf()  # Prevents the kernel density estimate of the atoms
+        # considered for calculation of the Bnet summary metric from being
+        # plotted on the same axes as the kernel density estimate of all
+        # atoms considered for BDamage analysis.
+        plot = sns.distplot(bnet_df.BDAM.values, hist=False, rug=True,
+                            kde_kws={'bw':'scott'})
+        plt.xlabel('B Damage')
+        plt.ylabel('Normalised Frequency')
+        plt.title(self.pdb_code + ' Bnet kernel density plot')
+
+        # Extracts an array of 128 (x, y) coordinate pairs evenly spaced
+        # along the x(BDamage)-axis from the kernel density plot. These
+        # coordinate pairs are used to calculate, via the trapezium rule,
+        # the area under the curve between the smallest value of x and the
+        # median (= total_area_LHS), and the area under the curve between
+        # the median and the largest value of x (= total_area_RHS). The
+        # Bnet summary metric is then calculated as the ratio of
+        # total_area_RHS to total_area_LHS.
+        xy_values = plot.get_lines()[0].get_data()
+        x_values = xy_values[0]
+        y_values = xy_values[1]
+        height = (x_values[-1]-x_values[0]) / (len(x_values)-1)
+
+        total_area_LHS = 0
+        for index, value in enumerate(y_values):
+            if x_values[index] < median:
+                area_LHS = (((y_values[index] + y_values[index+1]) / 2)
+                            * height)
+                total_area_LHS = total_area_LHS + area_LHS
+
+        total_area_RHS = 0
+        for index, value in enumerate(y_values):
+            if x_values[index] >= median and index < len(y_values)-1:
+                area_RHS = (((y_values[index] + y_values[index+1]) / 2)
+                            * height)
+                total_area_RHS = total_area_RHS + area_RHS
+
+        # Calculates area ratio (= Bnet)
+        ratio = total_area_RHS / total_area_LHS
+
+        plt.annotate('Bnet = {:.1f}'.format(ratio),
+                     xy=(max(x_values)*0.65, max(y_values)*0.9),
+                     fontsize=10)
+        plt.annotate('Median = {:.2f}'.format(median),
+                     xy=(max(x_values)*0.65, max(y_values)*0.85),
+                     fontsize=10)
+        plt.savefig(self.out_file_start + '_Bnet_{}.svg'.format(prot_or_na))
+
+        # Comment out before releasing for CCP4 - this will only be useful for
+        # in-house batch runs
+        if not os.path.isfile('Logfiles/Bnet_{}.csv'.format(prot_or_na)):
+            bnet_list = open('Logfiles/Bnet_{}.csv'.format(prot_or_na), 'w')
+            bnet_list.write('PDB' + ',')
+            bnet_list.write('Bnet' + '\n')
+            bnet_list.close()
+        bnet_list = open('Logfiles/Bnet_{}.csv'.format(prot_or_na), 'a')
+        bnet_list.write('%s,%s\n' % self.pdb_code, ratio)
+        bnet_list.close()
+
+        bnet_df = pd.DataFrame({'PDB': [self.pdb_code],
+                                'Bnet': [ratio]})
+        if os.path.isfile('Logfiles/Bnet_{}.pkl'.format(prot_or_na)):
+            old_bnet_df = pd.read_pickle('Logfiles/Bnet_{}.pkl'.format(prot_or_na))
+        else:
+            old_bnet_df = pd.DataFrame({'PDB': [],
+                                        'Bnet': []})
+        new_bnet_df = pd.concat(
+            [old_bnet_df, bnet_df], axis=0, ignore_index=True
+        ).reset_index(drop=True)
+        new_bnet_df.to_pickle('Logfiles/Bnet_{}.pkl'.format(prot_or_na))
 
     def calculate_Bnet(self, window_name, pdt_name, window):
-        # Plots a kernel density estimate of the BDamage values of Glu O and
-        # Asp O atoms. The summary metric Bnet is then calculated as the ratio
-        # of the areas under the curve either side of the median (of the
-        # overall BDamage distribution).
+        """
+        Plots a kernel density estimate of the BDamage values of Glu O and
+        Asp O atoms. The summary metric Bnet is then calculated as the ratio
+        of the areas under the curve either side of the median (of the
+        overall BDamage distribution).
+        """
 
         import os
         import sys
         # Ensures that seaborn uses scipy for kde bandwidth calculation rather
-        # than statsmodels
+        # than statsmodels => must be run before import seaborn
         sys.modules['statsmodels']=None
         import pandas as pd
         import matplotlib.pyplot as plt
@@ -270,154 +404,31 @@ class generate_output_files(object):
         # Sets figure aesthetics to seaborn defaults
         sns.set()
 
-        # Selects Glu / Asp terminal oxygen atoms from complete DataFrame.
-        prot = self.df[(self.df.RESNAME.isin(['GLU', 'ASP']))
-                       & (self.df.ATMNAME.isin(['OE1', 'OE2', 'OD1', 'OD2']))]
+        # Selects Glu / Asp (both the L- and D-amino acids) terminal oxygen
+        # atoms from complete DataFrame.
+        prot_df = self.df[(self.df.RESNAME.isin(['GLU', 'ASP', 'DGL', 'DAS']))
+                          & (self.df.ATMNAME.isin(['OE1', 'OE2', 'OD1', 'OD2']))]
         # Selects atoms of sugar-phosphate C-O bonds from complete DataFrame.
-        na = self.df[self.df.ATMNAME.isin(["O3'", "O5'", "C3'", "C5'"])]
+        na_df = self.df[self.df.ATMNAME.isin(["O3'", "O5'", "C3'", "C5'"])]
 
-        if prot.empty and na.empty:
+        # Calculates median of BDamage distribution
+        median = self.df.BDAM.median()
+
+        if prot_df.empty and na_df.empty:
             print('\n\nERROR: No sites used for Bnet calculation present in structure\n')
             return
 
-        if not prot.empty:
-            # Calculates median of protein BDamage distribution
-            median = self.df.BDAM.median()
+        if not prot_df.empty:
+            self.plot_Bnet_histogram(prot_df, median, 'protein')
 
-            plt.clf()  # Prevents the kernel density estimate of the atoms
-            # considered for calculation of the Bnet summary metric from being
-            # plotted on the same axes as the kernel density estimate of all
-            # atoms considered for BDamage analysis.
-            plot = sns.distplot(prot.BDAM.values, hist=False, rug=True,
-                                kde_kws={'bw':'scott'})
-            plt.xlabel('B Damage')
-            plt.ylabel('Normalised Frequency')
-            plt.title(self.pdb_code + ' Bnet kernel density plot')
-
-            # Extracts an array of 128 (x, y) coordinate pairs evenly spaced
-            # along the x(BDamage)-axis from the kernel density plot. These
-            # coordinate pairs are used to calculate, via the trapezium rule,
-            # the area under the curve between the smallest value of x and the
-            # median (= total_area_LHS), and the area under the curve between
-            # the median and the largest value of x (= total_area_RHS). The
-            # Bnet summary metric is then calculated as the ratio of
-            # total_area_RHS to total_area_LHS.
-            xy_values = plot.get_lines()[0].get_data()
-            x_values = xy_values[0]
-            y_values = xy_values[1]
-            height = (x_values[-1]-x_values[0]) / (len(x_values)-1)
-
-            total_area_LHS = 0
-            for index, value in enumerate(y_values):
-                if x_values[index] < median:
-                    area_LHS = (((y_values[index] + y_values[index+1]) / 2)
-                                * height)
-                    total_area_LHS = total_area_LHS + area_LHS
-
-            total_area_RHS = 0
-            for index, value in enumerate(y_values):
-                if x_values[index] >= median and index < len(y_values)-1:
-                    area_RHS = (((y_values[index] + y_values[index+1]) / 2)
-                                * height)
-                    total_area_RHS = total_area_RHS + area_RHS
-
-            # Calculates area ratio (= Bnet)
-            ratio = total_area_RHS / total_area_LHS
-
-            plt.annotate('Bnet = {:.1f}'.format(ratio),
-                         xy=(max(x_values)*0.65, max(y_values)*0.9),
-                         fontsize=10)
-            plt.annotate('Median = {:.2f}'.format(median),
-                         xy=(max(x_values)*0.65, max(y_values)*0.85),
-                         fontsize=10)
-            plt.savefig(self.pdb_file_path + '_Bnet_Protein.svg')
-
-            if not os.path.isfile('Logfiles/Bnet_Protein.csv'):
-                Bnet_list = open('Logfiles/Bnet_Protein.csv', 'w')
-                Bnet_list.write('PDB' + ',')
-                Bnet_list.write('Bnet' + ',')
-                Bnet_list.write('Window_size' + ',')
-                Bnet_list.write('Window_size (%)' + ',')
-                Bnet_list.write('PDT' + '\n')
-                Bnet_list.close()
-            Bnet_list = open('Logfiles/Bnet_Protein.csv', 'a')
-            Bnet_list.write('%s' % self.pdb_code + ',')
-            Bnet_list.write('%s' % ratio + ',')
-            Bnet_list.write('%s' % window + ',')
-            Bnet_list.write('%s' % window_name + ',')
-            Bnet_list.write('%s' % pdt_name + '\n')
-            Bnet_list.close()
-
-        if not na.empty:
-            # Calculates median of nucleic acid BDamage distribution
-            median = self.na.BDAM.median()
-
-            plt.clf()  # Prevents the kernel density estimate of the atoms
-            # considered for calculation of the Bnet summary metric from being
-            # plotted on the same axes as the kernel density estimate of all
-            # atoms considered for BDamage analysis.
-            plot = sns.distplot(na.BDAM.values, hist=False, rug=True,
-                                kde_kws={'bw':'scott'})
-            plt.xlabel('B Damage')
-            plt.ylabel('Normalised Frequency')
-            plt.title(self.pdb_code + ' Bnet kernel density plot')
-
-            # Extracts an array of 128 (x, y) coordinate pairs evenly spaced
-            # along the x(BDamage)-axis from the kernel density plot. These
-            # coordinate pairs are used to calculate, via the trapezium rule,
-            # the area under the curve between the smallest value of x and the
-            # median (= total_area_LHS), and the area under the curve between
-            # the median and the largest value of x (= total_area_RHS). The
-            # Bnet summary metric is then calculated as the ratio of
-            # total_area_RHS to total_area_LHS.
-            xy_values = plot.get_lines()[0].get_data()
-            x_values = xy_values[0]
-            y_values = xy_values[1]
-            height = (x_values[-1]-x_values[0]) / (len(x_values)-1)
-
-            total_area_LHS = 0
-            for index, value in enumerate(y_values):
-                if x_values[index] < median:
-                    area_LHS = (((y_values[index] + y_values[index+1]) / 2)
-                                * height)
-                    total_area_LHS = total_area_LHS + area_LHS
-
-            total_area_RHS = 0
-            for index, value in enumerate(y_values):
-                if x_values[index] >= median and index < len(y_values)-1:
-                    area_RHS = (((y_values[index] + y_values[index+1]) / 2)
-                                * height)
-                    total_area_RHS = total_area_RHS + area_RHS
-
-            # Calculates area ratio (= Bnet)
-            ratio = total_area_RHS / total_area_LHS
-
-            plt.annotate('Bnet = {:.1f}'.format(ratio),
-                         xy=(max(x_values)*0.65, max(y_values)*0.9),
-                         fontsize=10)
-            plt.annotate('Median = {:.2f}'.format(median),
-                         xy=(max(x_values)*0.65, max(y_values)*0.85),
-                         fontsize=10)
-            plt.savefig(str(self.pdb_file_path)+'_Bnet_NA.svg')
-
-            if not os.path.isfile('Logfiles/Bnet_NA.csv'):
-                Bnet_list = open('Logfiles/Bnet_NA.csv', 'w')
-                Bnet_list.write('PDB' + ',')
-                Bnet_list.write('Bnet' + ',')
-                Bnet_list.write('Window_size' + ',')
-                Bnet_list.write('Window_size (%)' + ',')
-                Bnet_list.write('PDT' + '\n')
-                Bnet_list.close()
-            Bnet_list = open('Logfiles/Bnet_NA.csv', 'a')
-            Bnet_list.write('%s' % self.pdb_code + ',')
-            Bnet_list.write('%s' % ratio + ',')
-            Bnet_list.write('%s' % window + ',')
-            Bnet_list.write('%s' % window_name + ',')
-            Bnet_list.write('%s' % pdt_name + '\n')
-            Bnet_list.close()
+        if not na_df.empty:
+            self.plot_Bnet_histogram(na_df, median, 'NA')
 
     def write_html_summary(self, output_options, highlightAtoms):
-        # Writes an html file summarising the results generated by RABDAM.
+        """
+        Writes an html file summarising the results generated by RABDAM.
+        """
+
         import os
         import time
         import pandas as pd
@@ -456,9 +467,9 @@ class generate_output_files(object):
         sub_df_top_site = sorted_df.drop(sorted_df.index[cut_index+1:])
         sub_df_top_site = sub_df_top_site.round({'AVRG BF': 2, 'BDAM': 2})
 
-        # Filters the complete DataFrame to retain only Glu and Asp terminal
-        # oxygen atoms.
-        sub_df_prot = self.df[(self.df.RESNAME.isin(['GLU', 'ASP']))
+        # Filters the complete DataFrame to retain only Glu and Asp (L- and
+        # D-isomers) terminal oxygen atoms.
+        sub_df_prot = self.df[(self.df.RESNAME.isin(['GLU', 'ASP', 'DGL', 'DAS']))
                               & (self.df.ATMNAME.isin(['OE1', 'OE2', 'OD1', 'OD2']))]
         sub_df_prot = sub_df_prot.round({'AVRG BF': 2, 'BDAM': 2})
         # Filters the complete DataFrame to retain only atoms of
@@ -467,7 +478,7 @@ class generate_output_files(object):
         sub_df_na = sub_df_na.round({'AVRG BF': 2, 'BDAM': 2})
 
         # Opens summary html file
-        html_file = open(self.pdb_file_path + '_BDamage.html', 'w')
+        html_file = open(self.out_file_start + '_BDamage.html', 'w')
         # Specifies html file header information
         html_file.write('<!DOCTYPE html>\n'
                         '<html>\n'
@@ -510,7 +521,7 @@ class generate_output_files(object):
                         '      </ul>\n'
                         '    </div>\n')
         # Writes html file Bnet (protein) summary
-        if os.path.isfile('%s_Bnet_Protein.svg' % self.pdb_file_path):
+        if os.path.isfile('%s_Bnet_Protein.svg' % self.out_file_start):
             html_file.write('    <div>\n'
                             '      <ul class="main_list">\n'
                             '        <li><h2>B<sub>net</sub> distribution (protein)</h2></li>\n'
@@ -522,7 +533,7 @@ class generate_output_files(object):
                             '      </ul>\n'
                             '    </div>\n')
         # Writes html file Bnet (nucleic acid) summary
-        if os.path.isfile('%s_Bnet_NA.svg' % self.pdb_file_path):
+        if os.path.isfile('%s_Bnet_NA.svg' % self.out_file_start):
             html_file.write('    <div>\n'
                             '      <ul class="main_list">\n'
                             '        <li><h2>B<sub>net</sub> distribution (nucleic acid)</h2></li>\n'

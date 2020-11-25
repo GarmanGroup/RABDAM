@@ -19,8 +19,27 @@
 # <http://www.gnu.org/licenses/>.
 
 
+def extract_unit_cell_params(cryst1_line):
+    """
+    Extracts unit cell parameters from CRYST1 record
+    """
+
+    import math
+
+    a = float(cryst1_line[6:15])
+    b = float(cryst1_line[15:24])
+    c = float(cryst1_line[24:33])
+    alpha = math.radians(float(cryst1_line[33:40]))
+    beta = math.radians(float(cryst1_line[40:47]))
+    gamma = math.radians(float(cryst1_line[47:54]))
+    unit_cell_params = [a, b, c, alpha, beta, gamma]
+
+    return unit_cell_params
+
 def convertToCartesian(unit_cell_params):
-    # Converts the unit cell parameters into Cartesian vectors.
+    """
+    Converts the unit cell parameters into Cartesian vectors.
+    """
 
     import math
     import numpy as np
@@ -73,10 +92,12 @@ def convertToCartesian(unit_cell_params):
 
 
 def translateUnitCell(ucAtomList, transAtomList, transAtomIDList,
-                      cartesianVectors, aTrans, bTrans, cTrans, count,
+                      cartesianVectors, aTrans, bTrans, cTrans, atom_count,
                       createAUCpdb, createTApdb):
-    # Translates the unit cell +/- 1 units in all dimensions (a, b and c) to
-    # generate a 3x3 assembly.
+    """
+    Translates the unit cell +/- 1 units in all dimensions (a, b and c) to
+    generate a 3x3 assembly.
+    """
 
     import numpy as np
 
@@ -100,15 +121,15 @@ def translateUnitCell(ucAtomList, transAtomList, transAtomIDList,
     # the 3x3 assembly.
     for item in ucAtomList:
         new_atom_xyz = np.add(item.xyzCoords, transVector)
-        transAtomList[count][0] = new_atom_xyz[0][0]
-        transAtomList[count][1] = new_atom_xyz[1][0]
-        transAtomList[count][2] = new_atom_xyz[2][0]
+        transAtomList[atom_count][0] = new_atom_xyz[0][0]
+        transAtomList[atom_count][1] = new_atom_xyz[1][0]
+        transAtomList[atom_count][2] = new_atom_xyz[2][0]
         if createAUCpdb is True or createTApdb is True:
-            transAtomIDList[count] = item.atomNum
-        count += 1
+            transAtomIDList[atom_count] = item.atomNum
+        atom_count += 1
 
     print('Successfully translated by (%2sa,%2sb,%2sc) unit cells' % (
         aTrans, bTrans, cTrans
         ))
 
-    return transAtomList, transAtomIDList, count
+    return transAtomList, transAtomIDList, atom_count

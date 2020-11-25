@@ -22,14 +22,17 @@
 # in the command line input, this script will run either the complete / a
 # subsection of the pipeline.
 
+class ArgumentError(Exception):
+    pass
+
+
 def main():
-    import sys
-    import os
     import argparse
-    import time
     import math
+    import os
+    import sys
+    import time
     import numpy as np
-    import argparse
 
     if __name__ == '__main__' or 'CCP4' in list(os.environ.keys()):
         from Subroutines.CalculateBDamage import rabdam
@@ -85,17 +88,43 @@ def main():
         day, month, year, hour, minute, second
         ))
 
-    # Sets default option for -o flag (default = generate all output files bar
-    # the summary file)
+    # Checks options specified for output files are allowed. If no output files
+    # are specified, sets default option (= generate all output files).
+    all_output_options = ['csv', 'pdb', 'cif', 'kde', 'bnet', 'summary']
     if vars(args)['output'] is None:
-        vars(args)['output'] = ['csv', 'bdam', 'kde', 'bnet', 'summary']
+        vars(args)['output'] = all_output_options
     output_options = [item.lower() for item in vars(args)['output']]
+
+    unrecognised_options = []
+    if any(option not in all_output_options for option in output_options):
+        unrecognised_options.append(option)
+    if len(unrecognised_options) >= 1:
+        raise ArgumentError(
+            'Unrecognised output options {} requested.\nPlease specify one or more '
+            'of the following: {}.\n'.format(unrecognised_options, all_output_options)
+        )
+
+    # Checks options specified for RABDAM run are allowed. If not specified, by
+    # default runs the full analysis pipeline.
+    all_run_options = ['dataframe', 'df', 'analysis', None]
+    if not vars(args)['run'] in all_run_options:
+        raise ArgumentError(
+            'Unrecognised run option: {}\nPlease either specify one of the '
+            'following options: {}\nOR remove the -r flag (which will direct '
+            'RABDAM to run the full analysis pipeline).'.format(vars(args)['run'],
+             all_run_options)
+        )
 
     cwd = os.getcwd()
     # Reads in program options from input file specified by -i flag
     if vars(args)['input'] is not None:
         # Reads in PDB and cif file name(s) listed in input file
         input_file_loc = vars(args)['input']
+        # Checks input file exists
+        if not os.path.isfile(input_file_loc):
+            raise FileNotFoundError(
+                'Specified input file {} does not exist'.format(input_file_loc)
+            )
         input_file_loc = input_file_loc.replace('\\', '/')
         input_file_loc_list = input_file_loc.split('/')
         input_file = input_file_loc_list[len(input_file_loc_list)-1]
