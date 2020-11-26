@@ -3,7 +3,8 @@
 
 import unittest
 from rabdam.rabdam import (
-    ArgumentError, parse_command_line_arguments, parse_input_file_arguments
+    ArgumentError, FileDoesNotExistError, parse_command_line_arguments,
+    parse_input_file_arguments
 )
 
 class TestClass(unittest.TestCase):
@@ -31,7 +32,7 @@ class TestClass(unittest.TestCase):
 
         command_line_4 = ['-i', 'does_not_exist.txt']
         self.assertRaises(
-            FileNotFoundError, parse_command_line_arguments, command_line_4
+            FileDoesNotExistError, parse_command_line_arguments, command_line_4
         )
 
         command_line_5 = ['-f', '2bn1']
@@ -141,7 +142,7 @@ class TestClass(unittest.TestCase):
         self.assertDictEqual(act_output_2, exp_output_2)
 
         input_3 = ['dir=does_not_exist/']
-        self.assertRaises(FileNotFoundError, parse_input_file_arguments, input_3)
+        self.assertRaises(FileDoesNotExistError, parse_input_file_arguments, input_3)
 
         input_4 = ['batchcontinue=xyz']
         self.assertRaises(ArgumentError, parse_input_file_arguments, input_4)

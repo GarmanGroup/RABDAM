@@ -26,6 +26,10 @@ class ArgumentError(Exception):
     pass
 
 
+class FileDoesNotExistError(Exception):
+    pass
+
+
 def parse_command_line_arguments(command_line):
     """
     Reads in command line arguments and checks that there are no unexpected
@@ -77,7 +81,7 @@ def parse_command_line_arguments(command_line):
     if vars(args)['input'] is not None:
         input_file_path = vars(args)['input']
         if not os.path.isfile(input_file_path):
-            raise FileNotFoundError(
+            raise FileDoesNotExistError(
                 'Specified input file {} does not exist'.format(input_file_path)
             )
 
@@ -149,7 +153,7 @@ def parse_input_file_arguments(splitArgs):
                 outputLoc = cwd
             outputLoc = outputLoc.replace('\\', '/')
             if not os.path.isdir(outputLoc):
-                raise FileNotFoundError(
+                raise FileDoesNotExistError(
                     'Directory {} does not exist'.format(outputLoc)
                 )
 
