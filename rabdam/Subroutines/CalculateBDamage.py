@@ -21,7 +21,7 @@
 
 class rabdam(object):
     def __init__(self, pathToInput, outputDir, batchRun, overwrite, PDT,
-                 windowSize, protOrNA, HETATM, addAtoms, removeAtoms,
+                 windowSize, protOrNA, HETATM, removeAtoms, addAtoms,
                  highlightAtoms, createOrigpdb, createAUpdb, createUCpdb,
                  createAUCpdb, createTApdb):
         self.pathToInput = pathToInput
@@ -32,8 +32,8 @@ class rabdam(object):
         self.windowSize = windowSize
         self.protOrNA = protOrNA
         self.HETATM = HETATM
-        self.addAtoms = addAtoms
         self.removeAtoms = removeAtoms
+        self.addAtoms = addAtoms
         self.highlightAtoms = highlightAtoms
         self.createOrigpdb = createOrigpdb
         self.createAUpdb = createAUpdb
@@ -41,7 +41,7 @@ class rabdam(object):
         self.createAUCpdb = createAUCpdb
         self.createTApdb = createTApdb
 
-    def rabdam_dataframe(self, run):
+    def rabdam_dataframe(self):
         """
         Calculates BDamage for selected atoms within input PDB file and
         writes output to DataFrame.
@@ -103,10 +103,7 @@ class rabdam(object):
                 write_pckg_dens_to_atoms, calcBDam
                 )
 
-        if run == 'rabdam':
-            print('**************************** RABDAM ****************************\n')
-        elif run == 'rabdam_dataframe':
-            print('*********************** RABDAM DATAFRAME ***********************\n')
+        print('**************************** RABDAM ****************************\n')
 
         print('\n****************************************************************\n'
               '***************** Program to calculate BDamage *****************\n'
@@ -614,7 +611,7 @@ class rabdam(object):
         # rabdam.py script is saved).
         os.chdir('%s' % cwd)
 
-    def rabdam_analysis(self, run, output_options):
+    def rabdam_analysis(self, output_options):
         """
         Uses values in DataFrame returned from calling the 'rabdam_dataframe'
         function to write output analysis files.
@@ -638,8 +635,7 @@ class rabdam(object):
             from rabdam.Subroutines.output import generate_output_files
             from rabdam.Subroutines.makeDataFrame import makePDB
 
-        if run == 'rabdam_analysis':
-            print('************************ RABDAM ANALYSIS ***********************\n')
+        print('**************************** RABDAM ****************************\n')
 
         # Changes directory to the specified location for the output 'Logfiles'
         # directory. The default location is the current working directory

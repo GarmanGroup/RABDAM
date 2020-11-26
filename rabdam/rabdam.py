@@ -26,19 +26,18 @@ class ArgumentError(Exception):
     pass
 
 
-def main():
+def parse_command_line_arguments(command_line):
+    """
+    Reads in command line arguments and checks that there are no unexpected
+    argument values.
+    """
+
     import argparse
-    import math
     import os
-    import sys
-    import time
-    import numpy as np
 
     if __name__ == '__main__' or 'CCP4' in list(os.environ.keys()):
-        from Subroutines.CalculateBDamage import rabdam
         from Subroutines.checkDependencies import check_RABDAM_dependencies
     else:
-        from rabdam.Subroutines.CalculateBDamage import rabdam
         from rabdam.Subroutines.checkDependencies import check_RABDAM_dependencies
 
     # Reads in command line inputs. There are three recognised flags: -i, -f
@@ -67,12 +66,402 @@ def main():
                         'pre-calculated BDamage values only ("analysis")')
     parser.add_argument('-o', '--output', nargs='+', help='Specifies the '
                         'output files to write (default = all files written)')
-    args = parser.parse_args()
+    args = parser.parse_args(command_line)
 
     # Checks system for RABDAM dependencies
     if vars(args)['dependencies']:
         check_RABDAM_dependencies()
         sys.exit()
+
+    # If specified, checks that file path to input file exists
+    if vars(args)['input'] is not None:
+        input_file_path = vars(args)['input']
+        if not os.path.isfile(input_file_path):
+            raise FileNotFoundError(
+                'Specified input file {} does not exist'.format(input_file_path)
+            )
+
+    # Checks options specified for output files are allowed. If no output files
+    # are specified, sets default option (= generate all output files).
+    output_options = ['csv', 'pdb', 'cif', 'kde', 'bnet', 'summary']
+    if vars(args)['output'] is None:
+        vars(args)['output'] = output_options
+    vars(args)['output'] = [item.lower() for item in vars(args)['output']]
+
+    unrecognised_options = []
+    for option in vars(args)['output']:
+        if not option in output_options:
+            unrecognised_options.append(option)
+    if len(unrecognised_options) >= 1:
+        raise ArgumentError(
+            'Unrecognised output options {} requested.\nPlease specify one or more '
+            'of the following: {}.\n'.format(unrecognised_options, output_options)
+        )
+
+    # Checks options specified for RABDAM run are allowed. If not specified, by
+    # default runs the full analysis pipeline.
+    all_run_options = ['dataframe', 'df', 'analysis', None]
+    if not vars(args)['run'] in all_run_options:
+        raise ArgumentError(
+            'Unrecognised run option: {}\nPlease either specify one of the '
+            'following options: {}\nOR remove the -r flag (which will direct '
+            'RABDAM to run the full analysis pipeline).'.format(vars(args)['run'],
+             all_run_options)
+        )
+    if not vars(args)['run'] is None:
+        vars(args)['run'] = vars(args)['run'].lower()
+
+    return args
+
+
+def parse_input_file_arguments(splitArgs):
+    """
+    Reads in program parameters listed in user-specified input file
+    """
+
+    import os
+
+    # Initialises default program options
+    cwd = os.getcwd()
+    outputLoc = cwd
+    batchVal = False
+    overwriteVal = False
+    pdtVal = 7.0
+    windowVal = 0.02
+    protOrNAVal = 'protein'
+    hetatmVal = False
+    removeAtomsList = []
+    addAtomsList = []
+    highlightAtomsList = []
+    orig_pdb = False
+    au_pdb = False
+    uc_pdb = False
+    auc_pdb = False
+    ta_pdb = False
+
+    # If input file is provided, program options are updated to the values
+    # the user has specified in it
+    for x in range(0, len(splitArgs)):
+        # Specifies location to which output 'Logfiles' directory is written
+        if splitArgs[x][0:3].lower() == 'dir':
+            outputLoc = splitArgs[x].split('=')[-1]
+            if outputLoc == '':
+                outputLoc = cwd
+            outputLoc = outputLoc.replace('\\', '/')
+            if not os.path.isdir(outputLoc):
+                raise FileNotFoundError(
+                    'Directory {} does not exist'.format(outputLoc)
+                )
+
+        # Specifies when an error is encountered whether to exit the program
+        # (default) or to continue to the next listed structure
+        elif splitArgs[x][0:13].lower() == 'batchcontinue':
+            batchVal = splitArgs[x].split('=')[-1].lower()
+            if batchVal in ['true', 'yes', 't', 'y']:
+                batchVal = True
+            elif batchVal in ['false', 'no', 'f', 'n']:
+                batchVal = False
+            else:
+                raise ArgumentError(
+                    'Unrecognised value for batchcontinue: {}'.format(batchVal)
+                )
+
+        # Specifies whether or not to overwrite files of the same name as the
+        # new output files to be created (default = do not overwrite)
+        elif splitArgs[x][0:9].lower() == 'overwrite':
+            overwriteVal = splitArgs[x].split('=')[-1].lower()
+            if overwriteVal in ['true', 'yes', 't', 'y']:
+                overwriteVal = True
+            elif overwriteVal in ['false', 'no', 'f', 'n']:
+                overwriteVal = False
+            else:
+                raise ArgumentError(
+                    'Unrecognised value for overwrite: {}'.format(overwriteVal)
+                )
+
+            # If command line output is directed to a file, sets overwriteVal
+            # to True to prevent program from requiring user input to decide
+            # whether to overwrite any pre-existing file(s) with the same file
+            # path(s) as the output file(s) to be written
+            if os.fstat(0) != os.fstat(1):
+                overwriteVal = True
+
+        # Specifies packing density threshold (default = 7)
+        elif splitArgs[x][0:3].lower() == 'pdt':
+            pdtVal = splitArgs[x].split('=')[-1]
+            try:
+                if float(pdtVal) != int(pdtVal):
+                    raise ArgumentError(
+                        'Value provided for packing density is not an integer: '
+                        '{}'.format(pdtVal)
+                    )
+                else:
+                    pdtVal = float(pdtVal)
+            except ValueError:
+                raise ArgumentError(
+                    'Value provided for packing density is not an integer: '
+                    '{}'.format(pdtVal)
+                )
+
+        # Specifies size of sliding window (as a percentage of the total number
+        # of atoms considered for BDamage analysis)
+        elif splitArgs[x][0:10].lower() == 'windowsize':
+            windowVal = splitArgs[x].split('=')[-1]
+            try:
+                windowVal = float(windowVal)
+            except ValueError:
+                raise ArgumentError(
+                    'Value provided for size of sliding window is not a number:'
+                    ' {}'.format(windowVal)
+                )
+            if not 0 < windowVal < 1:
+                raise ArgumentError(
+                    'Value provided for size of sliding window is not in the '
+                    'range 0 - 1: {}'.format(windowVal)
+                )
+
+        # Specifies whether to include protein atoms alone, nucleic atoms
+        # alone, or both atom types (if present) in the BDamage calculation
+        elif splitArgs[x][0:20].lower() == 'proteinornucleicacid':
+            protOrNAVal = splitArgs[x].split('=')[-1].lower()
+            # Temporary variable reassignment to prevent nucleic acid analysis
+            # with RABDAM before the complete functionality has been introduced
+            if protOrNAVal in ['na', 'nucleicacid']:
+                sys.exit('RABDAM is currently only suitable for assessing '
+                         'radiation damage\nto the protein component of '
+                         'macromolecular crystal structures.\nWe hope to extend'
+                         ' the program to incorporate nucleic acid analysis\n'
+                         'shortly - in the meantime, please restrict your '
+                         'RABDAM analysis to\nprotein atoms only.')
+            if not protOrNAVal in ['protein', 'na', 'nucleicacid']:
+                raise ArgumentError(
+                    'Unrecognised value for proteinornucleicacid: '
+                    '{}'.format(protOrNAVal)
+                )
+
+        # Specifies whether to remove HETATM from the BDamage calculation or to
+        # retain them
+        elif splitArgs[x][0:6].lower() == 'hetatm':
+            hetatmVal = splitArgs[x].split('=')[-1].lower()
+            if hetatmVal == 'keep':
+                hetatmVal = True
+            elif hetatmVal == 'remove':
+                hetatmVal = False
+            else:
+                raise ArgumentError(
+                    'Unrecognised value for hetatm: {}'.format(hetatmVal)
+                )
+
+        # Lists atoms (via either their atom numbers or their residue names) to
+        # be removed from the BDamage calculation. (This is useful to remove
+        # additional atoms not covered by the proteinOrNucleicAcid / HETATM
+        # options.)
+        elif splitArgs[x][0:11].lower() == 'removeatoms':
+            removeAtomsArg = splitArgs[x].split('=')[-1].upper()
+            removeAtomsList = []
+            if removeAtomsArg != '':
+                removeAtomsArg = removeAtomsArg.split(';')
+                for item in removeAtomsArg:
+                    removeAtomsRange = item.split('-')
+                    if len(removeAtomsRange) == 2:
+                        try:
+                            min_val = int(removeAtomsRange[0])
+                            max_val = int(removeAtomsRange[1])
+                            removeAtomsRange = range(min_val, (max_val+1))
+                            for number in removeAtomsRange:
+                                removeAtomsList.append(str(number))
+                        except ValueError:
+                            raise ArgumentError(
+                                'Unrecognised input: {} for remove atoms - if '
+                                'input contains "-", expecting a numeric '
+                                'range'.format(removeAtomsRange)
+                            )
+                    elif len(removeAtomsRange) == 1:
+                        removeAtomsList.append(str(removeAtomsRange[0]))
+                    else:
+                        raise ArgumentError(
+                            'Unrecognised input: {} for remove atoms - if '
+                            'input contains "-", expecting a numeric '
+                            'range'.format(removeAtomsRange)
+                        )
+
+        # Lists atoms (via either their atom numbers or their residue names) to
+        # be included in the BDamage calculation. (This is useful to add back
+        # in a subset of atoms of interest that has been removed by the
+        # proteinOrNucleicAcid / HETATM / removeAtoms options.)
+        elif splitArgs[x][0:8].lower() == 'addatoms':
+            addAtomsArg = splitArgs[x].split('=')[-1].upper()
+            addAtomsList = []
+            if addAtomsArg != '':
+                addAtomsArg = addAtomsArg.split(';')
+                for item in addAtomsArg:
+                    addAtomsRange = item.split('-')
+                    if len(addAtomsRange) == 2:
+                        try:
+                            min_val = int(addAtomsRange[0])
+                            max_val = int(addAtomsRange[1])
+                            addAtomsRange = range(min_val, (max_val+1))
+                            for number in addAtomsRange:
+                                addAtomsList.append(str(number))
+                        except ValueError:
+                            raise ArgumentError(
+                                'Unrecognised input: {} for add atoms - if '
+                                'input contains "-", expecting a numeric '
+                                'range'.format(addAtomsRange)
+                            )
+                    elif len(addAtomsRange) == 1:
+                        addAtomsList.append(str(addAtomsRange[0]))
+                    else:
+                        raise ArgumentError(
+                            'Unrecognised input: {} for add atoms - if '
+                            'input contains "-", expecting a numeric '
+                            'range'.format(addAtomsRange)
+                        )
+
+        # Lists atoms (via their atom numbers) whose BDamage values are to be
+        # indicated on the kernel density estimate of the BDamage distribution
+        # output by the program. Note that it is recommended no more than 6
+        # atoms are listed in the highlightAtoms option in the input file
+        # (beyond 6 atoms, the colour scheme will repeat itself, and in
+        # addition the key may not fit onto the graph).
+        elif splitArgs[x][0:14].lower() == 'highlightatoms':
+            highlightAtomsArg = splitArgs[x].split('=')[-1].upper()
+            highlightAtomsList = []
+            if highlightAtomsArg != '':
+                highlightAtomsArg = highlightAtomsArg.split(';')
+                for item in highlightAtomsArg:
+                    highlightAtomsRange = item.split('-')
+                    if len(highlightAtomsRange) == 2:
+                        try:
+                            min_val = int(highlightAtomsRange[0])
+                            max_val = int(highlightAtomsRange[1])
+                            highlightAtomsRange = range(min_val, (max_val+1))
+                            for number in highlightAtomsRange:
+                                highlightAtomsList.append(str(number))
+                        except ValueError:
+                            raise ArgumentError(
+                                'Unrecognised input: {} for highlight atoms - '
+                                'if input contains "-", expecting a numeric '
+                                'range'.format(highlightAtomsRange)
+                            )
+                    elif len(highlightAtomsRange) == 1:
+                        highlightAtomsList.append(str(highlightAtomsRange[0]))
+                    else:
+                        raise ArgumentError(
+                            'Unrecognised input: {} for highlight atoms - if '
+                            'input contains "-", expecting a numeric '
+                            'range'.format(highlightAtomsRange)
+                        )
+
+        # Specifies whether to save the input PDB file fed into the program
+        elif splitArgs[x][0:13].lower() == 'createorigpdb':
+            orig_pdb = splitArgs[x].split('=')[-1].lower()
+            if orig_pdb in ['true', 'yes', 't', 'y']:
+                orig_pdb = True
+            elif orig_pdb in ['false', 'no', 'f', 'n']:
+                orig_pdb = False
+            else:
+                raise ArgumentError(
+                    'Unrecognised value for createorigpdb: {}'.format(orig_pdb)
+                )
+
+        # Specifies whether to create a PDB file of the (filtered) asymmetric
+        # unit
+        elif splitArgs[x][0:11].lower() == 'createaupdb':
+            au_pdb = splitArgs[x].split('=')[-1].lower()
+            if au_pdb in ['true', 'yes', 't', 'y']:
+                au_pdb = True
+            elif au_pdb in ['false', 'no', 'f', 'n']:
+                au_pdb = False
+            else:
+                raise ArgumentError(
+                    'Unrecognised value for createaupdb: {}'.format(au_pdb)
+                )
+
+        # Specifies whether to create a PDB file of the unit cell
+        elif splitArgs[x][0:11].lower() == 'createucpdb':
+            uc_pdb = splitArgs[x].split('=')[-1].lower()
+            if uc_pdb in ['true', 'yes', 't', 'y']:
+                uc_pdb = True
+            elif uc_pdb in ['false', 'no', 'f', 'n']:
+                uc_pdb = False
+            else:
+                raise ArgumentError(
+                    'Unrecognised value for createucpdb: {}'.format(uc_pdb)
+                )
+
+        # Specifies whether to create a PDB file of the 3x3x3 unit cell
+        # assembly
+        elif splitArgs[x][0:12].lower() == 'createaucpdb':
+            auc_pdb = splitArgs[x].split('=')[-1].lower()
+            if auc_pdb in ['true', 'yes', 't', 'y']:
+                auc_pdb = True
+            elif auc_pdb in ['false', 'no', 'f', 'n']:
+                auc_pdb = False
+            else:
+                raise ArgumentError(
+                    'Unrecognised value for createaucpdb: {}'.format(auc_pdb)
+                )
+
+        # Specifies whether to create a PDB file of the trimmed atoms assembly
+        # (which consists of the asymmetric unit, plus every atom in the
+        # 3x3x3 unit cell assembly within a PDT (default=7) Angstrom radius of
+        # the asymmetric unit)
+        elif splitArgs[x][0:11].lower() == 'createtapdb':
+            ta_pdb = splitArgs[x].split('=')[-1].lower()
+            if ta_pdb in ['true', 'yes', 't', 'y']:
+                ta_pdb = True
+            elif ta_pdb in ['false', 'no', 'f', 'n']:
+                ta_pdb = False
+            else:
+                raise ArgumentError(
+                    'Unrecognised value for createtapdb: {}'.format(ta_pdb)
+                )
+
+        else:
+            if splitArgs[x] != '':
+                raise ArgumentError(
+                    'Unrecognised argument {}'.format(splitArgs[x])
+                )
+
+    input_arguments = {'outputDir': outputLoc,
+                       'batchRun': batchVal,
+                       'overwrite': overwriteVal,
+                       'PDT': pdtVal,
+                       'windowSize': windowVal,
+                       'protOrNA': protOrNAVal,
+                       'HETATM': hetatmVal,
+                       'removeAtoms': removeAtomsList,
+                       'addAtoms': addAtomsList,
+                       'highlightAtoms': highlightAtomsList,
+                       'createOrigpdb': orig_pdb,
+                       'createAUpdb': au_pdb,
+                       'createUCpdb': uc_pdb,
+                       'createAUCpdb': auc_pdb,
+                       'createTApdb': ta_pdb}
+
+    return input_arguments
+
+
+def main():
+    """
+    Runs RABDAM pipeline
+    """
+
+    import argparse
+    import math
+    import os
+    import sys
+    import time
+    import numpy as np
+
+    if __name__ == '__main__' or 'CCP4' in list(os.environ.keys()):
+        from Subroutines.CalculateBDamage import rabdam
+    else:
+        from rabdam.Subroutines.CalculateBDamage import rabdam
+
+    # Parses in command line arguments
+    args = parse_command_line_arguments(sys.argv[1:])
 
     # Initialises program start time
     start = time.time()
@@ -88,53 +477,13 @@ def main():
         day, month, year, hour, minute, second
         ))
 
-    # Checks options specified for output files are allowed. If no output files
-    # are specified, sets default option (= generate all output files).
-    all_output_options = ['csv', 'pdb', 'cif', 'kde', 'bnet', 'summary']
-    if vars(args)['output'] is None:
-        vars(args)['output'] = all_output_options
-    output_options = [item.lower() for item in vars(args)['output']]
-
-    unrecognised_options = []
-    if any(option not in all_output_options for option in output_options):
-        unrecognised_options.append(option)
-    if len(unrecognised_options) >= 1:
-        raise ArgumentError(
-            'Unrecognised output options {} requested.\nPlease specify one or more '
-            'of the following: {}.\n'.format(unrecognised_options, all_output_options)
-        )
-
-    # Checks options specified for RABDAM run are allowed. If not specified, by
-    # default runs the full analysis pipeline.
-    all_run_options = ['dataframe', 'df', 'analysis', None]
-    if not vars(args)['run'] in all_run_options:
-        raise ArgumentError(
-            'Unrecognised run option: {}\nPlease either specify one of the '
-            'following options: {}\nOR remove the -r flag (which will direct '
-            'RABDAM to run the full analysis pipeline).'.format(vars(args)['run'],
-             all_run_options)
-        )
-
-    cwd = os.getcwd()
     # Reads in program options from input file specified by -i flag
     if vars(args)['input'] is not None:
-        # Reads in PDB and cif file name(s) listed in input file
-        input_file_loc = vars(args)['input']
-        # Checks input file exists
-        if not os.path.isfile(input_file_loc):
-            raise FileNotFoundError(
-                'Specified input file {} does not exist'.format(input_file_loc)
-            )
-        input_file_loc = input_file_loc.replace('\\', '/')
-        input_file_loc_list = input_file_loc.split('/')
-        input_file = input_file_loc_list[len(input_file_loc_list)-1]
-        if len(input_file_loc_list) > 1:
-            input_file_loc = input_file_loc.replace(input_file, '')
-            os.chdir(input_file_loc)
-        fileCont = open(input_file, 'r')
+        input_file_path = vars(args)['input']
+        input_file_path = input_file_path.replace('\\', '/')
+        fileCont = open(input_file_path, 'r')
         functionArgs = fileCont.read()
         fileCont.close()
-        os.chdir(cwd)
         functionArgs = functionArgs.replace('\n', '')
         functionArgs = functionArgs.replace('\r', '')
         splitArgs = functionArgs.split(',')
@@ -154,262 +503,38 @@ def main():
     if len(pathToInputList) == 0:
         sys.exit('Input file / accession code not specified')
 
-    # Initialises default program options
-    outputLoc = cwd
-    batchVal = False
-    overwriteVal = False
-    pdtList = [7.0]
-    windowList = [0.02]
-    protOrNAVal = 'protein'
-    hetatmVal = False
-    removeAtomsList = []
-    addAtomsList = []
-    highlightAtomsList = []
-    origVal = False
-    auVal = False
-    ucVal = False
-    aucVal = False
-    taVal = False
-
-    # If input file is provided, program options are updated to the values
-    # the user has specified in it
-    for x in range(0, len(splitArgs)):
-        # Specifies location to which output 'Logfiles' directory is written
-        if splitArgs[x][0:3].lower() == 'dir':
-            dirArg = splitArgs[x].split('=')
-            outputLoc = dirArg[len(dirArg)-1]
-            if outputLoc == '':
-                outputLoc = cwd
-            outputLoc = outputLoc.replace('\\', '/')
-
-        # Specifies if an error is encountered when analysing the current
-        # structure whether to exit the program (default) or to continue to
-        # analyse the next listed structure
-        elif splitArgs[x][0:13].lower() == 'batchcontinue':
-            batchArg = splitArgs[x].split('=')
-            batchVal = batchArg[len(batchArg)-1].lower()
-            if batchVal in ['true', 'yes', 't', 'y']:
-                batchVal = True
-            elif batchVal in ['false', 'no', 'f', 'n']:
-                batchVal = False
-
-        # Specifies whether or not to overwrite files of the same name as the
-        # new output files to be created
-        elif splitArgs[x][0:9].lower() == 'overwrite':
-            overwriteArg = splitArgs[x].split('=')
-            overwriteVal = overwriteArg[len(overwriteArg)-1].lower()
-            if overwriteVal in ['true', 'yes', 't', 'y']:
-                overwriteVal = True
-            elif overwriteVal in ['false', 'no', 'f', 'n']:
-                overwriteVal = False
-
-            # If command line output is directed to a file, sets overwriteVal
-            # to True to prevent program from requiring user input to decide
-            # whether to overwrite any pre-existing file(s) with the same file
-            # path(s) as the output file(s) to be written
-            if os.fstat(0) != os.fstat(1):
-                overwriteVal = True
-
-        # Specifies packing density threshold
-        elif splitArgs[x][0:3].lower() == 'pdt':
-            pdtArg = splitArgs[x].split('=')
-            pdtArg = pdtArg[len(pdtArg)-1]
-            if '-' in pdtArg:
-                pdtRange = pdtArg.split('-')
-                min_pdt = float(pdtRange[0])
-                max_pdt = float(pdtRange[len(pdtRange)-1])
-                pdtList = np.arange(min_pdt, max_pdt, 1.0)
-            else:
-                pdtList = [float(pdtArg)]
-
-        # Specifies size of sliding window (as a percentage of the total number
-        # of atoms considered for BDamage analysis)
-        elif splitArgs[x][0:10].lower() == 'windowsize':
-            windowArg = splitArgs[x].split('=')
-            windowArg = windowArg[len(windowArg)-1]
-            windowVals = windowArg.split(';')
-            windowList = []
-            for number in windowVals:
-                if '%' in number:
-                    number = number.replace('%', '')
-                    number = float(number) / 100
-                    windowList.append(number)
-                else:
-                    windowList.append(float(number))
-
-        # Specifies whether to include protein atoms alone, nucleic atoms
-        # alone, or both atom types (if present) in the BDamage calculation
-        elif splitArgs[x][0:20].lower() == 'proteinornucleicacid':
-            protOrNAArg = splitArgs[x].split('=')
-            protOrNAVal = protOrNAArg[len(protOrNAArg)-1].lower()
-            # Temporary variable reassignment to prevent nucleic acid analysis
-            # with RABDAM before the complete functionality has been introduced
-            if protOrNAVal in ['na', 'nucleicacid']:
-                sys.exit('RABDAM is currently only suitable for assessing '
-                         'radiation damage\n'
-                         'to the protein component of macromolecular '
-                         'structures.\n'
-                         'We hope to extend the program to incorporate '
-                         'nucleic acid analysis\n'
-                         'shortly - in the meantime, please restrict your '
-                         'RABDAM analysis to\n'
-                         'protein atoms only.')
-
-        # Specifies whether to remove HETATM from the BDamage calculation or to
-        # retain them
-        elif splitArgs[x][0:6].lower() == 'hetatm':
-            hetatmArg = splitArgs[x].split('=')
-            hetatmVal = hetatmArg[len(hetatmArg)-1].lower()
-            if hetatmVal == 'keep':
-                hetatmVal = True
-            elif hetatmVal == 'remove':
-                hetatmVal = False
-
-        # Lists atoms (via either their atom numbers or their residue names) to
-        # be removed from the BDamage calculation. (This is useful to remove
-        # additional atoms not covered by the proteinOrNucleicAcid / HETATM
-        # options.)
-        elif splitArgs[x][0:11].lower() == 'removeatoms':
-            removeAtomsList = []
-            removeAtomsArg = splitArgs[x].split('=')
-            removeAtomsStr = removeAtomsArg[len(removeAtomsArg)-1].upper()
-            if removeAtomsStr != '':
-                removeAtomsSubList = removeAtomsStr.split(';')
-                for item in removeAtomsSubList:
-                    removeAtomsRange = item.split('-')
-                    if len(removeAtomsRange) == 2:
-                        min_val = int(removeAtomsRange[0])
-                        max_val = int(removeAtomsRange[1])
-                        removeAtomsRange = range(min_val, (max_val+1))
-                        for number in removeAtomsRange:
-                            removeAtomsList.append(str(number))
-                    elif len(removeAtomsRange) == 1:
-                        removeAtomsList.append(removeAtomsRange[0])
-
-        # Lists atoms (via either their atom numbers or their residue names) to
-        # be included in the BDamage calculation. (This is useful to add back
-        # in a subset of atoms of interest that has been removed by the
-        # proteinOrNucleicAcid / HETATM / removeAtoms options.)
-        elif splitArgs[x][0:8].lower() == 'addatoms':
-            addAtomsList = []
-            addAtomsArg = splitArgs[x].split('=')
-            addAtomsStr = addAtomsArg[len(addAtomsArg)-1].upper()
-            if addAtomsStr != '':
-                addAtomsSubList = addAtomsStr.split(';')
-                for item in addAtomsSubList:
-                    addAtomsRange = item.split('-')
-                    if len(addAtomsRange) == 2:
-                        min_val = int(addAtomsRange[0])
-                        max_val = int(addAtomsRange[1])
-                        addAtomsRange = range(min_val, (max_val+1))
-                        for number in addAtomsRange:
-                            addAtomsList.append(str(number))
-                    elif len(addAtomsRange) == 1:
-                        addAtomsList.append(addAtomsRange[0])
-
-        # Lists atoms (via their atom numbers) whose BDamage values are to be
-        # indicated on the kernel density estimate of the BDamage distribution
-        # output by the program. Note that it is recommended no more than 6
-        # atoms are listed in the highlightAtoms option in the input file
-        # (beyond 6 atoms, the colour scheme will repeat itself, and in
-        # addition the key may not fit onto the graph).
-        elif splitArgs[x][0:14].lower() == 'highlightatoms':
-            highlightAtomsList = []
-            highlightAtomsArg = splitArgs[x].split('=')
-            highlightAtomsStr = highlightAtomsArg[len(highlightAtomsArg)-1]
-            if highlightAtomsStr != '':
-                highlightAtomsSubList = highlightAtomsStr.split(';')
-                for item in highlightAtomsSubList:
-                    highlightAtomsRange = item.split('-')
-                    if len(highlightAtomsRange) == 2:
-                        min_val = int(highlightAtomsRange[0])
-                        max_val = int(highlightAtomsRange[1])
-                        highlightAtomsRange = range(min_val, (max_val+1))
-                        for number in highlightAtomsRange:
-                            highlightAtomsList.append(str(number))
-                    elif len(highlightAtomsRange) == 1:
-                        highlightAtomsList.append(highlightAtomsRange[0])
-
-        # Specifies whether to save the input PDB file fed into the program
-        elif splitArgs[x][0:11].lower() == 'createorigpdb':
-            origArg = splitArgs[x].split('=')
-            origVal = origArg[len(origArg)-1].lower()
-            if origVal in ['true', 'yes', 't', 'y']:
-                origVal = True
-            elif origVal in ['false', 'no', 'f', 'n']:
-                origVal = False
-
-        # Specifies whether to create a PDB file of the (filtered) asymmetric
-        # unit
-        elif splitArgs[x][0:11].lower() == 'createaupdb':
-            auArg = splitArgs[x].split('=')
-            auVal = auArg[len(auArg)-1].lower()
-            if auVal in ['true', 'yes', 't', 'y']:
-                auVal = True
-            elif auVal in ['false', 'no', 'f', 'n']:
-                auVal = False
-
-        # Specifies whether to create a PDB file of the unit cell
-        elif splitArgs[x][0:11].lower() == 'createucpdb':
-            ucArg = splitArgs[x].split('=')
-            ucVal = ucArg[len(ucArg)-1].lower()
-            if ucVal in ['true', 'yes', 't', 'y']:
-                ucVal = True
-            elif ucVal in ['false', 'no', 'f', 'n']:
-                ucVal = False
-
-        # Specifies whether to create a PDB file of the 3x3x3 unit cell
-        # assembly
-        elif splitArgs[x][0:12].lower() == 'createaucpdb':
-            aucArg = splitArgs[x].split('=')
-            aucVal = aucArg[len(aucArg)-1].lower()
-            if aucVal in ['true', 'yes', 't', 'y']:
-                aucVal = True
-            elif aucVal in ['false', 'no', 'f', 'n']:
-                aucVal = False
-
-        # Specifies whether to create a PDB file of the trimmed atoms assembly
-        # (which consists of the asymmetric unit, plus every atom in the
-        # 3x3x3 unit cell assembly within a PDT (default=7) Angstrom radius of
-        # the asymmetric unit)
-        elif splitArgs[x][0:11].lower() == 'createtapdb':
-            taArg = splitArgs[x].split('=')
-            taVal = taArg[len(taArg)-1].lower()
-            if taVal in ['true', 'yes', 't', 'y']:
-                taVal = True
-            elif taVal in ['false', 'no', 'f', 'n']:
-                taVal = False
+    # Parses in input arguments if input file specified with -i flag / sets to
+    # default if only file name / accession code specified with -f flag
+    input_arguments = parse_input_file_arguments(splitArgs)
 
     # Runs the BDamage calculation for every specified PDB file
     for item in pathToInputList:
-        for windowVal in windowList:
-            for pdtVal in pdtList:
-                # Initialises rabdam object
-                pdb = rabdam(pathToInput=item, outputDir=outputLoc,
-                             batchRun=batchVal, overwrite=overwriteVal,
-                             PDT=pdtVal, windowSize=windowVal,
-                             protOrNA=protOrNAVal, HETATM=hetatmVal,
-                             addAtoms=addAtomsList,
-                             removeAtoms=removeAtomsList,
-                             highlightAtoms=highlightAtomsList,
-                             createOrigpdb=origVal, createAUpdb=auVal,
-                             createUCpdb=ucVal, createAUCpdb=aucVal,
-                             createTApdb=taVal)
-                if vars(args)['run'] is None:
-                    # Runs full program
-                    pdb.rabdam_dataframe(run='rabdam')
-                    pdb.rabdam_analysis(run='rabdam',
-                                        output_options=output_options)
-                elif vars(args)['run'].lower() in ['dataframe', 'df']:
-                    # Runs subset of program; calculates BDamage values and
-                    # writes them to a DataFrame
-                    pdb.rabdam_dataframe(run='rabdam_dataframe')
-                elif vars(args)['run'].lower() in ['analysis']:
-                    # Runs subset of program; generates output analysis files
-                    # from pre-calculated BDamage values
-                    pdb.rabdam_analysis(run='rabdam_analysis',
-                                        output_options=output_options)
+        # Initialises rabdam object
+        pdb = rabdam(
+            pathToInput=item,
+            outputDir=input_arguments['outputDir'],
+            batchRun=input_arguments['batchRun'],
+            overwrite=input_arguments['overwrite'],
+            PDT=input_arguments['PDT'],
+            windowSize=input_arguments['windowSize'],
+            protOrNA=input_arguments['protOrNA'],
+            HETATM=input_arguments['HETATM'],
+            removeAtoms=input_arguments['removeAtoms'],
+            addAtoms=input_arguments['addAtoms'],
+            highlightAtoms=input_arguments['highlightAtoms'],
+            createOrigpdb=input_arguments['createOrigpdb'],
+            createAUpdb=input_arguments['createAUpdb'],
+            createUCpdb=input_arguments['createUCpdb'],
+            createAUCpdb=input_arguments['createAUCpdb'],
+            createTApdb=input_arguments['createTApdb']
+        )
 
+        if vars(args)['run'] in [None, 'dataframe', 'df']:
+            # Calculates BDamage values and writes them to a DataFrame
+            pdb.rabdam_dataframe()
+        if vars(args)['run'] in [None, 'analysis']:
+            # Generates output analysis files from pre-calculated BDamage values
+            pdb.rabdam_analysis(output_options=vars(args)['output'])
 
     # Prints total program run time to screen
     runtime = time.time() - start

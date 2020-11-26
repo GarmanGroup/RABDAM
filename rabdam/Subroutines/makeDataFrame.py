@@ -117,7 +117,6 @@ def makePDB(header_lines, atomList, footer_lines, seqres, newPDBfilename, Bfac):
             newLine = ''.join([a, b, '  ', c, d, e, ' ', f, g, h, '   ', i, j,
                                k, l, m, '          ', n, o, '\n'])
             newPDBfile.write(newLine)
-            print(newLine)
 
             # Inserts TER cards
             if index != (len(atomList) - 1):

@@ -369,7 +369,7 @@ class generate_output_files(object):
             bnet_list.write('Bnet' + '\n')
             bnet_list.close()
         bnet_list = open('Logfiles/Bnet_{}.csv'.format(prot_or_na), 'a')
-        bnet_list.write('%s,%s\n' % self.pdb_code, ratio)
+        bnet_list.write('%s,%s\n' % (self.pdb_code, ratio))
         bnet_list.close()
 
         bnet_df = pd.DataFrame({'PDB': [self.pdb_code],
