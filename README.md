@@ -3,6 +3,7 @@
 [![Python Version](https://img.shields.io/badge/python-2.7-blue.svg)](https://www.python.org/download/releases/2.7/)
 [![Python Version](https://img.shields.io/badge/python-3.6-blue.svg)](https://www.python.org/download/releases/3.6/)
 [![LGPL licensed](https://img.shields.io/badge/license-LGPL%20v3-blue.svg)](https://github.com/GarmanGroup/RABDAM/blob/master/COPYING.LESSER)
+[![GarmanGroup](https://circleci.com/gh/GarmanGroup/RABDAM.svg?style=svg)](https://circleci.com/gh/GarmanGroup/RABDAM)
 
 A program to calculate the *B*<sub>Damage</sub> and *B*<sub>net</sub> metrics to quantify the extent of specific radiation damage present within an individual MX structure. Suitable for running on any standard format PDB or mmCif file.
 

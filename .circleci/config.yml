@@ -1,7 +1,7 @@
 
 version: 2.1
 jobs:
-  build:
+  test3_6:
     docker:
       - image: python:3.6
     steps:
@@ -9,10 +9,17 @@ jobs:
       - run: pip install -r requirements.txt
       - run: python -m unittest tests.test_parse_input_file
 
-  build:
+  test2_7:
     docker:
       - image: python:2.7
     steps:
       - checkout
       - run: pip install -r requirements.txt
       - run: python -m unittest tests.test_parse_input_file
+
+
+workflows:
+  test:
+    jobs:
+      - test3_6
+      - test2_7
