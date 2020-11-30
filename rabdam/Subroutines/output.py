@@ -74,11 +74,11 @@ class generate_output_files(object):
 
         cif_data = {'lineID': [None]*len(atom_list),
                     'atomNum': [None]*len(atom_list),
-                    'atomType': [None]*len(atom_list),
+                    'origAtomType': [None]*len(atom_list),
                     'conformer': [None]*len(atom_list),
-                    'resiType': [None]*len(atom_list),
-                    'chainID': [None]*len(atom_list),
-                    'resiNum': [None]*len(atom_list),
+                    'origResiType': [None]*len(atom_list),
+                    'origChainID': [None]*len(atom_list),
+                    'origResiNum': [None]*len(atom_list),
                     'insCode': [None]*len(atom_list),
                     'x': [None]*len(atom_list),
                     'y': [None]*len(atom_list),
@@ -87,20 +87,20 @@ class generate_output_files(object):
                     'bFactor': [None]*len(atom_list),
                     'element': [None]*len(atom_list),
                     'charge': [None]*len(atom_list),
-                    'origResiNum': [None]*len(atom_list),
-                    'origResiType': [None]*len(atom_list),
-                    'origChainID': [None]*len(atom_list),
-                    'origAtomType': [None]*len(atom_list),
+                    'resiNum': [None]*len(atom_list),
+                    'resiType': [None]*len(atom_list),
+                    'chainID': [None]*len(atom_list),
+                    'atomType': [None]*len(atom_list),
                     'pd': [None]*len(atom_list),
                     'avrg_bf': [None]*len(atom_list),
                     'bd': [None]*len(atom_list)}
         cif_column_widths = {'lineID': 0,
                              'atomNum': 0,
-                             'atomType': 0,
+                             'origAtomType': 0,
                              'conformer': 0,
-                             'resiType': 0,
-                             'chainID': 0,
-                             'resiNum': 0,
+                             'origResiType': 0,
+                             'origChainID': 0,
+                             'origResiNum': 0,
                              'insCode': 0,
                              'x': 0,
                              'y': 0,
@@ -109,10 +109,10 @@ class generate_output_files(object):
                              'bFactor': 0,
                              'element': 0,
                              'charge': 0,
-                             'origResiNum': 0,
-                             'origResiType': 0,
-                             'origChainID': 0,
-                             'origAtomType': 0,
+                             'resiNum': 0,
+                             'resiType': 0,
+                             'chainID': 0,
+                             'atomType': 0,
                              'pd': 0,
                              'avrg_bf': 0,
                              'bd': 0}
@@ -124,21 +124,21 @@ class generate_output_files(object):
             cif_data['atomNum'][index] = str(atom.atomNum)
             if len(cif_data['atomNum'][index]) > cif_column_widths['atomNum']:
                 cif_column_widths['atomNum'] = len(cif_data['atomNum'][index])
-            cif_data['atomType'][index] = atom.atomType
-            if len(cif_data['atomType'][index]) > cif_column_widths['atomType']:
-                cif_column_widths['atomType'] = len(cif_data['atomType'][index])
+            cif_data['origAtomType'][index] = atom.origAtomType
+            if len(cif_data['origAtomType'][index]) > cif_column_widths['origAtomType']:
+                cif_column_widths['origAtomType'] = len(cif_data['origAtomType'][index])
             cif_data['conformer'][index] = atom.conformer
             if len(cif_data['conformer'][index]) > cif_column_widths['conformer']:
                 cif_column_widths['conformer'] = len(cif_data['conformer'][index])
-            cif_data['resiType'][index] = atom.resiType
-            if len(cif_data['resiType'][index]) > cif_column_widths['resiType']:
-                cif_column_widths['resiType'] = len(cif_data['resiType'][index])
-            cif_data['chainID'][index] = atom.chainID
-            if len(cif_data['chainID'][index]) > cif_column_widths['chainID']:
-                cif_column_widths['chainID'] = len(cif_data['chainID'][index])
-            cif_data['resiNum'][index] = str(atom.resiNum)
-            if len(cif_data['resiNum'][index]) > cif_column_widths['resiNum']:
-                cif_column_widths['resiNum'] = len(cif_data['resiNum'][index])
+            cif_data['origResiType'][index] = atom.origResiType
+            if len(cif_data['origResiType'][index]) > cif_column_widths['origResiType']:
+                cif_column_widths['origResiType'] = len(cif_data['origResiType'][index])
+            cif_data['origChainID'][index] = atom.origChainID
+            if len(cif_data['origChainID'][index]) > cif_column_widths['origChainID']:
+                cif_column_widths['origChainID'] = len(cif_data['origChainID'][index])
+            cif_data['origResiNum'][index] = atom.origResiNum
+            if len(cif_data['origResiNum'][index]) > cif_column_widths['origResiNum']:
+                cif_column_widths['origResiNum'] = len(cif_data['origResiNum'][index])
             cif_data['insCode'][index] = atom.insCode
             if len(cif_data['insCode'][index]) > cif_column_widths['insCode']:
                 cif_column_widths['insCode'] = len(cif_data['insCode'][index])
@@ -163,18 +163,18 @@ class generate_output_files(object):
             cif_data['charge'][index] = atom.charge
             if len(cif_data['charge'][index]) > cif_column_widths['charge']:
                 cif_column_widths['charge'] = len(cif_data['charge'][index])
-            cif_data['origResiNum'][index] = atom.origResiNum
-            if len(cif_data['origResiNum'][index]) > cif_column_widths['origResiNum']:
-                cif_column_widths['origResiNum'] = len(cif_data['origResiNum'][index])
-            cif_data['origResiType'][index] = atom.origResiType
-            if len(cif_data['origResiType'][index]) > cif_column_widths['origResiType']:
-                cif_column_widths['origResiType'] = len(cif_data['origResiType'][index])
-            cif_data['origChainID'][index] = atom.origChainID
-            if len(cif_data['origChainID'][index]) > cif_column_widths['origChainID']:
-                cif_column_widths['origChainID'] = len(cif_data['origChainID'][index])
-            cif_data['origAtomType'][index] = atom.origAtomType
-            if len(cif_data['origAtomType'][index]) > cif_column_widths['origAtomType']:
-                cif_column_widths['origAtomType'] = len(cif_data['origAtomType'][index])
+            cif_data['resiNum'][index] = str(atom.resiNum)
+            if len(cif_data['resiNum'][index]) > cif_column_widths['resiNum']:
+                cif_column_widths['resiNum'] = len(cif_data['resiNum'][index])
+            cif_data['resiType'][index] = atom.resiType
+            if len(cif_data['resiType'][index]) > cif_column_widths['resiType']:
+                cif_column_widths['resiType'] = len(cif_data['resiType'][index])
+            cif_data['chainID'][index] = atom.chainID
+            if len(cif_data['chainID'][index]) > cif_column_widths['chainID']:
+                cif_column_widths['chainID'] = len(cif_data['chainID'][index])
+            cif_data['atomType'][index] = atom.atomType
+            if len(cif_data['atomType'][index]) > cif_column_widths['atomType']:
+                cif_column_widths['atomType'] = len(cif_data['atomType'][index])
             cif_data['pd'][index] = str(atom.pd)
             if len(cif_data['pd'][index]) > cif_column_widths['pd']:
                 cif_column_widths['pd'] = len(cif_data['pd'][index])
@@ -196,7 +196,6 @@ class generate_output_files(object):
                     else:
                         repl_value_list.append(val.ljust(cif_column_widths[key]))
                 cif_data[key] = repl_value_list
-        cif_df = pd.DataFrame(cif_data)
 
         # Writes output mmCIF file
         new_cif = open('%s_BDamage.cif' % self.out_file_start, 'w')
@@ -228,11 +227,11 @@ class generate_output_files(object):
             cif_line = [cif_data['lineID'][index],
                         cif_data['atomNum'][index],
                         cif_data['element'][index],
-                        cif_data['atomType'][index],
+                        cif_data['origAtomType'][index],
                         cif_data['conformer'][index],
-                        cif_data['resiType'][index],
-                        cif_data['chainID'][index],
-                        cif_data['resiNum'][index],
+                        cif_data['origResiType'][index],
+                        cif_data['origChainID'][index],
+                        cif_data['origResiNum'][index],
                         cif_data['insCode'][index],
                         cif_data['x'][index],
                         cif_data['y'][index],
@@ -243,10 +242,10 @@ class generate_output_files(object):
                         cif_data['pd'][index],
                         cif_data['avrg_bf'][index],
                         cif_data['charge'][index],
-                        cif_data['origResiNum'][index],
-                        cif_data['origResiType'][index],
-                        cif_data['origChainID'][index],
-                        cif_data['origAtomType'][index]]
+                        cif_data['resiNum'][index],
+                        cif_data['resiType'][index],
+                        cif_data['chainID'][index],
+                        cif_data['atomType'][index]]
             cif_line = ' '.join(cif_line)
             new_cif.write('{}\n'.format(cif_line))
         new_cif.write('#\n')

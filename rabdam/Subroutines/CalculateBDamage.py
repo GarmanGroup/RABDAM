@@ -51,7 +51,6 @@ class rabdam(object):
         import sys
         import os
         import shutil
-        import requests
         import numpy as np
         import pickle
 
@@ -171,19 +170,6 @@ class rabdam(object):
             file_name_start = '%s%s' % (PDBdirectory, PDBcode)
             pathToInput = '%s%s.cif' % (PDBdirectory, PDBcode)
 
-            # Checks whether accession code exists - if not, exit program
-            # with error message
-            mmcif_url = 'https://files.rcsb.org/view/%s.cif' % PDBcode
-            header = requests.get(mmcif_url)
-            if header.status_code != 200:
-                print('\n\nERROR: Failed to download %s mmCIF file with '
-                      'accession code %s:\nCheck that a structure with this '
-                      'accession code exists.' % (url[-4:], PDBcode))
-                if self.batchRun is False:
-                    sys.exit()
-                elif self.batchRun is True:
-                    return
-
             # If directory with same name as PDBdirectory already exists in
             # 'Logfiles' directory, user input is requested ('Do you want to
             # overwrite the existing folder?'):
@@ -214,7 +200,12 @@ class rabdam(object):
                     if owChoice == 'yes' or owChoice == 'y':
                         print('\nOverwriting existing folder')
                         shutil.rmtree(PDBdirectory)
-                        download_mmcif(PDBcode, PDBdirectory, pathToInput)
+                        exit = download_mmcif(PDBcode, PDBdirectory, pathToInput)
+                        if exit is True:
+                            if self.batchRun is False:
+                                sys.exit()
+                            elif self.batchRun is True:
+                                return
                         break
                     elif owChoice == 'no' or owChoice == 'n':
                         print('\nKeeping original folder\n')
@@ -501,7 +492,7 @@ class rabdam(object):
             auc_pdb_atom_list = convert_array_to_atom_list(
                 transAtomList, transAtomIDList, ucAtomList
             )
-            makePDB('', auc_pdb_atom_list, '', seqres, aucPDBfilepath, 'Bfactor')
+            makePDB([], auc_pdb_atom_list, [], seqres, aucPDBfilepath, 'bfactor')
 
         print('\n************** End of Translate Unit Cell Section **************\n'
               '****************************************************************\n')
@@ -550,7 +541,7 @@ class rabdam(object):
             ta_pdb_atom_list = convert_array_to_atom_list(
                 trimmedAtomList, trimmedAtomIDList, ucAtomList
             )
-            makePDB('', ta_pdb_atom_list, '', seqres, taPDBfilepath, 'Bfactor')
+            makePDB([], ta_pdb_atom_list, [], seqres, taPDBfilepath, 'bfactor')
 
         print('\n****************** End of Trim Crystal Section *****************\n'
               '****************************************************************\n')
@@ -754,7 +745,7 @@ class rabdam(object):
         if 'pdb' in output_options:
             print('\nWriting PDB file with BDamage values replacing Bfactors')
             pdb_file_name = file_name_start + '_BDamage.pdb'
-            makePDB('', bdamAtomList, '', seqres, pdb_file_name, 'BDamage')
+            makePDB([], bdamAtomList, [], seqres, pdb_file_name, 'bdamage')
 
         if 'cif' in output_options:
             print('\nWriting cif file with BDamage column')

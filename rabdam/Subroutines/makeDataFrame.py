@@ -25,14 +25,12 @@ def convert_array_to_atom_list(array, all_atoms_list, sub_atoms_list):
     for use in writing a PDB file
     """
 
-    atom_id_list, atom_list
-
     import copy
     import numpy as np
 
     pdb_atom_list = []
     for index, atom_id in enumerate(all_atoms_list):
-        for atom in sub_atom_list:
+        for atom in sub_atoms_list:
             if atom.atomNum == atom_id:
                 new_atom = copy.deepcopy(atom)
                 newXYZ = np.array([[array[index][0]],
@@ -54,9 +52,11 @@ def makePDB(header_lines, atomList, footer_lines, seqres, newPDBfilename, Bfac):
     import numpy as np
 
     exit = False
-    newPDBfile = open(newPDBfilename, 'a')
+    newPDBfile = open(newPDBfilename, 'w')
 
     for line in header_lines:
+        if not line.endswith('\n'):
+            line += '\n'
         newPDBfile.write(line)
 
     for index, atm in enumerate(atomList):
@@ -92,11 +92,11 @@ def makePDB(header_lines, atomList, footer_lines, seqres, newPDBfilename, Bfac):
         l = '%6.2f' % atm.occupancy
         if len(l) != 6:
             exit = True
-        if Bfac == 'Bfactor':
+        if Bfac.lower() == 'bfactor':
             m = '%6.2f' % atm.bFactor
             if len(m) != 6:
                 exit = True
-        elif Bfac == 'BDamage':
+        elif Bfac.lower() == 'bdamage':
             m = '%6.2f' % np.log(atm.bd)
             if len(m) != 6:
                 exit = True
@@ -125,12 +125,14 @@ def makePDB(header_lines, atomList, footer_lines, seqres, newPDBfilename, Bfac):
                     and ((atm.resiNum+1) != atomList[index+1].resiNum)
                     and (atm.resiType in seqres)
                 ):
-                    newPDBfile.write('TER\n')
+                    newPDBfile.write('TER'.ljust(80) + '\n')
             else:
                 if atm.resiType in seqres:
-                    newPDBfile.write('TER\n')
+                    newPDBfile.write('TER'.ljust(80) + '\n')
 
     for line in footer_lines:
+        if not line.endswith('\n'):
+            line += '\n'
         newPDBfile.write(line)
 
     print('New PDB file saved to %s' % newPDBfilename)

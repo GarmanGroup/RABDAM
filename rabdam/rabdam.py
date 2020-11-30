@@ -30,7 +30,7 @@ class FileDoesNotExistError(Exception):
     pass
 
 
-def parse_command_line_arguments(command_line):
+def parse_command_line_arguments(command_line, test=False):
     """
     Reads in command line arguments and checks that there are no unexpected
     argument values.
@@ -39,10 +39,13 @@ def parse_command_line_arguments(command_line):
     import argparse
     import os
 
-    if __name__ == '__main__' or 'CCP4' in list(os.environ.keys()):
-        from Subroutines.checkDependencies import check_RABDAM_dependencies
-    else:
+    if test is True:
         from rabdam.Subroutines.checkDependencies import check_RABDAM_dependencies
+    else:
+        if __name__ == '__main__' or 'CCP4' in list(os.environ.keys()):
+            from Subroutines.checkDependencies import check_RABDAM_dependencies
+        else:
+            from rabdam.Subroutines.checkDependencies import check_RABDAM_dependencies
 
     # Reads in command line inputs. There are three recognised flags: -i, -f
     # and -o. Program inputs are specified by either the -i or the -f flag;

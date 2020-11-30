@@ -26,11 +26,12 @@ class atom(object):
     BDamage calculation).
     """
 
-    def __init__(self, lineidentifier='', atomnum=0, atomtype='', conformer='',
-                 resitype='', chainID='', resinum=0, insertioncode='',
-                 xyz_coords=[], element='', bfactor=0, occupancy=0, charge='',
-                 orig_resinum=0, orig_resitype='', orig_chainID='',
-                 orig_atomtype='', packingdensity=0, avrg_bfactor=0, bdamage=0):
+    def __init__(self, lineidentifier=None, atomnum=None, atomtype=None,
+                 conformer=None, resitype=None, chainID=None, resinum=None,
+                 insertioncode=None, xyz_coords=None, element=None,
+                 bfactor=None, occupancy=None, charge=None, orig_resinum=None,
+                 orig_resitype=None, orig_chainID=None, orig_atomtype=None,
+                 packingdensity=None, avrg_bfactor=None, bdamage=None):
         self.lineID = lineidentifier
         self.atomNum = atomnum
         self.atomType = atomtype
@@ -52,6 +53,32 @@ class atom(object):
         self.avrg_bf = avrg_bfactor
         self.bd = bdamage
 
+    def __eq__(self, other):
+        """
+        Allows atom objects to be compared during unit testing
+        """
+
+        return self.lineID == other.lineID and \
+               self.atomNum == other.atomNum and \
+               self.atomType == other.atomType and \
+               self.conformer == other.conformer and \
+               self.resiType == other.resiType and \
+               self.chainID == other.chainID and \
+               self.resiNum == other.resiNum and \
+               self.insCode == other.insCode and \
+               self.xyzCoords == other.xyzCoords and \
+               self.occupancy == other.occupancy and \
+               self.bFactor == other.bFactor and \
+               self.element == other.element and \
+               self.charge == other.charge and \
+               self.origResiNum == other.origResiNum and \
+               self.origResiType == other.origResiType and \
+               self.origChainID == other.origChainID and \
+               self.origAtomType == other.origAtomType and \
+               self.pd == other.pd and \
+               self.avrg_bf == other.avrg_bf and \
+               self.bd == other.bd
+
 
 def download_mmcif(PDBcode, PDBdirectory, pathToCIF):
     """
@@ -61,17 +88,29 @@ def download_mmcif(PDBcode, PDBdirectory, pathToCIF):
     import os
     import requests
 
-    cif_url = 'https://files.rcsb.org/view/%s.cif' % PDBcode
+    # Checks whether accession code exists - if not, exit program
+    # with error message
+    exit = False
+    mmcif_url = 'https://files.rcsb.org/view/%s.cif' % PDBcode
+    header = requests.get(mmcif_url)
+    if header.status_code != 200:
+        print('\n\nERROR: Failed to download %s mmCIF file with accession '
+              'code %s:\nCheck that a structure with this accession code '
+              'exists.' % (mmcif_url[-4:], PDBcode))
+        exit = True
 
+    # Downloads and saves mmCIF file
     os.makedirs(PDBdirectory)
     print('\nDirectory %s created' % PDBdirectory)
 
-    origCIF = requests.get(cif_url)
-    print('Downloaded mmCIF file from %s' % cif_url)
+    origCIF = requests.get(mmcif_url)
+    print('Downloaded mmCIF file from %s' % mmcif_url)
     cif_file = open(pathToCIF, 'w')
     cif_file.write(origCIF.text)
     print('mmCIF file saved to %s' % pathToCIF)
     cif_file.close()
+
+    return exit
 
 
 def copy_input(pathToInput, disk, newPathToInput, PDBdirectory):

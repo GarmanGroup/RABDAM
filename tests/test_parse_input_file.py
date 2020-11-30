@@ -18,13 +18,13 @@ class TestClass(unittest.TestCase):
 
         command_line_1 = []
         self.assertRaises(
-            SystemExit, parse_command_line_arguments, command_line_1
+            SystemExit, parse_command_line_arguments, command_line_1, True
         )
 
-        command_line_3 = ['-i', 'tests/test_files/example input 1.txt']
-        act_parsed_3 = parse_command_line_arguments(command_line_3)
+        command_line_3 = ['-i', 'tests/test_files/example input.txt']
+        act_parsed_3 = parse_command_line_arguments(command_line_3, True)
         exp_parsed_3 = argparse.Namespace(
-            dependencies=False, input='tests/test_files/example input 1.txt',
+            dependencies=False, input='tests/test_files/example input.txt',
             pdb_or_mmcif_file=None, output=['csv', 'pdb', 'cif', 'kde', 'bnet',
             'summary'], run=None
         )
@@ -32,11 +32,12 @@ class TestClass(unittest.TestCase):
 
         command_line_4 = ['-i', 'does_not_exist.txt']
         self.assertRaises(
-            FileDoesNotExistError, parse_command_line_arguments, command_line_4
+            FileDoesNotExistError, parse_command_line_arguments, command_line_4,
+            True
         )
 
         command_line_5 = ['-f', '2bn1']
-        act_parsed_5 = parse_command_line_arguments(command_line_5)
+        act_parsed_5 = parse_command_line_arguments(command_line_5, True)
         exp_parsed_5 = argparse.Namespace(
             dependencies=False, input=None, pdb_or_mmcif_file=['2bn1'],
             output=['csv', 'pdb', 'cif', 'kde', 'bnet', 'summary'], run=None
@@ -44,7 +45,7 @@ class TestClass(unittest.TestCase):
         self.assertEqual(act_parsed_5, exp_parsed_5)
 
         command_line_6 = ['-f', '5eeu', '5eev', '5eew']
-        act_parsed_6 = parse_command_line_arguments(command_line_6)
+        act_parsed_6 = parse_command_line_arguments(command_line_6, True)
         exp_parsed_6 = argparse.Namespace(
             dependencies=False, input=None, pdb_or_mmcif_file=['5eeu', '5eev',
             '5eew'], output=['csv', 'pdb', 'cif', 'kde', 'bnet', 'summary'],
@@ -53,10 +54,12 @@ class TestClass(unittest.TestCase):
         self.assertEqual(act_parsed_6, exp_parsed_6)
 
         command_line_7 = ['-o', 'csv', 'cif', 'pdb']
-        self.assertRaises(SystemExit, parse_command_line_arguments, command_line_7)
+        self.assertRaises(
+            SystemExit, parse_command_line_arguments, command_line_7, True
+        )
 
         command_line_8 = ['-o', 'csv', 'cif', 'pdb', '-f', '2bn1']
-        act_parsed_8 = parse_command_line_arguments(command_line_8)
+        act_parsed_8 = parse_command_line_arguments(command_line_8, True)
         exp_parsed_8 = argparse.Namespace(
             dependencies=False, input=None, pdb_or_mmcif_file=['2bn1'],
             output=['csv', 'cif', 'pdb'], run=None
@@ -64,7 +67,7 @@ class TestClass(unittest.TestCase):
         self.assertEqual(act_parsed_8, exp_parsed_8)
 
         command_line_9 = ['-o', 'csv', 'CIF', '-f', '2bn1']
-        act_parsed_9 = parse_command_line_arguments(command_line_9)
+        act_parsed_9 = parse_command_line_arguments(command_line_9, True)
         exp_parsed_9 = argparse.Namespace(
             dependencies=False, input=None, pdb_or_mmcif_file=['2bn1'],
             output=['csv', 'cif'], run=None
@@ -73,11 +76,11 @@ class TestClass(unittest.TestCase):
 
         command_line_10 = ['-o', 'csv', 'cfi', '-f', '2bn1']
         self.assertRaises(
-            ArgumentError, parse_command_line_arguments, command_line_10
+            ArgumentError, parse_command_line_arguments, command_line_10, True
         )
 
         command_line_11 = ['-r', 'df', '-f', '2bn1']
-        act_parsed_11 = parse_command_line_arguments(command_line_11)
+        act_parsed_11 = parse_command_line_arguments(command_line_11, True)
         exp_parsed_11 = argparse.Namespace(
             dependencies=False, input=None, pdb_or_mmcif_file=['2bn1'],
             output=['csv', 'pdb', 'cif', 'kde', 'bnet', 'summary'], run='df'
@@ -86,7 +89,7 @@ class TestClass(unittest.TestCase):
 
         command_line_12 = ['-r', 'anaylsis', '-f', '2bn1']
         self.assertRaises(
-            ArgumentError, parse_command_line_arguments, command_line_12
+            ArgumentError, parse_command_line_arguments, command_line_12, True
         )
 
     def test_parse_input_file(self):
