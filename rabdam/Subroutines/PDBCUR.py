@@ -546,7 +546,7 @@ def clean_atom_rec(atoms_list, disulfide_bonds, seqres, cryst1_line,
     for atm in atoms_list:
         # Extracts non-hydrogen, non-0 B-factor and non-0 occupancy ATOM /
         # HETATM records
-        if atm.element != 'H' and atm.bFactor > 0 and atm.occupancy > 0:
+        if atm.element != 'H' and atm.bFactor > 0 and 0 < atm.occupancy <= 1:
             filtered_atoms_list.append(copy.deepcopy(atm))
 
             # Checks that all disulfide bonds between CYS residue pairs have
@@ -582,7 +582,7 @@ def clean_atom_rec(atoms_list, disulfide_bonds, seqres, cryst1_line,
             # Checks that all macromolecular atoms in single conformers have an
             # occupancy of 1, and that the occupancies of counterpart atoms in
             # alternate conformers sum to 1.
-            if atm.resiType in seqres and atm.occupancy != 1:
+            if atm.occupancy != 1:
                 atom_id = '_'.join([atm.chainID, str(atm.resiNum), atm.insCode, atm.atomType])
                 if not atom_id in atom_ids:
                     atom_ids[atom_id] = {}
@@ -598,7 +598,7 @@ def clean_atom_rec(atoms_list, disulfide_bonds, seqres, cryst1_line,
 
         # Single conformer selected on a per-atom basis - hence selected atoms
         # could be a mix of residue conformer "A" and residue conformer "B"
-        conformer_index = np.argmax(occupancies.values())
+        conformer_index = np.argmax(list(occupancies.values()))
         conformers = list(occupancies.keys())
         discarded_atoms_list += [
             '{}_{}'.format(atom_id, conformer) for index, conformer

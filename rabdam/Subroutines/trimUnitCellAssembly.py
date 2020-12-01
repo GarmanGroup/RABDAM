@@ -87,9 +87,9 @@ def isInXYZparams(atomXYZ, params):
     x = atomXYZ[0]
     y = atomXYZ[1]
     z = atomXYZ[2]
-    if (    (params[0] < x < params[1])
-        and (params[2] < y < params[3])
-        and (params[4] < z < params[5])
+    if (    (params[0] <= x <= params[1])
+        and (params[2] <= y <= params[3])
+        and (params[4] <= z <= params[5])
     ):
         return True
     else:
@@ -113,8 +113,7 @@ def trimAtoms(atomList, params, atom_id_list, createAUCpdb, createTApdb, pdt):
         atomXYZ = [atomList[num][0], atomList[num][1], atomList[num][2]]
         if isInXYZparams(atomXYZ, params):
             trimmedAtomList.append(atomXYZ)
-            if createAUCpdb is True or createTApdb is True:
-                trimmedAtomIDList.append(atom_id_list[num])
+            trimmedAtomIDList.append(atom_id_list[num])
     trimmedAtomList = np.array(trimmedAtomList)
 
     print('--> %s atoms have been retained' % trimmedAtomList.shape[0])

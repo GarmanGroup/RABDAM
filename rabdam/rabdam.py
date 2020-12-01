@@ -150,7 +150,7 @@ def parse_input_file_arguments(splitArgs):
     # the user has specified in it
     for x in range(0, len(splitArgs)):
         # Specifies location to which output 'Logfiles' directory is written
-        if splitArgs[x][0:3].lower() == 'dir':
+        if splitArgs[x][0:9].lower() == 'outputdir':
             outputLoc = splitArgs[x].split('=')[-1]
             if outputLoc == '':
                 outputLoc = cwd

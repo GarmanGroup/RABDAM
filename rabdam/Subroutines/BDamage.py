@@ -70,8 +70,9 @@ def calcBDam(bdamAtomList, window):
     B-factor values of similarly (identified via sliding window) packed atoms.
     """
 
-    import pandas as pd
     import math
+    import random
+    import pandas as pd
 
     # Initialises lists of the atom properties required to calculate BDamage.
     ATMNUM = [None]*len(bdamAtomList)
@@ -89,6 +90,11 @@ def calcBDam(bdamAtomList, window):
     df = pd.DataFrame({'ATMNUM': ATMNUM,
                        'BFAC': BFAC,
                        'PD': PD})
+    """
+    index = [i for i in range(df.shape[0])]
+    random.shuffle(index)
+    df = df.iloc[index].reset_index(drop=True)
+    """
 
     # DataFrame rows are sorted by packing density (and next by atom number
     # in cases of equal packing density). Average B-factor values are then
@@ -97,6 +103,7 @@ def calcBDam(bdamAtomList, window):
     # close to either edge of the packing density distribution to lie at the
     # centre of a full-sized window, the average B-factor value of each of
     # these atoms is taken from the closest complete window.
+    #df = df.sort_values(by=['PD'], ascending=[True])
     df = df.sort_values(by=['PD', 'ATMNUM'], ascending=[True, True])
     df = df.reset_index(drop=True)
 
@@ -120,7 +127,6 @@ def calcBDam(bdamAtomList, window):
     # ratio of its B factor value to its associated average B factor value.
     atmnum_list = df.ATMNUM.tolist()
     for atm in bdamAtomList:
-        atmnum = atm.atomNum
         index = atmnum_list.index(atm.atomNum)
         atm.avrg_bf = df.AVRG_BF[index]
         atm.bd = atm.bFactor / atm.avrg_bf

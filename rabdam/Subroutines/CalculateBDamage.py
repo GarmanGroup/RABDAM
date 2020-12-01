@@ -333,7 +333,7 @@ class rabdam(object):
         if pathToInput[-4:] == '.cif':
             (atoms_list, disulfide_bonds, seqres, cryst1_line, exit
             ) = parse_mmcif_file(pathToInput)
-        elif pathToInput[-4] == '.pdb':
+        elif pathToInput[-4:] == '.pdb':
             (atoms_list, disulfide_bonds, seqres, cryst1_line, exit
             ) = parse_pdb_file(pathToInput)
 

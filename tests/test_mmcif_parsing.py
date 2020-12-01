@@ -444,9 +444,13 @@ class TestClass(unittest.TestCase):
         Tests that atom objects are correctly converted into mmCIF format
         """
 
+        import os
         import copy
+        import shutil
         import pandas as pd
 
+        if not os.path.isdir('tests/temp_files/'):
+            os.mkdir('tests/temp_files/')
 
         atoms_list = []
         # Taken from 2BN1 and 2QTZ
@@ -558,3 +562,5 @@ class TestClass(unittest.TestCase):
             act_cif_lines = f.read().split('\n')
 
         self.assertEqual(exp_cif_lines, act_cif_lines)
+
+        shutil.rmtree('tests/temp_files/')

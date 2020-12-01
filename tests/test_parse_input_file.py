@@ -121,7 +121,7 @@ class TestClass(unittest.TestCase):
         self.assertDictEqual(act_output_1, exp_output_1)
 
         input_2 = [
-            'dir=tests/', 'batchcontinue=y', 'overwrite=n', 'pdt=4',
+            'outputdir=tests/', 'batchcontinue=y', 'overwrite=n', 'pdt=4',
             'windowsize=0.5', 'proteinornucleicacid=protein', 'hetatm=keep',
             'removeatoms=2;5;7-9;HOH', 'addatoms=NA;FE;45-49;3;FAD',
             'highlightatoms=1-6', 'createorigpdb=YES', 'createaupdb=No',
@@ -144,7 +144,7 @@ class TestClass(unittest.TestCase):
                         'createTApdb': True}
         self.assertDictEqual(act_output_2, exp_output_2)
 
-        input_3 = ['dir=does_not_exist/']
+        input_3 = ['outputdir=does_not_exist/']
         self.assertRaises(FileDoesNotExistError, parse_input_file_arguments, input_3)
 
         input_4 = ['batchcontinue=xyz']

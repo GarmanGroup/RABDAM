@@ -122,7 +122,6 @@ def makePDB(header_lines, atomList, footer_lines, seqres, newPDBfilename, Bfac):
             if index != (len(atomList) - 1):
                 if (
                         (atm.chainID != atomList[index+1].chainID)
-                    and ((atm.resiNum+1) != atomList[index+1].resiNum)
                     and (atm.resiType in seqres)
                 ):
                     newPDBfile.write('TER'.ljust(80) + '\n')

@@ -168,7 +168,12 @@ class TestClass(unittest.TestCase):
         cards are inserted at appropriate locations
         """
 
+        import os
         import copy
+        import shutil
+
+        if not os.path.isdir('tests/temp_files/'):
+            os.mkdir('tests/temp_files/')
 
         atoms_list_1 = []
 
@@ -411,3 +416,5 @@ class TestClass(unittest.TestCase):
         ]
         self.assertEqual(act_pdb_lines_14, exp_pdb_lines_14)
         self.assertFalse(exit_14)
+
+        shutil.rmtree('tests/temp_files/')

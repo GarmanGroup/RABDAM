@@ -124,8 +124,7 @@ def translateUnitCell(ucAtomList, transAtomList, transAtomIDList,
         transAtomList[atom_count][0] = new_atom_xyz[0][0]
         transAtomList[atom_count][1] = new_atom_xyz[1][0]
         transAtomList[atom_count][2] = new_atom_xyz[2][0]
-        if createAUCpdb is True or createTApdb is True:
-            transAtomIDList[atom_count] = item.atomNum
+        transAtomIDList[atom_count] = item.atomNum
         atom_count += 1
 
     print('Successfully translated by (%2sa,%2sb,%2sc) unit cells' % (
