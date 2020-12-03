@@ -41,7 +41,7 @@ class rabdam(object):
         self.createAUCpdb = createAUCpdb
         self.createTApdb = createTApdb
 
-    def rabdam_dataframe(self):
+    def rabdam_dataframe(self, test=False):
         """
         Calculates BDamage for selected atoms within input PDB file and
         writes output to DataFrame.
@@ -374,10 +374,13 @@ class rabdam(object):
                   'no = terminate RABDAM run\n')
             owChoice = None
             while owChoice not in ['yes', 'no', 'y', 'n']:
-                if self.batchRun is True:
-                    owChoice = 'no'
+                if test is True:
+                    owChoice = 'yes'
                 else:
-                    owChoice = user_input(prompt).lower()
+                    if self.batchRun is True:
+                        owChoice = 'no'
+                    else:
+                        owChoice = user_input(prompt).lower()
 
                 if owChoice == 'yes' or owChoice == 'y':
                     print('Continuing RABDAM run\n')

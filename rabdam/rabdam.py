@@ -454,7 +454,7 @@ def parse_input_file_arguments(splitArgs):
     return input_arguments
 
 
-def main():
+def main(test=False):
     """
     Runs RABDAM pipeline
     """
@@ -542,7 +542,7 @@ def main():
 
         if vars(args)['run'] in [None, 'dataframe', 'df']:
             # Calculates BDamage values and writes them to a DataFrame
-            pdb.rabdam_dataframe()
+            pdb.rabdam_dataframe(test)
         if vars(args)['run'] in [None, 'analysis']:
             # Generates output analysis files from pre-calculated BDamage values
             pdb.rabdam_analysis(output_options=vars(args)['output'])

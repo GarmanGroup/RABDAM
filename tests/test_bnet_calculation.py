@@ -167,7 +167,7 @@ class TestClass(unittest.TestCase):
                 createAUCpdb=False,
                 createTApdb=False
             )
-            rabdam_run.rabdam_dataframe()
+            rabdam_run.rabdam_dataframe(test=True)
             rabdam_run.rabdam_analysis(
                 output_options=['csv', 'pdb', 'cif', 'kde', 'bnet', 'summary']
             )
@@ -199,7 +199,7 @@ class TestClass(unittest.TestCase):
                 createAUCpdb=False,
                 createTApdb=False
             )
-            rabdam_run.rabdam_dataframe()
+            rabdam_run.rabdam_dataframe(test=True)
             rabdam_run.rabdam_analysis(
                 output_options=['csv', 'pdb', 'cif', 'kde', 'bnet', 'summary']
             )
