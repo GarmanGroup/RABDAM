@@ -1,6 +1,6 @@
 
 # RABDAM
-# Copyright (C) 2018 Garman Group, University of Oxford
+# Copyright (C) 2020 Garman Group, University of Oxford
 
 # This file is part of RABDAM.
 
@@ -164,9 +164,7 @@ class rabdam(object):
         if len(self.pathToInput) == 4:
             print('Accession code supplied')
             PDBcode = self.pathToInput.upper()
-            window_name = str(100*self.windowSize).replace('.', '_')
-            pdt_name = str(self.PDT).replace('.', '_')
-            PDBdirectory = 'Logfiles/%s_window_%s_pdt_%s/' % (PDBcode, window_name, pdt_name)
+            PDBdirectory = 'Logfiles/%s/' % PDBcode
             file_name_start = '%s%s' % (PDBdirectory, PDBcode)
             pathToInput = '%s%s.cif' % (PDBdirectory, PDBcode)
 
@@ -267,11 +265,7 @@ class rabdam(object):
             splitFilename = splitPath[-1].split('.')
             PDBcode = splitFilename[-2].upper()
             fileName = PDBcode + '.' + splitFilename[-1]
-            window_name = str(100*self.windowSize).replace('.', '_')
-            pdt_name = str(self.PDT).replace('.', '_')
-            PDBdirectory = 'Logfiles/%s_window_%s_pdt_%s/' % (
-                PDBcode, window_name, pdt_name
-                )
+            PDBdirectory = 'Logfiles/%s/' % PDBcode
             file_name_start = '%s%s' % (PDBdirectory, PDBcode)
             newPathToInput = '%s%s' % (PDBdirectory, fileName)
 
@@ -381,7 +375,7 @@ class rabdam(object):
             owChoice = None
             while owChoice not in ['yes', 'no', 'y', 'n']:
                 if self.batchRun is True:
-                    owChoice = 'yes'  # Changed to yes for batch run on PDB only - change back to no before release!
+                    owChoice = 'no'
                 else:
                     owChoice = user_input(prompt).lower()
 
@@ -653,10 +647,7 @@ class rabdam(object):
         for file_type in ['.pdb', '.cif']:
             PDBcode = PDBcode.replace('%s' % file_type, '')
         PDBcode = PDBcode.upper()
-        window_name = str(100*self.windowSize).replace('.', '_')
-        pdt_name = str(self.PDT).replace('.', '_')
-        PDBdirectory = 'Logfiles/%s_window_%s_pdt_%s' % (PDBcode, window_name,
-                                                         pdt_name)
+        PDBdirectory = 'Logfiles/%s/' % PDBcode
         PDB_analysis_file = '%s/%s' % (PDBdirectory, PDBcode)
         storage_directory = '%s/DataFrame' % PDBdirectory
         storage_file = '%s/%s' % (storage_directory, PDBcode)
@@ -757,7 +748,7 @@ class rabdam(object):
 
         if 'bnet' in output_options or 'summary' in output_options:
             print('\nCalculating Bnet')
-            output.calculate_Bnet(window_name, pdt_name, window)
+            output.calculate_Bnet()
 
         if 'summary' in output_options:
             print('\nWriting summary html file\n')

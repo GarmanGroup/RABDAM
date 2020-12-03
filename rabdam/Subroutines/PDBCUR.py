@@ -1,6 +1,6 @@
 
 # RABDAM
-# Copyright (C) 2018 Garman Group, University of Oxford
+# Copyright (C) 2020 Garman Group, University of Oxford
 
 # This file is part of RABDAM.
 
@@ -122,12 +122,18 @@ def find_disulfides_from_mmcif(disulfide_rec, exit):
 
                 chain1 = line[prop_indices['ptnr1_label_asym_id']]
                 resnum1 = int(line[prop_indices['ptnr1_label_seq_id']])
-                inscode1 = line[prop_indices['pdbx_ptnr1_PDB_ins_code']]
+                try:
+                    inscode1 = line[prop_indices['pdbx_ptnr1_PDB_ins_code']]
+                except KeyError:
+                    inscode1 = '?'
                 res1 = [chain1, resnum1, inscode1]
 
                 chain2 = line[prop_indices['ptnr2_label_asym_id']]
                 resnum2 = int(line[prop_indices['ptnr2_label_seq_id']])
-                inscode2 = line[prop_indices['pdbx_ptnr2_PDB_ins_code']]
+                try:
+                    inscode2 = line[prop_indices['pdbx_ptnr2_PDB_ins_code']]
+                except KeyError:
+                    inscode2 = '?'
                 res2 = [chain2, resnum2, inscode2]
 
                 disulfide_bonds[disulf_num] = [res1, res2]
@@ -249,7 +255,7 @@ def parse_atom_rec_from_mmcif(atom_rec, exit):
             prop = line.split('.')[1].strip()
             prop_indices[prop] = prop_num
             prop_num += 1
-        elif line[0:6].strip() in ['ATOM', 'HETATM']:
+        elif any(x in line for x in ['ATOM', 'HETATM']):
             try:
                 line = line.split()
                 new_atom = atom()

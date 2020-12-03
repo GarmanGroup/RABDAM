@@ -5,7 +5,7 @@
 [![LGPL licensed](https://img.shields.io/badge/license-LGPL%20v3-blue.svg)](https://github.com/GarmanGroup/RABDAM/blob/master/COPYING.LESSER)
 [![GarmanGroup](https://circleci.com/gh/GarmanGroup/RABDAM.svg?style=svg)](https://circleci.com/gh/GarmanGroup/RABDAM)
 
-A program to calculate the *B*<sub>Damage</sub> and *B*<sub>net</sub> metrics to quantify the extent of specific radiation damage present within an individual MX structure. Suitable for running on any standard format PDB or mmCif file.
+A program to calculate the *B*<sub>Damage</sub> and *B*<sub>net</sub> metrics to quantify the extent of specific radiation damage present within an individual MX structure. Suitable for running on any standard format PDB or mmCIF file.
 
 \*\***NOTE:** These scripts are under development, and are updated regularly. The program is currently being extended to incorporate nucleic acids analysis. Whilst these new capabilities are being tested, presently RABDAM is restricted to assessing damage to (i) protein crystal structures and (ii) the protein component of protein / nucleic acid crystal structures. If in the meantime you would like to use RABDAM for nucleic acids analysis, please contact the authors at the email address provided at the bottom of the page.\*\*
 
@@ -33,11 +33,11 @@ RABDAM is a command line program. To run the program with its recommended defaul
 
 , where XXXX is the 4 character PDB accession code of the MX structure under study. Alternatively, you can provide RABDAM with an absolute file path to a locally saved PDB file:
 
-`python rabdam.py –f path/to/pdb_file.pdb`
+`python rabdam.py –f /abs/path/to/pdb_file.pdb`
 
-, or to a locally saved mmCif file:
+, or to a locally saved mmCIF file:
 
-`python rabdam.py –f path/to/mmcif_file.cif`
+`python rabdam.py –f /abs/path/to/mmcif_file.cif`
 
 See the “*Usage*” section below for further details.
 
@@ -57,11 +57,11 @@ The method of calculating an atom’s *B*<sub>Damage</sub> value is summarised i
 ___
 
 ![Images/BDamage_methodology.png](Images/BDamage_methodology.png)
-Calculation of the *B*<sub>Damage</sub> metric. From an input PDB / mmCif file of the asymmetric unit of a macromolecule of interest, RABDAM **(A)** generates a copy of the unit cell, followed by **(B)** a 3x3x3 assembly of unit cells. **(C)** Atoms in the 3x3x3 unit cell assembly that lie further than 7 Å from the asymmetric unit are discounted. **(D)** The packing density of an atom *j* in the asymmetric unit is calculated as the number of atoms within a 7 Å radius. **(E)** Asymmetric unit atoms are ordered by packing density; the *B*<sub>Damage</sub> value of atom *j* is then calculated as the ratio of its *B*-factor to the average of the *B*-factor values of atoms grouped, via a sliding window, as occupying a similar packing density environment. Note that hydrogen atoms are not considered in the calculation of *B*<sub>Damage</sub>. Diagrams are shown in 2D rather than 3D for clarity.
+Calculation of the *B*<sub>Damage</sub> metric. From an input PDB / mmCIF file of the asymmetric unit of a macromolecule of interest, RABDAM **(A)** generates a copy of the unit cell, followed by **(B)** a 3x3x3 assembly of unit cells. **(C)** Atoms in the 3x3x3 unit cell assembly that lie further than 7 Å from the asymmetric unit are discounted. **(D)** The packing density of an atom *j* in the asymmetric unit is calculated as the number of atoms within a 7 Å radius. **(E)** Asymmetric unit atoms are ordered by packing density; the *B*<sub>Damage</sub> value of atom *j* is then calculated as the ratio of its *B*-factor to the average of the *B*-factor values of atoms grouped, via a sliding window, as occupying a similar packing density environment. Note that hydrogen atoms are not considered in the calculation of *B*<sub>Damage</sub>. Diagrams are shown in 2D rather than 3D for clarity.
 
 ___
 
-*B*<sub>Damage</sub> values are calculated from full atomic isotropic *B*-factor values, which should be listed in the *B*-factor field of a structure’s ATOM / HETATM records in a standard format PDB / mmCif file. However, ~10% of PDB / mmCif files list alternative *B*-factor values in this field (Touw & Vriend, 2014). The *B*-factor Databank (BDB) contains PDB files with full isotropic (\*but not necessarily atomic) *B*-factor values in the ATOM / HETATM record *B*-factor field; all PDB entries with sufficient header information to determine the content of and if necessary re-calculate the *B*-factor field are incorporated in the BDB (Touw & Vriend, 2014). RABDAM incorporates a regularly updated list of accession codes of PDB structures deposited with full isotropic *B*-factors that has been downloaded from the BDB; the program will flag a warning if the user specifies an accession code that is not on this list for RABDAM analysis.
+*B*<sub>Damage</sub> values are calculated from full atomic isotropic *B*-factor values, which should be listed in the *B*-factor field of a structure’s ATOM / HETATM records in a standard format PDB / mmCIF file. However, ~10% of PDB / mmCIF files list alternative *B*-factor values in this field (Touw & Vriend, 2014). The *B*-factor Databank (BDB) contains PDB files with full isotropic (\*but not necessarily atomic) *B*-factor values in the ATOM / HETATM record *B*-factor field; all PDB entries with sufficient header information to determine the content of and if necessary re-calculate the *B*-factor field are incorporated in the BDB (Touw & Vriend, 2014). RABDAM incorporates a regularly updated list of accession codes of PDB structures deposited with full isotropic *B*-factors that has been downloaded from the BDB; the program will flag a warning if the user specifies an accession code that is not on this list for RABDAM analysis.
 
 The *B*<sub>net</sub> metric is a derivative of the (per-atom) *B*<sub>Damage</sub> metric that summarises in a single value the total extent of specific radiation damage suffered by an MX structure. One of the best-characterised chemical changes resulting from specific radiation damage that occurs within proteins\* is the decarboxylation of Glu and Asp residues; the *B*<sub>net</sub> metric is calculated from a kernel density estimate of the *B*<sub>Damage</sub> values of a structure’s Glu and Asp side chain oxygen atoms as the ratio of the area under the curve either side of the median of the (overall) *B*<sub>Damage</sub> distribution.
 
@@ -76,7 +76,7 @@ The *B*<sub>net</sub> metric is calculated as the ratio of the area either side 
 
 ___
 
-RABDAM will calculate the values of the *B*<sub>Damage</sub> and *B*<sub>net</sub> metrics for any standard format PDB or mmCif file to identify potential individual sites, plus the total extent, of specific radiation damage within the structure.
+RABDAM will calculate the values of the *B*<sub>Damage</sub> and *B*<sub>net</sub> metrics for any standard format PDB or mmCIF file to identify potential individual sites, plus the total extent, of specific radiation damage within the structure.
 
 ___
 
@@ -108,7 +108,7 @@ RABDAM will take approximately 1 min to run a 200 kDa structure on a single proc
 ___
 
 #### Data requirements
-RABDAM can be run on any standard format PDB or mmCif file of a single model of your MX structure of interest (specifically, it requires the CRYST1 and, if present, the SSBOND lines from the header information, as well as the ATOM / HETATM records). Note however that because *B*<sub>Damage</sub> is a per-atom metric, it should only be calculated for structures for which *B*-factor values have been refined per-atom. Furthermore, owing to the correlation between *B*-factor and occupancy values, the only non-ligand atoms subject to occupancy refinement should be those in alternate conformers (whose occupancy should sum to 1).
+RABDAM can be run on any standard format PDB or mmCIF file of a single model of your MX structure of interest (specifically, it requires the CRYST1 and, if present, the SSBOND lines from the header information, as well as the ATOM / HETATM records). Note however that because *B*<sub>Damage</sub> is a per-atom metric, it should only be calculated for structures for which *B*-factor values have been refined per-atom. Furthermore, owing to the correlation between *B*-factor and occupancy values, the only non-ligand atoms subject to occupancy refinement should be those in alternate conformers (whose occupancy should sum to 1).
 
 ____
 
@@ -137,7 +137,7 @@ Alternatively, if you wish to perform a run of RABDAM using entirely default par
 
 `python rabdam.py -f XXXX` / `python rabdam.py -f path/to/pdb_file.pdb` / `python rabdam.py -f path/to/mmcif_file.cif`
 
-It is possible to specify more than one PDB and / or mmCif files for analysis following the `-f` flag, *e.g.*:
+It is possible to specify more than one PDB and / or mmCIF files for analysis following the `-f` flag, *e.g.*:
 
 `python rabdam.py –f path/to/pdb_file_1.pdb path/to/mmcif_file_2.cif path/to/pdb_file_3.pdb`
 
@@ -151,8 +151,9 @@ The `-r` flag can be used to instruct RABDAM to run to completion (default), or 
 The `-o` flag can be used to control the selection of output files that the program writes. By default RABDAM writes 6 output files, specified by the following 5 keywords:
 
 - `kde` : a kernel density estimate of the distribution of *B*<sub>Damage</sub> values calculated for the input MX structure
-- `bdam` : a PDB file in which the *B*-factor column of the ATOM (/ HETATM) records is replaced by ln(*B*<sub>Damage</sub>) values (thus allowing the structure to be uniformly coloured by *B*<sub>Damage</sub> using molecular graphics software such as PyMol, CCP4mg, *etc*), plus an mmCif file in which a column of *B*<sub>Damage</sub> values is appended to the ATOM (/ HETATM) records (located between the *B*-factor and element columns)
-- `csv` : a csv file listing the properties (both those in the input PDB / mmCif file and those calculated by RABDAM) of all atoms in the input MX structure included in the *B*<sub>Damage</sub> analysis
+- `pdb` : a PDB file in which the *B*-factor column of the ATOM/HETATM records is replaced by ln(*B*<sub>Damage</sub>) values (thus allowing the structure to be uniformly coloured by *B*<sub>Damage</sub> using molecular graphics software such as PyMol, CCP4mg, *etc*)
+- `cif`: an mmCIF file in which packing density and *B*<sub>Damage</sub> values are included with the ATOM/HETATM records
+- `csv` : a csv file listing the properties (both those in the input PDB / mmCIF file and those calculated by RABDAM) of all atoms in the input MX structure included in the *B*<sub>Damage</sub> analysis
 - `bnet` : a kernel density estimate of the *B*<sub>Damage</sub> values of the terminal oxygen atoms of Glu and Asp residues, plus the value of the (protein-specific) *B*<sub>net</sub> value calculated from this distribution (see the “*Background*” section)
 - `summary` : an html file summarising the results presented in the above 5 output files
 
@@ -175,11 +176,11 @@ ___
 #### Writing the RABDAM input file
 If you wish to run RABDAM with non-default parameter values, you will need to provide the program with an input file specifying your selected parameter values. RABDAM takes (in any order) 16 input parameters (stipulated by the italicised keywords):
 
-- The name of the PDB / mmCif file(s) to be analysed
+- The name of the PDB / mmCIF file(s) to be analysed
 
 Either a 4 character PDB accession code, or an absolute file path (which may contain spaces). It is possible to run multiple structures from a single input file by listing the names of each of those structures separated by commas (see below). This is the only parameter not stipulated by a keyword, and which does not have a default value.
 
--	The output directory, *dir*
+-	The output directory, *outputDir*
 
 The location of the directory (specified by its absolute file path) in which you would like the program output files to be written. If not specified, this defaults to the current working directory.
 
@@ -217,11 +218,11 @@ Allows the addition of individual atoms (specified either by their atom serial n
 
 -	Option to highlight atoms on the kernel density estimate of the *B*<sub>Damage</sub> distribution, *highlightAtoms*
 
-Highlights the *B*<sub>Damage</sub> values of specified atoms on the output kernel density estimate (by default no atoms are highlighted). Atoms are specified by their serial numbers as listed in the input PDB / mmCif file provided to RABDAM. It is possible to highlight multiple atoms at once (see the guidelines below for providing multiple values for the same parameter); note however that it is recommended no more than 6 atoms are specified at once (beyond 6 atoms the graph colour scheme will repeat itself, furthermore the complete key might not fit onto the plot).
+Highlights the *B*<sub>Damage</sub> values of specified atoms on the output kernel density estimate (by default no atoms are highlighted). Atoms are specified by their serial numbers as listed in the input PDB / mmCIF file provided to RABDAM. It is possible to highlight multiple atoms at once (see the guidelines below for providing multiple values for the same parameter); note however that it is recommended no more than 6 atoms are specified at once (beyond 6 atoms the graph colour scheme will repeat itself, furthermore the complete key might not fit onto the plot).
 
 -	Option to create a copy of the initial PDB file, *createOrigpdb*
 
-Writes a copy of the initial PDB file (which is either provided to the program directly, or is obtained via conversion of the input mmCif file) to the output directory when set to "*True*" (by default this parameter is set to "*False*").
+Writes a copy of the initial PDB file (which is either provided to the program directly, or is obtained via conversion of the input mmCIF file) to the output directory when set to "*True*" (by default this parameter is set to "*False*").
 
 -	Option to create a PDB file of the filtered asymmetric unit, *createAUpdb*
 
@@ -251,7 +252,7 @@ Below is an example input file instructing RABDAM to analyse the lysozyme struct
 
 ```
 4H8X, 4H9I,
-dir=C:\Users\UserName\Documents\RABDAM_test_output,
+outputdir=C:\Users\UserName\Documents\RABDAM_test_output,
 batchContinue=False,
 overwrite=False,
 PDT=7,

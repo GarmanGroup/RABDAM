@@ -1,5 +1,5 @@
 4H8X, 4H9I,
-dir=C:\Users\UserName\Documents\RABDAM_test_output,
+outputdir=C:\Users\UserName\Documents\RABDAM_test_output,
 batchContinue=False,
 overwrite=False,
 PDT=7,

@@ -1,6 +1,6 @@
 
 # RABDAM
-# Copyright (C) 2018 Garman Group, University of Oxford
+# Copyright (C) 2020 Garman Group, University of Oxford
 
 # This file is part of RABDAM.
 
@@ -38,9 +38,13 @@ def parse_command_line_arguments(command_line, test=False):
 
     import argparse
     import os
+    import sys
 
     if test is True:
-        from rabdam.Subroutines.checkDependencies import check_RABDAM_dependencies
+        if sys.version_info[0] < 3:
+            from Subroutines.checkDependencies import check_RABDAM_dependencies
+        else:
+            from rabdam.Subroutines.checkDependencies import check_RABDAM_dependencies
     else:
         if __name__ == '__main__' or 'CCP4' in list(os.environ.keys()):
             from Subroutines.checkDependencies import check_RABDAM_dependencies

@@ -1,6 +1,6 @@
 
 # RABDAM
-# Copyright (C) 2018 Garman Group, University of Oxford
+# Copyright (C) 2020 Garman Group, University of Oxford
 
 # This file is part of RABDAM.
 
@@ -360,8 +360,6 @@ class generate_output_files(object):
                      fontsize=10)
         plt.savefig(self.out_file_start + '_Bnet_{}.svg'.format(prot_or_na))
 
-        # Comment out before releasing for CCP4 - this will only be useful for
-        # in-house batch runs
         if not os.path.isfile('Logfiles/Bnet_{}.csv'.format(prot_or_na)):
             bnet_list = open('Logfiles/Bnet_{}.csv'.format(prot_or_na), 'w')
             bnet_list.write('PDB' + ',')
@@ -383,7 +381,7 @@ class generate_output_files(object):
         ).reset_index(drop=True)
         new_bnet_df.to_pickle('Logfiles/Bnet_{}.pkl'.format(prot_or_na))
 
-    def calculate_Bnet(self, window_name, pdt_name, window):
+    def calculate_Bnet(self):
         """
         Plots a kernel density estimate of the BDamage values of Glu O and
         Asp O atoms. The summary metric Bnet is then calculated as the ratio
