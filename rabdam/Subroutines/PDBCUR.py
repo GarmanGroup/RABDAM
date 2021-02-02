@@ -576,7 +576,7 @@ def clean_atom_rec(atoms_list, disulfide_bonds, seqres, cryst1_line,
                          and atm.insCode == inscode1 and atm.resiType == 'CYS')
                         or
                         (atm.chainID == chain2 and atm.resiNum == resnum2
-                         and atm.insCode == inscode2 and atom.resiType == 'CYS'))
+                         and atm.insCode == inscode2 and atm.resiType == 'CYS'))
                 ):
                     pause = True
                     print('\n\nERROR: One or more disulfide bonds has been '

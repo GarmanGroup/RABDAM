@@ -322,7 +322,7 @@ class generate_output_files(object):
         plt.ylabel('Normalised Frequency')
         plt.title(self.pdb_code + ' Bnet kernel density plot')
 
-        # Extracts an array of 128 (x, y) coordinate pairs evenly spaced
+        # Extracts an array of 100 (x, y) coordinate pairs evenly spaced
         # along the x(BDamage)-axis from the kernel density plot. These
         # coordinate pairs are used to calculate, via the trapezium rule,
         # the area under the curve between the smallest value of x and the

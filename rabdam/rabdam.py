@@ -46,10 +46,13 @@ def parse_command_line_arguments(command_line, test=False):
         else:
             from rabdam.Subroutines.checkDependencies import check_RABDAM_dependencies
     else:
-        if __name__ == '__main__' or 'CCP4' in list(os.environ.keys()):
+        if __name__ == '__main__':
             from Subroutines.checkDependencies import check_RABDAM_dependencies
         else:
-            from rabdam.Subroutines.checkDependencies import check_RABDAM_dependencies
+            if sys.version_info[0] < 3:
+                from Subroutines.checkDependencies import check_RABDAM_dependencies
+            else:
+                from rabdam.Subroutines.checkDependencies import check_RABDAM_dependencies
 
     # Reads in command line inputs. There are three recognised flags: -i, -f
     # and -o. Program inputs are specified by either the -i or the -f flag;
@@ -466,10 +469,13 @@ def main(test=False):
     import time
     import numpy as np
 
-    if __name__ == '__main__' or 'CCP4' in list(os.environ.keys()):
+    if __name__ == '__main__':
         from Subroutines.CalculateBDamage import rabdam
     else:
-        from rabdam.Subroutines.CalculateBDamage import rabdam
+        if sys.version_info[0] < 3:
+            from Subroutines.CalculateBDamage import rabdam
+        else:
+            from rabdam.Subroutines.CalculateBDamage import rabdam
 
     # Parses in command line arguments
     args = parse_command_line_arguments(sys.argv[1:])
