@@ -1,13 +1,11 @@
-# RABDAM – identifying specific radiation damage in MX structures
+# RABDAM – identifying specific radiation damage in PX structures
 
 [![Python Version](https://img.shields.io/badge/python-2.7-blue.svg)](https://www.python.org/download/releases/2.7/)
 [![Python Version](https://img.shields.io/badge/python-3.6-blue.svg)](https://www.python.org/download/releases/3.6/)
 [![LGPL licensed](https://img.shields.io/badge/license-LGPL%20v3-blue.svg)](https://github.com/GarmanGroup/RABDAM/blob/master/COPYING.LESSER)
 [![GarmanGroup](https://circleci.com/gh/GarmanGroup/RABDAM.svg?style=svg)](https://circleci.com/gh/GarmanGroup/RABDAM)
 
-A program to calculate the *B*<sub>Damage</sub> and *B*<sub>net</sub> metrics to quantify the extent of specific radiation damage present within an individual MX structure. Suitable for running on any standard format PDB or mmCIF file.
-
-\*\***NOTE:** These scripts are under development, and are updated regularly. The program is currently being extended to incorporate nucleic acids analysis. Whilst these new capabilities are being tested, presently RABDAM is restricted to assessing damage to (i) protein crystal structures and (ii) the protein component of protein / nucleic acid crystal structures. If in the meantime you would like to use RABDAM for nucleic acids analysis, please contact the authors at the email address provided at the bottom of the page.\*\*
+A program to calculate the *B*<sub>Damage</sub> and *B*<sub>net</sub> metrics to quantify the extent of specific radiation damage present within an individual protein crystal (PX) structure. Suitable for running on any standard format PDB or mmCIF file.
 
 ___
 
@@ -64,8 +62,6 @@ ___
 *B*<sub>Damage</sub> values are calculated from full atomic isotropic *B*-factor values, which should be listed in the *B*-factor field of a structure’s ATOM / HETATM records in a standard format PDB / mmCIF file. However, ~10% of PDB / mmCIF files list alternative *B*-factor values in this field (Touw & Vriend, 2014). The *B*-factor Databank (BDB) contains PDB files with full isotropic (\*but not necessarily atomic) *B*-factor values in the ATOM / HETATM record *B*-factor field; all PDB entries with sufficient header information to determine the content of and if necessary re-calculate the *B*-factor field are incorporated in the BDB (Touw & Vriend, 2014). RABDAM incorporates a regularly updated list of accession codes of PDB structures deposited with full isotropic *B*-factors that has been downloaded from the BDB; the program will flag a warning if the user specifies an accession code that is not on this list for RABDAM analysis.
 
 The *B*<sub>net</sub> metric is a derivative of the (per-atom) *B*<sub>Damage</sub> metric that summarises in a single value the total extent of specific radiation damage suffered by an MX structure. One of the best-characterised chemical changes resulting from specific radiation damage that occurs within proteins\* is the decarboxylation of Glu and Asp residues; the *B*<sub>net</sub> metric is calculated from a kernel density estimate of the *B*<sub>Damage</sub> values of a structure’s Glu and Asp side chain oxygen atoms as the ratio of the area under the curve either side of the median of the (overall) *B*<sub>Damage</sub> distribution.
-
-(\* An equivalent of this protein-specific *B*<sub>net</sub> metric for nucleic acids is currently being developed - see the program description above.)
 
 The method of calculating the *B*<sub>net</sub> value for a protein structure is summarised in the diagram below:
 
