@@ -278,9 +278,18 @@ class generate_output_files(object):
         # as the kernel density estimate of the atoms considered for
         # calculation of the Bnet summary metric
 
+        sns.rugplot(self.df.BDAM.values)
         # Generates kernel density plot
-        plot = sns.distplot(self.df.BDAM.values, hist=False, rug=True,
-                            kde_kws={'bw':'scott'})
+        if sns.__version__.split('.')[0] == '0' and int(sns.__version__.split('.')[1]) < 11:
+            plot = sns.kdeplot(
+                self.df.BDAM.values, bw='scott', color='tab:blue', gridsize=100,
+                cut=3, clip=None
+            )
+        else:
+            plot = sns.kdeplot(
+                self.df.BDAM.values, bw_method='scott', color='tab:blue',
+                gridsize=100, cut=3, clip=None
+            )
 
         # Marks on the positions of any atoms whose numbers are listed in the
         # highlightAtoms option specified in the input file.
@@ -309,30 +318,49 @@ class generate_output_files(object):
 
         import os
         import matplotlib.pyplot as plt
+        import numpy as np
         import pandas as pd
         import seaborn as sns
+        from scipy.stats import gaussian_kde
 
         plt.clf()  # Prevents the kernel density estimate of the atoms
         # considered for calculation of the Bnet summary metric from being
         # plotted on the same axes as the kernel density estimate of all
         # atoms considered for BDamage analysis.
-        plot = sns.distplot(bnet_df.BDAM.values, hist=False, rug=True,
-                            kde_kws={'bw':'scott'})
+        sns.rugplot(bnet_df.BDAM.values)
+        if sns.__version__.split('.')[0] == '0' and int(sns.__version__.split('.')[1]) < 11:
+            plot = sns.kdeplot(
+                bnet_df.BDAM.values, bw='scott', color='tab:blue', gridsize=100,
+                cut=3, clip=None
+            )
+        else:
+            plot = sns.kdeplot(
+                bnet_df.BDAM.values, bw_method='scott', color='tab:blue',
+                gridsize=100, cut=3, clip=None
+            )
         plt.xlabel('B Damage')
         plt.ylabel('Normalised Frequency')
         plt.title(self.pdb_code + ' Bnet kernel density plot')
 
-        # Extracts an array of 100 (x, y) coordinate pairs evenly spaced
-        # along the x(BDamage)-axis from the kernel density plot. These
-        # coordinate pairs are used to calculate, via the trapezium rule,
-        # the area under the curve between the smallest value of x and the
-        # median (= total_area_LHS), and the area under the curve between
-        # the median and the largest value of x (= total_area_RHS). The
-        # Bnet summary metric is then calculated as the ratio of
-        # total_area_RHS to total_area_LHS.
-        xy_values = plot.get_lines()[0].get_data()
-        x_values = xy_values[0]
-        y_values = xy_values[1]
+        # Extracts an array of 100 (x, y) coordinate pairs evenly spaced along
+        # the x(BDamage)-axis from the kernel density plot. Rather than taking
+        # these values directly from the seaborn KDE plot, the KDE plot is
+        # recalculated using scipy to ensure that Bnet values will be resistant
+        # to changes in the default parameters of the kdeplot function in
+        # seaborn. These coordinate pairs are used to calculate, via the
+        # trapezium rule, the area under the curve between the smallest value of
+        # x and the median (= total_area_LHS), and the area under the curve
+        # between the median and the largest value of x (= total_area_RHS). The
+        # Bnet summary metric is then calculated as the ratio of total_area_RHS
+        # to total_area_LHS.
+        bandwidth = gaussian_kde(dataset=bnet_df.BDAM.values).scotts_factor()
+        tail_width = bandwidth*np.std(bnet_df.BDAM.values, ddof=0)
+        x_min = min(bnet_df.BDAM.values) - (3*tail_width)
+        x_max = max(bnet_df.BDAM.values) + (3*tail_width)
+
+        kde = gaussian_kde(dataset=bnet_df.BDAM.values, bw_method='scott', weights=None)
+        x_values = np.linspace(x_min, x_max, 100)
+        y_values = kde(x_values)
         height = (x_values[-1]-x_values[0]) / (len(x_values)-1)
 
         total_area_LHS = 0
