@@ -372,7 +372,9 @@ class rabdam(object):
                   '--USER INPUT-- type your choice and press RETURN\n'
                   'yes = continue RABDAM run\n'
                   'no = terminate RABDAM run\n')
-            owChoice = None
+            owChoice = None  # Change to yes for batch running to prevent user
+            # input being required
+            # owChoice = 'yes'
             while owChoice not in ['yes', 'no', 'y', 'n']:
                 if test is True:
                     owChoice = 'yes'

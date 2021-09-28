@@ -358,7 +358,7 @@ class generate_output_files(object):
         x_min = min(bnet_df.BDAM.values) - (3*tail_width)
         x_max = max(bnet_df.BDAM.values) + (3*tail_width)
 
-        kde = gaussian_kde(dataset=bnet_df.BDAM.values, bw_method='scott', weights=None)
+        kde = gaussian_kde(dataset=bnet_df.BDAM.values, bw_method='scott')
         x_values = np.linspace(x_min, x_max, 100)
         y_values = kde(x_values)
         height = (x_values[-1]-x_values[0]) / (len(x_values)-1)
@@ -378,9 +378,9 @@ class generate_output_files(object):
                 total_area_RHS = total_area_RHS + area_RHS
 
         # Calculates area ratio (= Bnet)
-        ratio = total_area_RHS / total_area_LHS
+        kde_ratio = total_area_RHS / total_area_LHS
 
-        plt.annotate('Bnet = {:.1f}'.format(ratio),
+        plt.annotate('Bnet = {:.1f}'.format(kde_ratio),
                      xy=(max(x_values)*0.65, max(y_values)*0.9),
                      fontsize=10)
         plt.annotate('Median = {:.2f}'.format(median),
@@ -394,11 +394,11 @@ class generate_output_files(object):
             bnet_list.write('Bnet' + '\n')
             bnet_list.close()
         bnet_list = open('Logfiles/Bnet_{}.csv'.format(prot_or_na), 'a')
-        bnet_list.write('%s,%s\n' % (self.pdb_code, ratio))
+        bnet_list.write('%s,%s\n' % (self.pdb_code, kde_ratio))
         bnet_list.close()
 
         bnet_df = pd.DataFrame({'PDB': [self.pdb_code],
-                                'Bnet': [ratio]})
+                                'Bnet': [kde_ratio]})
         if os.path.isfile('Logfiles/Bnet_{}.pkl'.format(prot_or_na)):
             old_bnet_df = pd.read_pickle('Logfiles/Bnet_{}.pkl'.format(prot_or_na))
         else:
