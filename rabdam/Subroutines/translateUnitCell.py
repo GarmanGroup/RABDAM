@@ -1,6 +1,6 @@
 
 # RABDAM
-# Copyright (C) 2020 Garman Group, University of Oxford
+# Copyright (C) 2023 Garman Group, University of Oxford
 
 # This file is part of RABDAM.
 
@@ -119,12 +119,15 @@ def translateUnitCell(ucAtomList, transAtomList, transAtomIDList,
     # Each atom in the unit cell is translated as described by the translation
     # matrix, and its new xyz coordinates stored in a list of all atoms in
     # the 3x3 assembly.
-    for item in ucAtomList:
-        new_atom_xyz = np.add(item.xyzCoords, transVector)
+    for coords in ucAtomList:
+        coords = np.array([[coords[0]],
+                           [coords[1]],
+                           [coords[2]]])
+        new_atom_xyz = np.add(coords, transVector)
         transAtomList[atom_count][0] = new_atom_xyz[0][0]
         transAtomList[atom_count][1] = new_atom_xyz[1][0]
         transAtomList[atom_count][2] = new_atom_xyz[2][0]
-        transAtomIDList[atom_count] = item.atomNum
+        transAtomIDList[atom_count] = atom_count
         atom_count += 1
 
     print('Successfully translated by (%2sa,%2sb,%2sc) unit cells' % (

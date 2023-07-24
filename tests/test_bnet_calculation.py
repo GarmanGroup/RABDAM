@@ -1,6 +1,6 @@
 
 # RABDAM
-# Copyright (C) 2020 Garman Group, University of Oxford
+# Copyright (C) 2023 Garman Group, University of Oxford
 
 # This file is part of RABDAM.
 
@@ -18,9 +18,6 @@
 # Public License along with this program.  If not, see
 # <http://www.gnu.org/licenses/>.
 
-# An outer layer to the pipeline scripts. Depending upon the flags specified
-# in the command line input, this script will run either the complete / a
-# subsection of the pipeline.
 
 # python -m unittest tests/test_bnet_calculation.py
 
@@ -44,39 +41,39 @@ class TestClass(unittest.TestCase):
 
         exp_bnet_dict = {'2O2X': 3.300580966,
                          '4EZF': 3.193514624,
-                         '4MWU': 3.185476349,
+                         '4MWU': 3.185476349,  # I 4 3 2
                          '4MOV': 3.144130191,
                          '3NBM': 3.141821366,
                          '1GW1': 3.105626889,
                          '4EWE': 3.08241654,
-                         '3F1P': 3.060628186,
+                         '3F1P': 3.060628186,  # C 1 2 1
                          '3IV0': 3.054440912,
-                         '4ZWV': 3.017330004,
+                         '4ZWV': 3.017330004,  # C 1 2 1  # Still fails
                          '1T2I': 3.004830448,
-                         '3LX3': 2.962424378,
+                         '3LX3': 2.962424378,  # H 3 2  # Still fails
                          '5P4N': 2.916582486,
                          '5MAA': 2.91219352,
-                         '1E73': 2.850203561,
+                         '1E73': 2.850203561,  # C 2 2 21
                          '1YKI': 2.797739814,
-                         '4WA4': 2.720540993,
+                         '4WA4': 2.720540993,  # I 4
                          '3V2J': 2.669599635,
-                         '3CUI': 2.666605946,
-                         '4XLA': 2.624366813,
-                         '4DUK': 2.854175949,
-                         '3V38': 2.500984382,
-                         '1VJF': 2.496374854,
+                         '3CUI': 2.666605946,  # P 41 21 2  # Still fails
+                         '4XLA': 2.624366813,  # P 3 2 1  # Still fails
+                         '4DUK': 2.854175949,  # P 63 2 2  # Still fails
+                         '3V38': 2.500984382,  # Still fails
+                         '1VJF': 2.496374854,  # Still fails
                          '5IO2': 2.467587911,
                          '5CM7': 2.44869046,
-                         '2EHU': 2.448290431,
+                         '2EHU': 2.448290431,  # Still fails
                          '5JOW': 2.439619791,
                          '2C54': 2.379224017,
                          '4GZK': 2.349526276,
-                         '2NUM': 2.326904729,
+                         '2NUM': 2.326904729,  # Still fails
                          '5FYO': 2.319618192,
                          '4ODK': 2.304354685,
                          '6EV4': 2.302433369,
                          '5P5U': 2.288966997,
-                         '3VHV': 2.285877338,
+                         '3VHV': 2.285877338,  # Still fails
                          '4JCK': 2.27150332,
                          '5EKM': 2.258574341,
                          '3H4O': 2.231817033,
@@ -85,16 +82,16 @@ class TestClass(unittest.TestCase):
                          '4M5I': 2.169405117,
                          '1Y59': 2.138787261,
                          '4C45': 2.131256276,
-                         '5F90': 2.11287042,
+                         '5F90': 2.11287042,  # Still fails
                          '4NI3': 2.088735516,
-                         '4Z6N': 2.083743584,
+                         '4Z6N': 2.083743584,  # Still fails
                          '5M2G': 2.06566475,
                          '5ER6': 2.05707889,
                          '4R0X': 2.006996308,
                          '5LLG': 1.981501196,
-                         '1FCX': 1.976990791,
-                         '5M90': 1.96542442,
-                         '3NJK': 1.955577757,
+                         '1FCX': 1.976990791,  # Still fails
+                         '5M90': 1.96542442,  # Still fails
+                         '3NJK': 1.955577757,  # Still fails - likely an error with special positions
                          '5CWG': 1.949818624,
                          '2P7O': 1.921138477,
                          '5SZC': 1.962633169,
@@ -103,43 +100,43 @@ class TestClass(unittest.TestCase):
                          '5MA0': 1.877853781,
                          '4C1E': 1.877575448,
                          '5EJ3': 1.875439995,
-                         '2WUG': 1.87334953,
+                         '2WUG': 1.87334953,  # Still fails
                          '4MPY': 1.842338963,
-                         '4OTZ': 1.835716553,
-                         '4IOO': 1.828349113,
+                         '4OTZ': 1.835716553,  # Still fails
+                         '4IOO': 1.828349113,  # Still fails
                          '4Z6O': 1.800528596,
                          '4ZOT': 1.799163077,
-                         '5PHB': 1.783879628,
+                         '5PHB': 1.783879628,  # Still fails
                          '3UJC': 1.747894856,
                          '4FR8': 1.738876799,
-                         '5PH8': 1.736825591,
+                         '5PH8': 1.736825591,  # Still fails
                          '5UPM': 1.736663507,
-                         '3MWX': 1.733132746,
-                         '4KDX': 1.729650659,
-                         '3WH5': 1.717975404,
+                         '3MWX': 1.733132746,  # Still fails
+                         '4KDX': 1.729650659,  # Still fails
+                         '3WH5': 1.717975404,  # Still fails
                          '4P04': 1.714107945,
-                         '5Y90': 1.695283923,
-                         '4H31': 1.674014779,
-                         '5HJE': 1.662869176,
-                         '4YKK': 1.653894709,
+                         '5Y90': 1.695283923,  # Still fails
+                         '4H31': 1.674014779,  # Still fails
+                         '5HJE': 1.662869176,  # Still fails
+                         '4YKK': 1.653894709,  # Still fails
                          '1Q0F': 1.646880018,
                          '5JP6': 1.629246723,
-                         '1X7Y': 1.618817315,
+                         '1X7Y': 1.618817315,  # Still fails
                          '4ZC8': 1.60606196,
-                         '5EPE': 1.604407869,
+                         '5EPE': 1.604407869,  # Still fails
                          '4ZS9': 1.582398487,
                          '5VNX': 1.543824945,
                          '5IHV': 1.542271159,
                          '5J90': 1.526469901,
                          '4K6W': 1.520316883,
-                         '3PBC': 1.512738972,
-                         '5CMB': 1.504620762,
+                         '3PBC': 1.512738972,  # Still fails
+                         '5CMB': 1.504620762,  # Still fails
                          '4PSC': 1.491796934,
                          '5UPN': 1.477252783,
                          '4XLZ': 1.473298738,
-                         '4XGY': 1.465885549,
-                         '5M4G': 1.400219288,
-                         '3A54': 1.319587779}
+                         '4XGY': 1.465885549,  # Still fails
+                         '5M4G': 1.400219288,  # Still fails
+                         '3A54': 1.319587779}  # Still fails
 
         if not os.path.isdir('tests/temp_files/'):
             os.mkdir('tests/temp_files/')
@@ -163,9 +160,9 @@ class TestClass(unittest.TestCase):
                 highlightAtoms=[],
                 createOrigpdb=False,
                 createAUpdb=False,
-                createUCpdb=False,
-                createAUCpdb=False,
-                createTApdb=False
+                createUCpdb=True,
+                createAUCpdb=True,
+                createTApdb=True
             )
             rabdam_run.rabdam_dataframe(test=True)
             rabdam_run.rabdam_analysis(
@@ -195,9 +192,9 @@ class TestClass(unittest.TestCase):
                 highlightAtoms=[],
                 createOrigpdb=False,
                 createAUpdb=False,
-                createUCpdb=False,
-                createAUCpdb=False,
-                createTApdb=False
+                createUCpdb=True,
+                createAUCpdb=True,
+                createTApdb=True
             )
             rabdam_run.rabdam_dataframe(test=True)
             rabdam_run.rabdam_analysis(
@@ -211,4 +208,4 @@ class TestClass(unittest.TestCase):
             os.remove('tests/temp_files/%s.pdb' % code)
             os.remove('tests/temp_files/Logfiles/Bnet_protein.pkl')
 
-        shutil.rmtree('tests/temp_files/')
+        #shutil.rmtree('tests/temp_files/')

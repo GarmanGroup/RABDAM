@@ -1,6 +1,6 @@
 
 # RABDAM
-# Copyright (C) 2020 Garman Group, University of Oxford
+# Copyright (C) 2023 Garman Group, University of Oxford
 
 # This file is part of RABDAM.
 
@@ -31,7 +31,8 @@ class atom(object):
                  insertioncode=None, xyz_coords=None, element=None,
                  bfactor=None, occupancy=None, charge=None, orig_resinum=None,
                  orig_resitype=None, orig_chainID=None, orig_atomtype=None,
-                 packingdensity=None, avrg_bfactor=None, bdamage=None):
+                 packingdensity=None, avrg_bfactor=None, bdamage=None,
+                 protein=None, na=None, chain_len=None):
         self.lineID = lineidentifier
         self.atomNum = atomnum
         self.atomType = atomtype
@@ -52,6 +53,9 @@ class atom(object):
         self.pd = packingdensity
         self.avrg_bf = avrg_bfactor
         self.bd = bdamage
+        self.protein = protein
+        self.na = na
+        self.chain_len = chain_len
 
     def __eq__(self, other):
         """
@@ -77,7 +81,10 @@ class atom(object):
                self.origAtomType == other.origAtomType and \
                self.pd == other.pd and \
                self.avrg_bf == other.avrg_bf and \
-               self.bd == other.bd
+               self.bd == other.bd and \
+               self.protein == other.protein and\
+               self.na == other.na and \
+               self.chain_len == other.chain_len
 
 
 def download_mmcif(PDBcode, PDBdirectory, pathToCIF):
@@ -107,7 +114,7 @@ def download_mmcif(PDBcode, PDBdirectory, pathToCIF):
     print('Downloaded mmCIF file from %s' % mmcif_url)
     cif_file = open(pathToCIF, 'w')
     cif_file.write(origCIF.text)
-    print('mmCIF file saved to %s' % pathToCIF)
+    print('mmCIF file saved to %s/%s' % (PDBdirectory, pathToCIF))
     cif_file.close()
 
     return exit
@@ -128,47 +135,12 @@ def copy_input(pathToInput, disk, newPathToInput, PDBdirectory):
     os.makedirs(PDBdirectory)
     localFile = open(newPathToInput, 'w')
     localFile.write(origInput.read())
-    print('%s copied to %s' % (pathToInput, newPathToInput))
+    print('%s copied to %s/%s' % (pathToInput, owd, newPathToInput))
     localFile.close()
     origInput.close()
 
 
-def full_atom_list(fileName):
-    """
-    Parses in input PDB file (= PDBCUR output) and returns a list of all
-    atoms in the file with their associated attributes as assigned in the
-    'atom' class.
-    """
-
-    ucAtomList = []
-    fileOpen = open(fileName, 'r')
-    for line in fileOpen.readlines():
-        if line[0:6].strip() in ['ATOM', 'HETATM']:
-            new_atom = atom()
-            new_atom.lineID = line[0:6].strip()
-            new_atom.atomNum = int(line[6:11].strip())
-            new_atom.atomType = line[12:16].strip()
-            new_atom.conformer = line[16:17].strip()
-            new_atom.resiType = line[17:20].strip()
-            new_atom.chainID = line[21:22].strip()
-            new_atom.resiNum = int(line[22:26].strip())
-            new_atom.insCode = line[26:27].strip()
-            new_atom.xyzCoords = [[float(line[30:38].strip())],
-                                  [float(line[38:46].strip())],
-                                  [float(line[46:54].strip())]]
-            new_atom.occupancy = float(line[54:60].strip())
-            new_atom.bFactor = float(line[60:66].strip())
-            new_atom.atomID = line[76:78].strip()
-            new_atom.charge = line[78:80].strip()
-            ucAtomList.append(new_atom)
-    fileOpen.close()
-    print('Finished reading in atoms --> %d atoms found in\n%s' % (
-          int(len(ucAtomList)), fileName))
-    return ucAtomList
-
-
-def b_damage_atom_list(clean_au_list, seqres, HETATM, protOrNA, addAtoms,
-                       removeAtoms):
+def b_damage_atom_list(clean_au_list, HETATM, protOrNA, addAtoms, removeAtoms):
     """
     Filters a copy of the clean_au_list to retain only the subset of atoms
     to be included in the BDamage calculation, as specified by the 'HETATM',
@@ -178,45 +150,28 @@ def b_damage_atom_list(clean_au_list, seqres, HETATM, protOrNA, addAtoms,
 
     import copy
 
-    if __name__ == 'Subroutines.parsePDB':
-        from Subroutines.check_chem_components import nuc_acid_codes, amino_acid_codes
-    else:
-        from rabdam.Subroutines.check_chem_components import nuc_acid_codes, amino_acid_codes
-
-    all_na_codes = nuc_acid_codes()
-    all_aa_codes = amino_acid_codes()
-    std_na_codes = ['A', 'C', 'G', 'I', 'U', 'DA', 'DC', 'DG', 'DI', 'DT',
-                    'DU', 'N']
-    std_aa_codes = ['ALA', 'ARG', 'ASN', 'ASP', 'CYS', 'GLN', 'GLU', 'GLY',
-                    'HIS', 'ILE', 'LEU', 'LYS', 'MET', 'PHE', 'PRO', 'SER',
-                    'THR', 'TRP', 'TYR', 'VAL', 'PYL', 'SEC', 'ASX', 'GLX',
-                    'UNK']
-    std_codes = std_na_codes + std_aa_codes
-
     bdam_list_unfiltered = copy.deepcopy(clean_au_list) + [None]*len(clean_au_list)
 
     for index, atm in enumerate(clean_au_list):
         # Removes hetatm not in macromolecule if HETATM set to 'Remove' in
         # input file.
-        if atm.lineID == 'HETATM':
+        if atm.protein is False and atm.na is False:
             if HETATM is False:
-                if atm.resiType not in seqres:
-                    bdam_list_unfiltered[index] = None
-                elif (    atm.resiType in seqres
-                      and any(x == atm.resiType for x in std_codes)
-                ):
-                    bdam_list_unfiltered[index] = None
+                bdam_list_unfiltered[index] = None
 
         # Removes nucleic acid atoms if proteinOrNucleicAcid set to
         # 'Protein' in input file.
         if protOrNA == 'protein':
-            if atm.resiType in seqres and not atm.resiType in all_aa_codes:
+            if atm.protein is False and atm.na is True:
                 bdam_list_unfiltered[index] = None
         # Removes protein atoms if proteinOrNucleicAcid set to
         # 'Nucleic Acid' / 'NA' in input file.
         elif protOrNA in ['nucleicacid', 'na']:
-            if atm.resiType in seqres and not atm.resiType in all_na_codes:
+            if atm.na is False and atm.protein is True:
                 bdam_list_unfiltered[index] = None
+        # Otherwise keeps all protein and NA atoms
+        elif protOrNA == 'proteinna':
+            pass
 
         # Removes atoms whose number is in removeAtoms list.
         if str(atm.atomNum) in removeAtoms:

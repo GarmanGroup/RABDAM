@@ -1,6 +1,6 @@
 
 # RABDAM
-# Copyright (C) 2020 Garman Group, University of Oxford
+# Copyright (C) 2023 Garman Group, University of Oxford
 
 # This file is part of RABDAM.
 
@@ -100,153 +100,31 @@ def make_cryst1_line_from_mmcif(space_group_rec, exit):
     return cryst1_line, exit
 
 
-def find_disulfides_from_mmcif(disulfide_rec, exit):
-    """
-    Extracts info about Cys residues involved in disulfide bonds from input
-    mmCIF format file
-    """
-
-    disulfide_bonds = {}
-    prop_indices = {}
-    prop_num = 0
-    for line in disulfide_rec:
-        if line.startswith('_struct_conn.'):
-            prop = line.split('.')[1].strip()
-            prop_indices[prop] = prop_num
-            prop_num += 1
-
-        elif line.startswith('disulf'):
-            try:
-                line = line.split()
-                disulf_num = int(line[prop_indices['id']].replace('disulf', ''))
-
-                chain1 = line[prop_indices['ptnr1_label_asym_id']]
-                resnum1 = int(line[prop_indices['ptnr1_label_seq_id']])
-                try:
-                    inscode1 = line[prop_indices['pdbx_ptnr1_PDB_ins_code']]
-                except KeyError:
-                    inscode1 = '?'
-                res1 = [chain1, resnum1, inscode1]
-
-                chain2 = line[prop_indices['ptnr2_label_asym_id']]
-                resnum2 = int(line[prop_indices['ptnr2_label_seq_id']])
-                try:
-                    inscode2 = line[prop_indices['pdbx_ptnr2_PDB_ins_code']]
-                except KeyError:
-                    inscode2 = '?'
-                res2 = [chain2, resnum2, inscode2]
-
-                disulfide_bonds[disulf_num] = [res1, res2]
-            except (KeyError, IndexError, ValueError):
-                print('Disulfide bond records failed to be parsed by RABDAM - '
-                      'check their formatting')
-                disulfide_bonds = {}
-                exit = True
-                break
-
-    return disulfide_bonds, exit
-
-
-def find_disulfides_from_pdb(disulfide_rec, exit):
-    """
-    Extracts info about Cys residues involved in disulfide bonds from input
-    PDB format file
-    """
-
-    disulfide_bonds = {}
-    for line in disulfide_rec:
-        try:
-            disulf_num = int(line[7:10])
-
-            chain1 = line[15:16].strip()
-            resnum1 = int(line[17:21])
-            inscode1 = line[21:22].strip()
-            res1 = [chain1, resnum1, inscode1]
-
-            chain2 = line[29:30].strip()
-            resnum2 = int(line[31:35])
-            inscode2 = line[35:36].strip()
-            res2 = [chain2, resnum2, inscode2]
-
-            disulfide_bonds[disulf_num] = [res1, res2]
-        except (IndexError, ValueError):
-            print('Disulfide (SSBOND) bond records failed to be parsed by '
-                  'RABDAM - check their formatting')
-            disulfide_bonds = {}
-            exit = True
-            break
-
-    return disulfide_bonds, exit
-
-
-def parse_seqres_from_mmcif(seqres_rec, exit):
-    """
-    Extracts a list of unique residue identities in the asymmetric unit from an
-    input mmCIF format file
-    """
-
-    seqres = []
-    prop_indices = {}
-    prop_num = 0
-    for line in seqres_rec:
-        if line.startswith('_entity_poly_seq.'):
-            prop = line.split('.')[1].strip()
-            prop_indices[prop] = prop_num
-            prop_num += 1
-        elif not any(line.startswith(x) for x in ['loop_', '_entity_poly_seq.']):
-            line = line.split()
-            try:
-                if not line[prop_indices['mon_id']] in seqres:
-                    seqres.append(line[prop_indices['mon_id']])
-            except (IndexError, KeyError):
-                print('Sequence (_entity_poly_seq) records failed to be parsed '
-                      'by RABDAM - check their formatting')
-                seqres = []
-                break
-
-    if seqres == []:
-        exit = True
-
-    return seqres, exit
-
-
-def parse_seqres_from_pdb(seqres_rec, exit):
-    """
-    Extracts a list of unique residue identities in the asymmetric unit from an
-    input PDB format file
-    """
-
-    seqres = []
-    for line in seqres_rec:
-        if len(line) < 19:
-            seqres = []
-            break
-        else:
-            res_list = line[19:70].split()
-            for res in res_list:
-                if not res in seqres:
-                    seqres.append(res)
-
-    if seqres == []:
-        print('SEQRES records failed to be parsed by RABDAM - check their '
-              'formatting')
-        exit = True
-
-    return seqres, exit
-
-
-def parse_atom_rec_from_mmcif(atom_rec, exit):
+def parse_atom_rec_from_mmcif(atom_rec, input_cif, exit):
     """
     Parses ATOM / HETATM records in mmCIF format input file
     """
 
-    import copy
+    from iotbx.data_manager import DataManager
+    import numpy as np
 
     if __name__ == 'Subroutines.PDBCUR':
         from Subroutines.parsePDB import atom
     else:
         from rabdam.Subroutines.parsePDB import atom
 
+    dm = DataManager()
+    all_models = dm.get_model(input_cif)
+
+    model = all_models.get_hierarchy().models()[0]
+    model_atoms = list(model.atoms())
+    model_atoms_dict = {}
+    for atm in model_atoms:
+        model_atoms_dict[' '.join([str(n) for n in list(atm.xyz)])] = atm
+
+    res_is_prot_dict = {}
+    res_is_na_dict = {}
+    chain_len_dict = {}
     atoms_list = []
     prop_indices = {}
     prop_num = 0
@@ -264,7 +142,8 @@ def parse_atom_rec_from_mmcif(atom_rec, exit):
                 new_atom.conformer = line[prop_indices['label_alt_id']].replace('?', '').replace('.', '')
                 new_atom.insCode = line[prop_indices['pdbx_PDB_ins_code']].replace('?', '').replace('.', '')
                 new_atom.element = line[prop_indices['type_symbol']].replace('?', '').replace('.', '')
-                new_atom.charge = line[prop_indices['pdbx_formal_charge']].replace('?', '').replace('.', '')
+                new_atom.charge = ''  # Avoids errors when using cctbx to parse clean_au_file to generate a copy of the unit cell
+                #new_atom.charge = line[prop_indices['pdbx_formal_charge']].replace('?', '').replace('.', '')
                 new_atom.chainID = line[prop_indices['auth_asym_id']].replace('?', '').replace('.', '')
                 new_atom.origChainID = line[prop_indices['label_asym_id']].replace('?', '').replace('.', '')
                 new_atom.resiType = line[prop_indices['auth_comp_id']].replace('?', '').replace('.', '')
@@ -305,6 +184,34 @@ def parse_atom_rec_from_mmcif(atom_rec, exit):
                 except ValueError:
                     print('ERROR: Encountered non-numeric B-factor value {}'.format(line[prop_indices['B_iso_or_equiv']]))
                     exit = True
+                try:
+                    atom_coords = ' '.join([str(n) for n in np.array(new_atom.xyzCoords).flatten()])
+                    if not atom_coords in res_is_prot_dict.keys():
+                        atm = model_atoms_dict[atom_coords]
+                        res_is_prot_dict[atom_coords] = atm.parent().parent().conformers()[0].is_protein()
+                    new_atom.protein = res_is_prot_dict[atom_coords]
+                except (KeyError, AttributeError):
+                    print('ERROR: Unable to identify if atom {} is in a protein'
+                        ' chain'.format(line[prop_indices['id']]))
+                    exit = True
+                try:
+                    if not atom_coords in res_is_na_dict.keys():
+                        atm = model_atoms_dict[atom_coords]
+                        res_is_na_dict[atom_coords] = atm.parent().parent().conformers()[0].is_na()
+                    new_atom.na = res_is_na_dict[atom_coords]
+                except (KeyError, AttributeError):
+                    print('ERROR: Unable to identify if atom {} is in a nucleic acid'
+                        ' chain'.format(line[prop_indices['id']]))
+                    exit = True
+                try:
+                    if not atom_coords in chain_len_dict.keys():
+                        atm = model_atoms_dict[atom_coords]
+                        chain_len_dict[atom_coords] = atm.parent().parent().parent().residue_groups_size()
+                    new_atom.chain_len = chain_len_dict[atom_coords]
+                except (KeyError, AttributeError):
+                    print('ERROR: Unable to identify the length of the parent '
+                          'chain of atom {}'.format(line[prop_indices['id']]))
+                    exit = True
 
                 # Checks all required properties have been assigned to the atom object
                 none_props = [
@@ -313,7 +220,8 @@ def parse_atom_rec_from_mmcif(atom_rec, exit):
                     new_atom.resiNum, new_atom.insCode, new_atom.xyzCoords,
                     new_atom.occupancy, new_atom.bFactor, new_atom.element,
                     new_atom.charge, new_atom.origResiNum, new_atom.origResiType,
-                    new_atom.origChainID, new_atom.origAtomType
+                    new_atom.origChainID, new_atom.origAtomType,
+                    new_atom.protein, new_atom.na, new_atom.chain_len
                 ]
                 if any(prop is None for prop in none_props):
                     exit = True
@@ -343,16 +251,31 @@ def parse_atom_rec_from_mmcif(atom_rec, exit):
     return atoms_list, exit
 
 
-def parse_atom_rec_from_pdb(atom_rec, exit):
+def parse_atom_rec_from_pdb(atom_rec, input_pdb, exit):
     """
     Parses ATOM / HETATM records in PDB format input file
     """
+
+    from iotbx.data_manager import DataManager
+    import numpy as np
 
     if __name__ == 'Subroutines.PDBCUR':
         from Subroutines.parsePDB import atom
     else:
         from rabdam.Subroutines.parsePDB import atom
 
+    dm = DataManager()
+    all_models = dm.get_model(input_pdb)
+
+    model = all_models.get_hierarchy().models()[0]
+    model_atoms = list(model.atoms())
+    model_atoms_dict = {}
+    for atm in model_atoms:
+        model_atoms_dict[' '.join([str(n) for n in list(atm.xyz)])] = atm
+
+    res_is_prot_dict = {}
+    res_is_na_dict = {}
+    chain_len_dict = {}
     atoms_list = []
 
     for line in atom_rec:
@@ -368,7 +291,6 @@ def parse_atom_rec_from_pdb(atom_rec, exit):
         new_atom.origChainID = line[21:22].strip()
         new_atom.insCode = line[26:27].strip()
         new_atom.element = line[76:78].strip()
-        new_atom.charge = line[78:80].strip()
 
         try:
             new_atom.atomNum = int(line[6:11].strip())
@@ -400,6 +322,42 @@ def parse_atom_rec_from_pdb(atom_rec, exit):
         except ValueError:
             print('ERROR: Encountered non-numeric B-factor value '
                   '{}'.format(line[60:66].strip()))
+        new_atom.charge = ''  # Avoids errors when using cctbx to parse
+        # clean_au_file to generate a copy of the unit cell
+        """
+        try:
+            new_atom.charge = line[78:80].strip()
+        except IndexError:
+            new_atom.charge = ''
+        """
+        try:
+            atom_coords = ' '.join([str(n) for n in np.array(new_atom.xyzCoords).flatten()])
+            if not atom_coords in res_is_prot_dict.keys():
+                atm = model_atoms_dict[atom_coords]
+                res_is_prot_dict[atom_coords] = atm.parent().parent().conformers()[0].is_protein()
+            new_atom.protein = res_is_prot_dict[atom_coords]
+        except (KeyError, AttributeError):
+            print('ERROR: Unable to identify if atom {} is in a protein'
+                ' chain'.format(line[6:11].strip()))
+            exit = True
+        try:
+            if not atom_coords in res_is_na_dict.keys():
+                atm = model_atoms_dict[atom_coords]
+                res_is_na_dict[atom_coords] = atm.parent().parent().conformers()[0].is_na()
+            new_atom.na = res_is_na_dict[atom_coords]
+        except (KeyError, AttributeError):
+            print('ERROR: Unable to identify if atom {} is in a nucleic acid'
+                ' chain'.format(line[6:11].strip()))
+            exit = True
+        try:
+            if not atom_coords in chain_len_dict.keys():
+                atm = model_atoms_dict[atom_coords]
+                chain_len_dict[atom_coords] = atm.parent().parent().parent().residue_groups_size()
+            new_atom.chain_len = chain_len_dict[atom_coords]
+        except (KeyError, AttributeError):
+            print('ERROR: Unable to identify the length of the parent chain of '
+                  'atom {}'.format(line[6:11].strip()))
+            exit = True
 
         # Checks all required properties have been assigned to the atom object
         none_props = [
@@ -408,7 +366,8 @@ def parse_atom_rec_from_pdb(atom_rec, exit):
             new_atom.resiNum, new_atom.insCode, new_atom.xyzCoords,
             new_atom.occupancy, new_atom.bFactor, new_atom.element,
             new_atom.charge, new_atom.origResiNum, new_atom.origResiType,
-            new_atom.origChainID, new_atom.origAtomType
+            new_atom.origChainID, new_atom.origAtomType, new_atom.protein,
+            new_atom.na, new_atom.chain_len
         ]
         if any(prop is None for prop in none_props):
             exit = True
@@ -438,36 +397,24 @@ def parse_mmcif_file(pathToInput):
                      if subsection.strip() != '']
 
     atom_rec = []
-    disulfide_rec = []
     space_group = []
-    seqres_rec = []
 
     for subsection in input_cif:
         if '_atom_site.group_PDB' in subsection:
             atom_rec += [line.strip('\r') for line in subsection.split('\n')
                          if line.strip() != '']
-        elif 'disulf1' in subsection:
-            disulfide_rec += [line.strip('\r') for line in subsection.split('\n')
-                              if not line.strip() in ['', 'loop_']]
         elif ('_cell.length_a' in subsection
              or '_symmetry.space_group_name_H-M' in subsection
         ):
             space_group += [line.strip('\r') for line in subsection.split('\n')
                             if not line.strip() in ['', 'loop_']]
-        elif '_entity_poly_seq.' in subsection:
-            seqres_rec += [line.strip('\r') for line in subsection.split('\n')
-                           if not line.strip() in ['', 'loop_']]
 
     # Constructs CRYST1 line of PDB file
     cryst1_line, exit = make_cryst1_line_from_mmcif(space_group, exit)
-    # Extracts disulfide bonds
-    disulfide_bonds, exit = find_disulfides_from_mmcif(disulfide_rec, exit)
-    # Extracts SEQRES info from PDB file
-    seqres, exit = parse_seqres_from_mmcif(seqres_rec, exit)
     # Extracts ATOM / HETATM lines
-    atoms_list, exit = parse_atom_rec_from_mmcif(atom_rec, exit)
+    atoms_list, exit = parse_atom_rec_from_mmcif(atom_rec, pathToInput, exit)
 
-    return atoms_list, disulfide_bonds, seqres, cryst1_line, exit
+    return atoms_list, cryst1_line, exit
 
 
 def parse_pdb_file(pathToInput):
@@ -477,8 +424,6 @@ def parse_pdb_file(pathToInput):
     exit = False
 
     atom_rec = []
-    disulfide_rec = []
-    seqres_rec = []
     cryst1_line = ''
 
     with open('%s' % pathToInput, 'r') as f:
@@ -486,39 +431,23 @@ def parse_pdb_file(pathToInput):
                      if line.strip() != '']
 
     for line in input_pdb:
-        if len(line) != 80:
-            print('\n\nERROR: PDB file formatting incorrect - encountered line '
-                  'of less than 80 characters.\nTerminating RABDAM run.\n')
+        if line[0:6].strip() in ['ATOM', 'HETATM']:
+            atom_rec.append(line)
+        elif line[0:6] == 'CRYST1':
+            cryst1_line = line
+        elif line[0:5] == 'MODEL':
             exit = True
-            break
-        else:
-            if line[0:6].strip() in ['ATOM', 'HETATM']:
-                atom_rec.append(line)
-            elif line[0:6] == 'SSBOND':
-                disulfide_rec.append(line)
-            elif line[0:6] == 'SEQRES':
-                seqres_rec.append(line)
-            elif line[0:6] == 'CRYST1':
-                cryst1_line = line
-            elif line[0:5] == 'MODEL':
-                exit = True
-                print('\n\nERROR: More than one model present in input PDB file.\n'
-                      'Please submit a PDB file containing a single model for '
-                      'BDamage analysis.\n'
-                      'Terminating RABDAM run.\n')
+            print('\n\nERROR: More than one model present in input PDB file.\n'
+                    'Please submit a PDB file containing a single model.\n'
+                    'Terminating RABDAM run.\n')
 
-    # Extracts disulfide bonds
-    disulfide_bonds, exit = find_disulfides_from_pdb(disulfide_rec, exit)
-    # Extracts SEQRES info from PDB file
-    seqres, exit = parse_seqres_from_pdb(seqres_rec, exit)
     # Extracts ATOM / HETATM lines
-    atoms_list, exit = parse_atom_rec_from_pdb(atom_rec, exit)
+    atoms_list, exit = parse_atom_rec_from_pdb(atom_rec, pathToInput, exit)
 
-    return atoms_list, disulfide_bonds, seqres, cryst1_line, exit
+    return atoms_list, cryst1_line, exit
 
 
-def clean_atom_rec(atoms_list, disulfide_bonds, seqres, cryst1_line,
-                   file_name_start):
+def clean_atom_rec(atoms_list, cryst1_line, file_name_start):
     """
     Filters the ATOM / HETATM records to remove hydrogen atoms and 0 occupancy
     atoms, as well as retaining only the most probable alternate conformers (in
@@ -529,24 +458,17 @@ def clean_atom_rec(atoms_list, disulfide_bonds, seqres, cryst1_line,
     """
 
     import copy
-    import math
-    import shutil
     import numpy as np
-    import pandas as pd
 
     if __name__ == 'Subroutines.PDBCUR':
         from Subroutines.makeDataFrame import makePDB
     else:
         from rabdam.Subroutines.makeDataFrame import makePDB
 
-    # Checks that any disulphide bonds have been refined with 100% occupancy.
-    # Then removes anisotropic Bfactors, hydrogen atoms and 0 occupancy atoms.
     exit = False
     pause = False
 
     filtered_atoms_list = []
-    unit_cell_params = []
-
     atom_ids = {}
 
     for atm in atoms_list:
@@ -554,36 +476,6 @@ def clean_atom_rec(atoms_list, disulfide_bonds, seqres, cryst1_line,
         # HETATM records
         if atm.element != 'H' and atm.bFactor > 0 and 0 < atm.occupancy <= 1:
             filtered_atoms_list.append(copy.deepcopy(atm))
-
-            # Checks that all disulfide bonds between CYS residue pairs have
-            # been refined with 100% occupancy.
-            for bond_num, res_list in disulfide_bonds.items():
-                res1 = res_list[0]
-                chain1 = res1[0]
-                resnum1 = res1[1]
-                inscode1 = res1[2]
-
-                res2 = res_list[1]
-                chain2 = res2[0]
-                resnum2 = res2[1]
-                inscode2 = res2[2]
-
-                if (
-                    atm.occupancy != 1
-                    and
-                    (
-                        (atm.chainID == chain1 and atm.resiNum == resnum1
-                         and atm.insCode == inscode1 and atm.resiType == 'CYS')
-                        or
-                        (atm.chainID == chain2 and atm.resiNum == resnum2
-                         and atm.insCode == inscode2 and atm.resiType == 'CYS'))
-                ):
-                    pause = True
-                    print('\n\nERROR: One or more disulfide bonds has been '
-                          'refined with an occupancy of less than 1.\nTo '
-                          'enable damage detection, disulfide bonds should be '
-                          'refined as single occupancy\nrather than in '
-                          'alternate oxidised and reduced conformations.\n')
 
             # Checks that all macromolecular atoms in single conformers have an
             # occupancy of 1, and that the occupancies of counterpart atoms in
@@ -622,48 +514,31 @@ def clean_atom_rec(atoms_list, disulfide_bonds, seqres, cryst1_line,
               ' input file')
 
     clean_au_file = '%s_asymmetric_unit.pdb' % file_name_start
-    pdb_fail = makePDB([cryst1_line], filtered_atoms_list, [], seqres, clean_au_file, 'bfactor')
+    pdb_fail = makePDB([cryst1_line], filtered_atoms_list, [], clean_au_file, 'bfactor')
     if pdb_fail is True:
         exit  = True
-        print('\n\nERROR: Failed to make input PDB file to feed into PDBCUR.\n'
+        print('\n\nERROR: Failed to make asymmetric unit PDB file.\n'
               'Check formatting of input PDB/mmCIF file input file')
 
     return exit, pause, filtered_atoms_list, clean_au_file
 
 
-def genPDBCURinputs(PDBCURinputFile):
+def gen_unit_cell(clean_au_file):
     """
-    Creates input file for the CCP4 suite program PDBCUR, instructing it to
-    generate the unit cell from an input PDB file of an asymmetric unit
-    """
-
-    print('Writing input file for PDBCUR at %s' % PDBCURinputFile)
-    input_file = open(PDBCURinputFile, 'w')
-    input_file.write('genunit\n')
-    input_file.close()
-
-
-def runPDBCUR(clean_au_file, PDBCURoutputPDB, PDBCURinputFile, PDBCURlog):
-    """
-    Runs PDBCUR from the command line with the operations specified in the
-    PDBCUR input file.
+    Only need xyz coordinates for unit cell atoms => should speed up the code considerably
     """
 
-    import os
+    import numpy as np
+    from iotbx.data_manager import DataManager
 
-    runPDBCURcommand = 'pdbcur xyzin %s xyzout %s < %s > %s' % (
-        clean_au_file, PDBCURoutputPDB, PDBCURinputFile, PDBCURlog
-        )
-    print('Running PDBCUR (Winn et al. 2011) to generate unit cell')
-    os.system(runPDBCURcommand)
-    print('PDBCUR log is printed below\n')
-    PDBCURlogText = open(PDBCURlog, 'r')
-    for line in PDBCURlogText:
-        print('%s' % line)
-    PDBCURlogText.close()
-    os.remove(PDBCURlog)
-    os.remove(PDBCURinputFile)
+    dm = DataManager()
+    model = dm.get_model(clean_au_file)
+    xray_structure = model.get_xray_structure()
+    p1 = xray_structure.expand_to_p1()
+    unit_cell_coords = np.array(p1.sites_cart())
 
-    print('\n################################################################\n'
-          '\n################################################################\n'
-          '\n################################################################\n')
+    return unit_cell_coords, [n for n in range(1, (unit_cell_coords.shape[0] + 1))]
+
+
+
+

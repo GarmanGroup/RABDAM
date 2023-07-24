@@ -1,6 +1,6 @@
 
 # RABDAM
-# Copyright (C) 2020 Garman Group, University of Oxford
+# Copyright (C) 2023 Garman Group, University of Oxford
 
 # This file is part of RABDAM.
 
@@ -238,16 +238,7 @@ def parse_input_file_arguments(splitArgs):
         # alone, or both atom types (if present) in the BDamage calculation
         elif splitArgs[x][0:20].lower() == 'proteinornucleicacid':
             protOrNAVal = splitArgs[x].split('=')[-1].lower()
-            # Temporary variable reassignment to prevent nucleic acid analysis
-            # with RABDAM before the complete functionality has been introduced
-            if protOrNAVal in ['na', 'nucleicacid']:
-                sys.exit('RABDAM is currently only suitable for assessing '
-                         'radiation damage\nto the protein component of '
-                         'macromolecular crystal structures.\nWe hope to extend'
-                         ' the program to incorporate nucleic acid analysis\n'
-                         'shortly - in the meantime, please restrict your '
-                         'RABDAM analysis to\nprotein atoms only.')
-            if not protOrNAVal in ['protein', 'na', 'nucleicacid']:
+            if not protOrNAVal in ['protein', 'na', 'nucleicacid', 'proteinna']:
                 raise ArgumentError(
                     'Unrecognised value for proteinornucleicacid: '
                     '{}'.format(protOrNAVal)

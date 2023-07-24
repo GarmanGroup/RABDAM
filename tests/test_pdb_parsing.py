@@ -1,6 +1,6 @@
 
 # RABDAM
-# Copyright (C) 2020 Garman Group, University of Oxford
+# Copyright (C) 2023 Garman Group, University of Oxford
 
 # This file is part of RABDAM.
 
@@ -18,9 +18,6 @@
 # Public License along with this program.  If not, see
 # <http://www.gnu.org/licenses/>.
 
-# An outer layer to the pipeline scripts. Depending upon the flags specified
-# in the command line input, this script will run either the complete / a
-# subsection of the pipeline.
 
 # python -m unittest tests/test_pdb_parsing.py
 

@@ -1,6 +1,6 @@
 
 # RABDAM
-# Copyright (C) 2020 Garman Group, University of Oxford
+# Copyright (C) 2023 Garman Group, University of Oxford
 
 # This file is part of RABDAM.
 
@@ -455,6 +455,7 @@ class generate_output_files(object):
         """
 
         import os
+        import requests
         import time
         import pandas as pd
         import numpy as np
@@ -504,15 +505,42 @@ class generate_output_files(object):
 
         # Opens summary html file
         html_file = open(self.out_file_start + '_BDamage.html', 'w')
+    
+        # Try first to load html files from the internet
+        js_file = 'https://raw.githubusercontent.com/GarmanGroup/RABDAM/master/rabdam/Subroutines/HTML_stylesheet.js'
+        js_header = requests.get(js_file)
+        if js_header.status_code == 200:
+            js_text = js_header.text
+        else:
+            js_file = 'file://%s/HTML_stylesheet.js' % os.path.dirname(os.path.abspath(__file__))
+            with open(js_file, 'r') as f:
+                js_text = f.read()
+
+        css_file = 'https://raw.githubusercontent.com/GarmanGroup/RABDAM/master/rabdam/Subroutines/HTML_stylesheet.css'
+        css_header = requests.get(css_file)
+        if css_header.status_code == 200:
+            css_text = css_header.text
+        else:
+            css_file = 'file://%s/HTML_stylesheet.css' % os.path.dirname(os.path.abspath(__file__))
+            with open(css_file, 'r') as f:
+                css_text = f.read()
+
+        jquery_file = 'http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js'
+        jquery_header = requests.get(jquery_file)
+        if jquery_header.status_code == 200:
+            jquery_text = jquery_header.text
+        else:
+            jquery_file = 'file://%s/jQuery_stylesheet.js' % os.path.dirname(os.path.abspath(__file__))
+            with open(jquery_file, 'r') as f:
+                jquery_text = f.read()
+
         # Specifies html file header information
         html_file.write('<!DOCTYPE html>\n'
                         '<html>\n'
                         '  <head>\n'
-                        '    <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>\n'
-                        '    <script type="text/javascript" src="file://%s/HTML_stylesheet.js"></script>\n' % os.path.dirname(os.path.abspath(__file__)))  # Locates
-                                                                                                              # HTML stylesheets when RABDAM is run either as a
-                                                                                                              # package or as a script
-        html_file.write('    <link href="file://%s/HTML_stylesheet.css" type="text/css" rel="stylesheet">\n' % os.path.dirname(os.path.abspath(__file__)))
+                        '    <script type="text/javascript"> %s </script>\n' % jquery_text)
+        html_file.write('    <script type="text/javascript"> %s </script>\n' % js_text)
+        html_file.write('    <style> %s </style>\n' % css_text)
         html_file.write('    <title>'+self.pdb_code.replace('_', ' ')+' BDamage summary file</title>\n'
                         '  </head>\n')
         # Writes html file title

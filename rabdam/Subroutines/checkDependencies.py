@@ -1,6 +1,6 @@
 
 # RABDAM
-# Copyright (C) 2020 Garman Group, University of Oxford
+# Copyright (C) 2023 Garman Group, University of Oxford
 
 # This file is part of RABDAM.
 
@@ -34,64 +34,60 @@ def check_RABDAM_dependencies():
     dependencies_met = True
 
     # Checks python packages called by RABDAM
-    python_package_list = ['numpy', 'matplotlib', 'pandas', 'requests',
-                           'seaborn']
-    for package in python_package_list:
+    python_package_dict = {}
+    with open('requirements.txt', 'r') as f:
+        for line in f.readlines():
+            line = line.replace('\n', '').strip()
+            if line == '':
+                pass
+            elif any(x in line for x in ['>=', '>', '==', '<', '<=']):
+                package = line.split('>')[0].split('=')[0].split('<')[0].strip()
+                version = line.split('>')[-1].split('=')[-1].split('<')[-1].strip()
+                python_package_dict[package] = version
+            else:
+                python_package_dict[line] = None
+
+    for package, req_version in python_package_dict.items():
         try:
             imp.find_module(package)
-            if package in ['pandas', 'seaborn']:
-                version = pkg_resources.get_distribution('%s' % package).version
-                version_list = list(version)
-                count = version_list.count('.')
-                if count < 2:
-                    version = version + '.0'
-                version = int(version.replace('.', ''))
-                if package == 'pandas':
-                    if version < 180:
-                        dependencies_met = False
-                        print('\nThe pandas Python data analysis library is '
-                              'installed on the system,\n'
-                              'but a more recent version is required to run '
-                              'RABDAM.'
-                              '\nUpdate via "pip install pandas --upgrade"')
-                elif package == 'seaborn':
-                    if version < 70:
-                        dependencies_met = False
-                        print('\nThe seaborn Python plotting library is '
-                              'installed on the system,\n'
-                              'but a more recent version is required to run '
-                              'RABDAM.'
-                              '\nUpdate via "pip install seaborn --upgrade"')
-
         except ImportError:
             dependencies_met = False
             print('Python package %s not installed' % package)
             print('Install via "pip install %s"' % package)
 
-    # Checks that CCP4 has been downloaded and is accessible in the command
-    # prompt / terminal being used
-    operating_system = platform.system().strip()
-    if operating_system.lower() == 'windows':
-        os.system('pdbcur > test.txt')
-    else:
-        os.system('pdbcur > test.txt 2>&1')
+        if not req_version is None:
+            act_version = pkg_resources.get_distribution('%s' % package).version.strip()
+            act_version_list = act_version.split('.')
+            req_version_list = req_version.split('.')
 
-    test_file = open('test.txt', 'r')
-    test_file_lines = test_file.readlines()
-    if test_file_lines == []:
-        dependencies_met = False
-        print('\nCCP4 program suite not found. If you have downloaded the\n'
-              'CCP4 suite, ensure that you are running RABDAM in a\n'
-              'terminal / command prompt that can run CCP4 programs')
-    else:
-        test_file_line = test_file_lines[0]
-        if 'pdbcur:commandnotfound' in test_file_line.replace(' ', ''):
-            dependencies_met = False
-            print('\nCCP4 program suite not found. If you have downloaded the\n'
-                  'CCP4 suite, ensure that you are running RABDAM in a\n'
-                  'terminal / command prompt that can run CCP4 programs')
-    test_file.close()
-    os.remove('test.txt')
+            if len(act_version_list) != 3:
+                dependencies_met = False
+                print(
+                    'Expected {} package version to be in format X.Y.Z, instead'
+                    ' it is formatted as {} - unable to recognise if the '
+                    'package version meets RABDAM\'s requirements or '
+                    'not'.format(package, act_version)
+                )
+
+            else:
+                for i, req_val in enumerate(req_version_list):
+                    req_val = int(req_val)
+                    act_val = int(act_version_list[i])
+
+                    if act_val > req_val:
+                        break
+                    elif act_val < req_val:
+                        dependencies_met = False
+                        print(
+                            '\nThe {} package is installed on the system, but a'
+                            ' more recent version is required to run RABDAM.'
+                            '\nUpdate via "pip install {} --upgrade"'.format(package, package)
+                        )
+                    else:
+                        if i == 2:
+                            break
+                        else:
+                            continue
 
     if dependencies_met is True:
         print('\nSystem meets all RABDAM dependencies')

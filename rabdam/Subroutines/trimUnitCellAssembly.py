@@ -1,6 +1,6 @@
 
 # RABDAM
-# Copyright (C) 2020 Garman Group, University of Oxford
+# Copyright (C) 2023 Garman Group, University of Oxford
 
 # This file is part of RABDAM.
 
@@ -96,7 +96,7 @@ def isInXYZparams(atomXYZ, params):
         return False
 
 
-def trimAtoms(atomList, params, atom_id_list, createAUCpdb, createTApdb, pdt):
+def trimAtoms(atomList, params, atom_id_list, pdt):
     """
     Removes all atoms with coordinates which lie outside of the trimmed atoms
     box from the list of atoms in the 3x3 unit cell assembly.

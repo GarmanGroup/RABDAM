@@ -1,6 +1,6 @@
 
 # RABDAM
-# Copyright (C) 2020 Garman Group, University of Oxford
+# Copyright (C) 2023 Garman Group, University of Oxford
 
 # This file is part of RABDAM.
 
@@ -18,9 +18,6 @@
 # Public License along with this program.  If not, see
 # <http://www.gnu.org/licenses/>.
 
-# An outer layer to the pipeline scripts. Depending upon the flags specified
-# in the command line input, this script will run either the complete / a
-# subsection of the pipeline.
 
 # python -m unittest tests/test_parse_input_file.py
 
@@ -44,75 +41,75 @@ class TestClass(unittest.TestCase):
             SystemExit, parse_command_line_arguments, command_line_1, True
         )
 
-        command_line_3 = ['-i', 'tests/test_files/example input.txt']
-        act_parsed_3 = parse_command_line_arguments(command_line_3, True)
-        exp_parsed_3 = argparse.Namespace(
+        command_line_2 = ['-i', 'tests/test_files/example input.txt']
+        act_parsed_2 = parse_command_line_arguments(command_line_2, True)
+        exp_parsed_2 = argparse.Namespace(
             dependencies=False, input='tests/test_files/example input.txt',
             pdb_or_mmcif_file=None, output=['csv', 'pdb', 'cif', 'kde', 'bnet',
             'summary'], run=None
         )
-        self.assertEqual(act_parsed_3, exp_parsed_3)
+        self.assertEqual(act_parsed_2, exp_parsed_2)
 
-        command_line_4 = ['-i', 'does_not_exist.txt']
+        command_line_3 = ['-i', 'does_not_exist.txt']
         self.assertRaises(
-            FileDoesNotExistError, parse_command_line_arguments, command_line_4,
+            FileDoesNotExistError, parse_command_line_arguments, command_line_3,
             True
         )
 
-        command_line_5 = ['-f', '2bn1']
-        act_parsed_5 = parse_command_line_arguments(command_line_5, True)
-        exp_parsed_5 = argparse.Namespace(
+        command_line_4 = ['-f', '2bn1']
+        act_parsed_4 = parse_command_line_arguments(command_line_4, True)
+        exp_parsed_4 = argparse.Namespace(
             dependencies=False, input=None, pdb_or_mmcif_file=['2bn1'],
             output=['csv', 'pdb', 'cif', 'kde', 'bnet', 'summary'], run=None
         )
-        self.assertEqual(act_parsed_5, exp_parsed_5)
+        self.assertEqual(act_parsed_4, exp_parsed_4)
 
-        command_line_6 = ['-f', '5eeu', '5eev', '5eew']
-        act_parsed_6 = parse_command_line_arguments(command_line_6, True)
-        exp_parsed_6 = argparse.Namespace(
+        command_line_5 = ['-f', '5eeu', '5eev', '5eew']
+        act_parsed_5 = parse_command_line_arguments(command_line_5, True)
+        exp_parsed_5 = argparse.Namespace(
             dependencies=False, input=None, pdb_or_mmcif_file=['5eeu', '5eev',
             '5eew'], output=['csv', 'pdb', 'cif', 'kde', 'bnet', 'summary'],
             run=None
         )
-        self.assertEqual(act_parsed_6, exp_parsed_6)
+        self.assertEqual(act_parsed_5, exp_parsed_5)
 
-        command_line_7 = ['-o', 'csv', 'cif', 'pdb']
+        command_line_6 = ['-o', 'csv', 'cif', 'pdb']
         self.assertRaises(
-            SystemExit, parse_command_line_arguments, command_line_7, True
+            SystemExit, parse_command_line_arguments, command_line_6, True
         )
 
-        command_line_8 = ['-o', 'csv', 'cif', 'pdb', '-f', '2bn1']
-        act_parsed_8 = parse_command_line_arguments(command_line_8, True)
-        exp_parsed_8 = argparse.Namespace(
+        command_line_7 = ['-o', 'csv', 'cif', 'pdb', '-f', '2bn1']
+        act_parsed_7 = parse_command_line_arguments(command_line_7, True)
+        exp_parsed_7 = argparse.Namespace(
             dependencies=False, input=None, pdb_or_mmcif_file=['2bn1'],
             output=['csv', 'cif', 'pdb'], run=None
         )
-        self.assertEqual(act_parsed_8, exp_parsed_8)
+        self.assertEqual(act_parsed_7, exp_parsed_7)
 
-        command_line_9 = ['-o', 'csv', 'CIF', '-f', '2bn1']
-        act_parsed_9 = parse_command_line_arguments(command_line_9, True)
-        exp_parsed_9 = argparse.Namespace(
+        command_line_8 = ['-o', 'csv', 'CIF', '-f', '2bn1']
+        act_parsed_8 = parse_command_line_arguments(command_line_8, True)
+        exp_parsed_8 = argparse.Namespace(
             dependencies=False, input=None, pdb_or_mmcif_file=['2bn1'],
             output=['csv', 'cif'], run=None
         )
-        self.assertEqual(act_parsed_9, exp_parsed_9)
+        self.assertEqual(act_parsed_8, exp_parsed_8)
 
-        command_line_10 = ['-o', 'csv', 'cfi', '-f', '2bn1']
+        command_line_9 = ['-o', 'csv', 'cfi', '-f', '2bn1']
         self.assertRaises(
-            ArgumentError, parse_command_line_arguments, command_line_10, True
+            ArgumentError, parse_command_line_arguments, command_line_9, True
         )
 
-        command_line_11 = ['-r', 'df', '-f', '2bn1']
-        act_parsed_11 = parse_command_line_arguments(command_line_11, True)
-        exp_parsed_11 = argparse.Namespace(
+        command_line_10 = ['-r', 'df', '-f', '2bn1']
+        act_parsed_10 = parse_command_line_arguments(command_line_10, True)
+        exp_parsed_10 = argparse.Namespace(
             dependencies=False, input=None, pdb_or_mmcif_file=['2bn1'],
             output=['csv', 'pdb', 'cif', 'kde', 'bnet', 'summary'], run='df'
         )
-        self.assertEqual(act_parsed_11, exp_parsed_11)
+        self.assertEqual(act_parsed_10, exp_parsed_10)
 
-        command_line_12 = ['-r', 'anaylsis', '-f', '2bn1']
+        command_line_11 = ['-r', 'anaylsis', '-f', '2bn1']
         self.assertRaises(
-            ArgumentError, parse_command_line_arguments, command_line_12, True
+            ArgumentError, parse_command_line_arguments, command_line_11, True
         )
 
     def test_parse_input_file(self):
