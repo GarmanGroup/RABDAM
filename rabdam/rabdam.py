@@ -553,8 +553,12 @@ def main(test=False):
     elif mins >= 1:
         print('Program run time: %01.0f min %02.3f sec\n' % (mins, secs))
 
-    print('Please cite:\nShelley, K. L., Dixon, T. P. E., Brooks-Bartlett, '
-          'J. C. & Garman, E. F. (2018). J. Appl. Cryst. 51, 552-559\n\n')
+    print('Please cite:\nShelley KL, Dixon TPE, Brooks-Bartlett JC & Garman EF'
+          ' (2018). J Appl Cryst 51, 552-559.\n\n')
+    print('If using BDamage, please cite:\nGerstel M, Deane CM & Garman EF '
+          '(2015).  J Synchrotron Radiat 22, 201-212.\n\n')
+    print('If using Bnet, please cite:\nShelley KL & Garman EF (2022). '
+          'Nat Commun 13, 1314.\n\n')
 
 # Runs 'main' function if rabdam.py is run as a script
 if __name__ == '__main__':

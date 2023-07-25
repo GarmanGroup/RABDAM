@@ -26,19 +26,22 @@ class atom(object):
     BDamage calculation).
     """
 
-    def __init__(self, lineidentifier=None, atomnum=None, atomtype=None,
-                 conformer=None, resitype=None, chainID=None, resinum=None,
-                 insertioncode=None, xyz_coords=None, element=None,
-                 bfactor=None, occupancy=None, charge=None, orig_resinum=None,
-                 orig_resitype=None, orig_chainID=None, orig_atomtype=None,
-                 packingdensity=None, avrg_bfactor=None, bdamage=None,
-                 protein=None, na=None, chain_len=None):
+    def __init__(
+        self, lineidentifier=None, atomnum=None, atomtype=None, conformer=None,
+        resitype=None, chainID=None, entity_id=None, resinum=None,
+        insertioncode=None, xyz_coords=None, element=None, bfactor=None,
+        occupancy=None, charge=None, orig_resinum=None, orig_resitype=None,
+        orig_chainID=None, orig_atomtype=None, pdb_model_num=None,
+        packingdensity=None, avrg_bfactor=None, bdamage=None, protein=None,
+        na=None, chain_len=None
+    ):
         self.lineID = lineidentifier
         self.atomNum = atomnum
         self.atomType = atomtype
         self.conformer = conformer
         self.resiType = resitype
         self.chainID = chainID
+        self.entity_id = entity_id
         self.resiNum = resinum
         self.insCode = insertioncode
         self.xyzCoords = xyz_coords
@@ -50,6 +53,7 @@ class atom(object):
         self.origResiType = orig_resitype
         self.origChainID = orig_chainID
         self.origAtomType = orig_atomtype
+        self.pdb_model_num = pdb_model_num
         self.pd = packingdensity
         self.avrg_bf = avrg_bfactor
         self.bd = bdamage
@@ -68,6 +72,7 @@ class atom(object):
                self.conformer == other.conformer and \
                self.resiType == other.resiType and \
                self.chainID == other.chainID and \
+               self.entity_id == other.entity_id and \
                self.resiNum == other.resiNum and \
                self.insCode == other.insCode and \
                self.xyzCoords == other.xyzCoords and \
@@ -79,6 +84,7 @@ class atom(object):
                self.origResiType == other.origResiType and \
                self.origChainID == other.origChainID and \
                self.origAtomType == other.origAtomType and \
+               self.pdb_model_num == other.pdb_model_num and \
                self.pd == other.pd and \
                self.avrg_bf == other.avrg_bf and \
                self.bd == other.bd and \

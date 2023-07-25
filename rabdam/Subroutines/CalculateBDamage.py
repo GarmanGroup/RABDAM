@@ -72,13 +72,12 @@ class rabdam(object):
             from Subroutines.trimUnitCellAssembly import (
                 getAUparams, convertParams, trimAtoms
             )
-            from Subroutines.makeDataFrame import (
-                makePDB, make_c_pdb, writeDataFrame
-            )
+            from Subroutines.makeDataFrame import writeDataFrame
             from Subroutines.BDamage import (
                 get_xyz_from_objects, calc_packing_density,
                 write_pckg_dens_to_atoms, calcBDam
             )
+            from Subroutines.output import write_all_carbon_cif
         else:
             from rabdam.Subroutines.PDBCUR import (
                 parse_mmcif_file, parse_pdb_file, clean_atom_rec, gen_unit_cell
@@ -92,13 +91,12 @@ class rabdam(object):
             from rabdam.Subroutines.trimUnitCellAssembly import (
                 getAUparams, convertParams, trimAtoms
             )
-            from rabdam.Subroutines.makeDataFrame import (
-                makePDB, make_c_pdb, writeDataFrame
-            )
+            from rabdam.Subroutines.makeDataFrame import writeDataFrame
             from rabdam.Subroutines.BDamage import (
                 get_xyz_from_objects, calc_packing_density,
                 write_pckg_dens_to_atoms, calcBDam
             )
+            from rabdam.Subroutines.output import write_all_carbon_cif
 
         print('**************************** RABDAM ****************************\n')
 
@@ -360,8 +358,9 @@ class rabdam(object):
         exit = False
         pause = False
         exit, pause, clean_au_list, clean_au_file = clean_atom_rec(
-            atoms_list, cryst1_line, file_name_start
+            atoms_list, file_name_start
         )
+        clean_au_file = '{}.cif'.format(clean_au_file)
 
         if exit is True:
             shutil.rmtree('%s' % PDBdirectory)
@@ -375,7 +374,7 @@ class rabdam(object):
                   'should be refined as full occupancy (i.e. 1),\n'
                   'except for alternate conformers (whose occupancy should sum '
                   'to 1).\nOne or more atoms in the structure does not '
-                  'meet these requirements (see ERRORs listed above).\n'
+                  'meet these requirements (see WARNINGs listed above).\n'
                   'Continue with RABDAM run?\n'
                   '--USER INPUT-- type your choice and press RETURN\n'
                   'yes = continue RABDAM run\n'
@@ -417,7 +416,7 @@ class rabdam(object):
               '************* Make and Translate Unit Cell Section *************\n')
         # Generates a list of atoms in the unit cell
         print('\nGenerating unit cell\n')
-        ucAtomList, ucATomIDList = gen_unit_cell(clean_au_file)
+        ucAtomList, ucAtomIDList = gen_unit_cell(clean_au_file, pathToInput)
 
         # The PDB file of the processed asymmetric unit is deleted unless
         # createAUpdb is set equal to True (default = False) in the input file.
@@ -430,11 +429,13 @@ class rabdam(object):
         if not self.createOrigpdb:
             os.remove(pathToInput)
 
-        # The unit cell PDB file is deleted unless createUCpdb is equal to True
+        # If createUCpdb is equal to True (default = False), save coordinates of
+        # the unit cell atoms. All atoms are set to a C carbon of glycine in
+        # order to prevent the generation of this file slowing down the program
         # in the input file (default = False).
         if self.createUCpdb is True:
-            unit_cell_pdb_file = '%s_unit_cell.pdb' % file_name_start
-            make_c_pdb([], ucAtomList, ucATomIDList, [], unit_cell_pdb_file)
+            unit_cell_pdb_file = '%s_unit_cell' % file_name_start
+            write_all_carbon_cif(ucAtomList, ucAtomIDList, unit_cell_pdb_file)
 
         # The unit cell parameters are converted into Cartesian vectors. These
         # vectors are then used to translate the unit cell -/+ 1 units in all
@@ -469,8 +470,8 @@ class rabdam(object):
         # Creates PDB file of 3x3 unit cell assembly. WARNING: VERY slow and
         # RAM-consuming for large structures!
         if self.createAUCpdb is True:
-            aucPDBfilepath = '%s_all_unit_cells.pdb' % file_name_start
-            make_c_pdb([], transAtomList, transAtomIDList, [], aucPDBfilepath)
+            aucPDBfilepath = '%s_all_unit_cells' % file_name_start
+            write_all_carbon_cif(transAtomList, transAtomIDList, aucPDBfilepath)
 
         print('\n************** End of Translate Unit Cell Section **************\n'
               '****************************************************************\n')
@@ -514,8 +515,10 @@ class rabdam(object):
         # Creates PDB file of trimmed 3x3 unit cell assembly. WARNING: VERY
         # slow and RAM-consuming for large structures!
         if self.createTApdb is True:
-            taPDBfilepath = '%s_trimmed_atoms.pdb' % file_name_start
-            make_c_pdb([], trimmedAtomList, trimmedAtomIDList, [], taPDBfilepath)
+            taPDBfilepath = '%s_trimmed_atoms' % file_name_start
+            write_all_carbon_cif(
+                trimmedAtomList, trimmedAtomIDList, taPDBfilepath
+            )
 
         print('\n****************** End of Trim Crystal Section *****************\n'
               '****************************************************************\n')
@@ -594,10 +597,14 @@ class rabdam(object):
             user_input = input
 
         if __name__ == 'Subroutines.CalculateBDamage':
-            from Subroutines.output import generate_output_files
+            from Subroutines.output import (
+                generate_output_files, write_output_cif
+            )
             from Subroutines.makeDataFrame import makePDB
         else:
-            from rabdam.Subroutines.output import generate_output_files
+            from rabdam.Subroutines.output import (
+                generate_output_files, write_output_cif
+            )
             from rabdam.Subroutines.makeDataFrame import makePDB
 
         print('**************************** RABDAM ****************************\n')
@@ -720,7 +727,9 @@ class rabdam(object):
 
         if 'cif' in output_options:
             print('\nWriting cif file with BDamage column')
-            output.write_output_cif(bdamAtomList)
+            write_output_cif(
+                bdamAtomList, '{}_BDamage'.format(file_name_start), True
+            )
 
         if 'kde' in output_options or 'summary' in output_options:
             print('\nPlotting kernel density estimate')

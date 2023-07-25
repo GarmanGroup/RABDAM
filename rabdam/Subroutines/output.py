@@ -19,6 +19,407 @@
 # <http://www.gnu.org/licenses/>.
 
 
+def write_output_cif(atom_list, file_start, bdam):
+    """
+    Writes an mmCIF file for the input structure with an additional
+    column of BDamage values for those atoms included in the calculation.
+    """
+
+    import copy
+
+    cif_data = {
+        'lineID': [None]*len(atom_list),
+        'atomNum': [None]*len(atom_list),
+        'origAtomType': [None]*len(atom_list),
+        'conformer': [None]*len(atom_list),
+        'origResiType': [None]*len(atom_list),
+        'origChainID': [None]*len(atom_list),
+        'entity_id': [None]*len(atom_list),
+        'origResiNum': [None]*len(atom_list),
+        'insCode': [None]*len(atom_list),
+        'x': [None]*len(atom_list),
+        'y': [None]*len(atom_list),
+        'z': [None]*len(atom_list),
+        'occupancy': [None]*len(atom_list),
+        'bFactor': [None]*len(atom_list),
+        'element': [None]*len(atom_list),
+        'charge': [None]*len(atom_list),
+        'resiNum': [None]*len(atom_list),
+        'resiType': [None]*len(atom_list),
+        'chainID': [None]*len(atom_list),
+        'atomType': [None]*len(atom_list),
+        'model_num': [None]*len(atom_list)
+    }
+    if bdam is True:
+        cif_data['pd'] = [None]*len(atom_list)
+        cif_data['avrg_bf'] = [None]*len(atom_list)
+        cif_data['bd'] = [None]*len(atom_list)
+
+    cif_column_widths = {
+        'lineID': 0,
+        'atomNum': 0,
+        'origAtomType': 0,
+        'conformer': 0,
+        'origResiType': 0,
+        'origChainID': 0,
+        'entity_id': 0,
+        'origResiNum': 0,
+        'insCode': 0,
+        'x': 0,
+        'y': 0,
+        'z': 0,
+        'occupancy': 0,
+        'bFactor': 0,
+        'element': 0,
+        'charge': 0,
+        'resiNum': 0,
+        'resiType': 0,
+        'chainID': 0,
+        'atomType': 0,
+        'model_num': 0
+    }
+    if bdam is True:
+        cif_column_widths['pd'] = 0
+        cif_column_widths['avrg_bf'] = 0
+        cif_column_widths['bd'] = 0
+
+    for index, atom in enumerate(atom_list):
+        cif_data['lineID'][index] = atom.lineID
+        if len(cif_data['lineID'][index]) > cif_column_widths['lineID']:
+            cif_column_widths['lineID'] = len(cif_data['lineID'][index])
+        cif_data['atomNum'][index] = str(atom.atomNum)
+        if len(cif_data['atomNum'][index]) > cif_column_widths['atomNum']:
+            cif_column_widths['atomNum'] = len(cif_data['atomNum'][index])
+        cif_data['origAtomType'][index] = atom.origAtomType
+        if len(cif_data['origAtomType'][index]) > cif_column_widths['origAtomType']:
+            cif_column_widths['origAtomType'] = len(cif_data['origAtomType'][index])
+        cif_data['conformer'][index] = atom.conformer
+        if len(cif_data['conformer'][index]) > cif_column_widths['conformer']:
+            cif_column_widths['conformer'] = len(cif_data['conformer'][index])
+        cif_data['origResiType'][index] = atom.origResiType
+        if len(cif_data['origResiType'][index]) > cif_column_widths['origResiType']:
+            cif_column_widths['origResiType'] = len(cif_data['origResiType'][index])
+        cif_data['origChainID'][index] = atom.origChainID
+        if len(cif_data['origChainID'][index]) > cif_column_widths['origChainID']:
+            cif_column_widths['origChainID'] = len(cif_data['origChainID'][index])
+        cif_data['entity_id'][index] = str(atom.entity_id)
+        if len(cif_data['entity_id'][index]) > cif_column_widths['entity_id']:
+            cif_column_widths['entity_id'] = len(cif_data['entity_id'][index])
+        cif_data['origResiNum'][index] = atom.origResiNum
+        if len(cif_data['origResiNum'][index]) > cif_column_widths['origResiNum']:
+            cif_column_widths['origResiNum'] = len(cif_data['origResiNum'][index])
+        cif_data['insCode'][index] = atom.insCode
+        if len(cif_data['insCode'][index]) > cif_column_widths['insCode']:
+            cif_column_widths['insCode'] = len(cif_data['insCode'][index])
+        cif_data['x'][index] = str(atom.xyzCoords[0][0])
+        if len(cif_data['x'][index]) > cif_column_widths['x']:
+            cif_column_widths['x'] = len(cif_data['x'][index])
+        cif_data['y'][index] = str(atom.xyzCoords[1][0])
+        if len(cif_data['y'][index]) > cif_column_widths['y']:
+            cif_column_widths['y'] = len(cif_data['y'][index])
+        cif_data['z'][index] = str(atom.xyzCoords[2][0])
+        if len(cif_data['z'][index]) > cif_column_widths['z']:
+            cif_column_widths['z'] = len(cif_data['z'][index])
+        cif_data['occupancy'][index] = str(atom.occupancy)
+        if len(cif_data['occupancy'][index]) > cif_column_widths['occupancy']:
+            cif_column_widths['occupancy'] = len(cif_data['occupancy'][index])
+        cif_data['bFactor'][index] = str(atom.bFactor)
+        if len(cif_data['bFactor'][index]) > cif_column_widths['bFactor']:
+            cif_column_widths['bFactor'] = len(cif_data['bFactor'][index])
+        cif_data['element'][index] = atom.element
+        if len(cif_data['element'][index]) > cif_column_widths['element']:
+            cif_column_widths['element'] = len(cif_data['element'][index])
+        cif_data['charge'][index] = atom.charge
+        if len(cif_data['charge'][index]) > cif_column_widths['charge']:
+            cif_column_widths['charge'] = len(cif_data['charge'][index])
+        cif_data['resiNum'][index] = str(atom.resiNum)
+        if len(cif_data['resiNum'][index]) > cif_column_widths['resiNum']:
+            cif_column_widths['resiNum'] = len(cif_data['resiNum'][index])
+        cif_data['resiType'][index] = atom.resiType
+        if len(cif_data['resiType'][index]) > cif_column_widths['resiType']:
+            cif_column_widths['resiType'] = len(cif_data['resiType'][index])
+        cif_data['chainID'][index] = atom.chainID
+        if len(cif_data['chainID'][index]) > cif_column_widths['chainID']:
+            cif_column_widths['chainID'] = len(cif_data['chainID'][index])
+        cif_data['atomType'][index] = atom.atomType
+        if len(cif_data['atomType'][index]) > cif_column_widths['atomType']:
+            cif_column_widths['atomType'] = len(cif_data['atomType'][index])
+        cif_data['model_num'][index] = str(atom.pdb_model_num)
+        if len(cif_data['model_num'][index]) > cif_column_widths['model_num']:
+            cif_column_widths['model_num'] = len(cif_data['model_num'][index])
+
+        if bdam is True:
+            cif_data['pd'][index] = str(int(atom.pd))
+            if len(cif_data['pd'][index]) > cif_column_widths['pd']:
+                cif_column_widths['pd'] = len(cif_data['pd'][index])
+            cif_data['avrg_bf'][index] = str(round(atom.avrg_bf, 3))
+            if len(cif_data['avrg_bf'][index]) > cif_column_widths['avrg_bf']:
+                cif_column_widths['avrg_bf'] = len(cif_data['avrg_bf'][index])
+            cif_data['bd'][index] = str(round(atom.bd, 3))
+            if len(cif_data['bd'][index]) > cif_column_widths['bd']:
+                cif_column_widths['bd'] = len(cif_data['bd'][index])
+
+    for key, value_list in copy.deepcopy(cif_data).items():
+        if set(value_list) == {''}:
+            cif_data[key] = ['?']*len(atom_list)
+        else:
+            repl_value_list = []
+            for val in value_list:
+                if val == '':
+                    repl_value_list.append('.'.ljust(cif_column_widths[key]))
+                else:
+                    repl_value_list.append(val.ljust(cif_column_widths[key]))
+            cif_data[key] = repl_value_list
+
+    # Writes output mmCIF file
+    new_cif = open('%s.cif' % file_start, 'w')
+
+    new_cif.write('data_{}\n'.format(file_start))
+    new_cif.write('#\nloop_\n')
+    new_cif.write(
+        '_atom_site.group_PDB\n'
+        '_atom_site.id\n'
+        '_atom_site.type_symbol\n'
+        '_atom_site.label_atom_id\n'
+        '_atom_site.label_alt_id\n'
+        '_atom_site.label_comp_id\n'
+        '_atom_site.label_asym_id\n'
+        '_atom_site.label_entity_id\n'
+        '_atom_site.label_seq_id\n'
+        '_atom_site.pdbx_PDB_ins_code\n'
+        '_atom_site.Cartn_x\n'
+        '_atom_site.Cartn_y\n'
+        '_atom_site.Cartn_z\n'
+        '_atom_site.occupancy\n'
+        '_atom_site.B_iso_or_equiv\n'
+    )
+    if bdam is True:
+        new_cif.write(
+            '_atom_site.B_Damage\n'
+            '_atom_site.packing_density\n'
+            '_atom_site.average_B_factor\n'
+        )
+    new_cif.write(
+        '_atom_site.pdbx_formal_charge\n'
+        '_atom_site.auth_seq_id\n'
+        '_atom_site.auth_comp_id\n'
+        '_atom_site.auth_asym_id\n'
+        '_atom_site.auth_atom_id\n'
+        '_atom_site.pdbx_PDB_model_num\n'
+    )
+
+    for index in range(len(atom_list)):
+        cif_line = [
+            cif_data['lineID'][index],
+            cif_data['atomNum'][index],
+            cif_data['element'][index],
+            cif_data['origAtomType'][index],
+            cif_data['conformer'][index],
+            cif_data['origResiType'][index],
+            cif_data['origChainID'][index],
+            cif_data['entity_id'][index],
+            cif_data['origResiNum'][index],
+            cif_data['insCode'][index],
+            cif_data['x'][index],
+            cif_data['y'][index],
+            cif_data['z'][index],
+            cif_data['occupancy'][index],
+            cif_data['bFactor'][index]
+        ]
+        if bdam is True:
+            cif_line += [
+                cif_data['bd'][index],
+                cif_data['pd'][index],
+                cif_data['avrg_bf'][index]
+            ]
+        cif_line += [
+            cif_data['charge'][index],
+            cif_data['resiNum'][index],
+            cif_data['resiType'][index],
+            cif_data['chainID'][index],
+            cif_data['atomType'][index],
+            cif_data['model_num'][index]
+        ]
+        cif_line = ' '.join(cif_line)
+        new_cif.write('{}\n'.format(cif_line))
+    new_cif.write('#\n')
+
+    new_cif.close()
+
+
+def write_all_carbon_cif(atom_list, atom_id_list, file_start):
+    """
+    Writes an mmCIF file containing a complete set of atom information for all
+    atoms in 'atom_list'. All atoms are set to be carbon - suitable for unit
+    cell, 3x3 unit cell and trimmed 3x3 unit cell pdb files only
+    """
+
+    import copy
+
+    cif_data = {
+        'lineID': [None]*len(atom_list),
+        'atomNum': [None]*len(atom_list),
+        'origAtomType': [None]*len(atom_list),
+        'conformer': [None]*len(atom_list),
+        'origResiType': [None]*len(atom_list),
+        'origChainID': [None]*len(atom_list),
+        'entity_id': [None]*len(atom_list),
+        'origResiNum': [None]*len(atom_list),
+        'insCode': [None]*len(atom_list),
+        'x': [None]*len(atom_list),
+        'y': [None]*len(atom_list),
+        'z': [None]*len(atom_list),
+        'occupancy': [None]*len(atom_list),
+        'bFactor': [None]*len(atom_list),
+        'element': [None]*len(atom_list),
+        'charge': [None]*len(atom_list),
+        'resiNum': [None]*len(atom_list),
+        'resiType': [None]*len(atom_list),
+        'chainID': [None]*len(atom_list),
+        'atomType': [None]*len(atom_list),
+        'model_num': [None]*len(atom_list)
+    }
+
+    cif_column_widths = {
+        'lineID': 0,
+        'atomNum': 0,
+        'origAtomType': 0,
+        'conformer': 0,
+        'origResiType': 0,
+        'origChainID': 0,
+        'entity_id': 0,
+        'origResiNum': 0,
+        'insCode': 0,
+        'x': 0,
+        'y': 0,
+        'z': 0,
+        'occupancy': 0,
+        'bFactor': 0,
+        'element': 0,
+        'charge': 0,
+        'resiNum': 0,
+        'resiType': 0,
+        'chainID': 0,
+        'atomType': 0,
+        'model_num': 0
+    }
+
+    for index, atom in enumerate(atom_list):
+        cif_data['lineID'][index] = 'ATOM'
+        cif_column_widths['lineID'] = len(cif_data['lineID'][index])
+        cif_data['atomNum'][index] = str(atom_id_list[index])
+        if len(cif_data['atomNum'][index]) > cif_column_widths['atomNum']:
+            cif_column_widths['atomNum'] = len(cif_data['atomNum'][index])
+        cif_data['origAtomType'][index] = 'C'
+        cif_column_widths['origAtomType'] = len(cif_data['origAtomType'][index])
+        cif_data['conformer'][index] = '?'
+        cif_column_widths['conformer'] = len(cif_data['conformer'][index])
+        cif_data['origResiType'][index] = 'GLY'
+        cif_column_widths['origResiType'] = len(cif_data['origResiType'][index])
+        cif_data['origChainID'][index] = 'A'
+        cif_column_widths['origChainID'] = len(cif_data['origChainID'][index])
+        cif_data['entity_id'][index] = '1'
+        cif_column_widths['entity_id'] = len(cif_data['entity_id'][index])
+        cif_data['origResiNum'][index] = '1'
+        cif_column_widths['origResiNum'] = len(cif_data['origResiNum'][index])
+        cif_data['insCode'][index] = '?'
+        cif_column_widths['insCode'] = len(cif_data['insCode'][index])
+        cif_data['x'][index] = str(atom_list[index][0])
+        cif_column_widths['x'] = len(cif_data['x'][index])
+        cif_data['y'][index] = str(atom_list[index][1])
+        cif_column_widths['y'] = len(cif_data['y'][index])
+        cif_data['z'][index] = str(atom_list[index][2])
+        cif_column_widths['z'] = len(cif_data['z'][index])
+        cif_data['occupancy'][index] = '1.00'
+        cif_column_widths['occupancy'] = len(cif_data['occupancy'][index])
+        cif_data['bFactor'][index] = '50.0'
+        cif_column_widths['bFactor'] = len(cif_data['bFactor'][index])
+        cif_data['element'][index] = 'C'
+        cif_column_widths['element'] = len(cif_data['element'][index])
+        cif_data['charge'][index] = '?'
+        cif_column_widths['charge'] = len(cif_data['charge'][index])
+        cif_data['resiNum'][index] = '1'
+        cif_column_widths['resiNum'] = len(cif_data['resiNum'][index])
+        cif_data['resiType'][index] = 'GLY'
+        cif_column_widths['resiType'] = len(cif_data['resiType'][index])
+        cif_data['chainID'][index] = 'A'
+        cif_column_widths['chainID'] = len(cif_data['chainID'][index])
+        cif_data['atomType'][index] = 'C'
+        cif_column_widths['atomType'] = len(cif_data['atomType'][index])
+        cif_data['model_num'][index] = '1'
+        cif_column_widths['model_num'] = len(cif_data['model_num'][index])
+
+    for key, value_list in copy.deepcopy(cif_data).items():
+        if set(value_list) == {''}:
+            cif_data[key] = ['?']*len(atom_list)
+        else:
+            repl_value_list = []
+            for val in value_list:
+                if val == '':
+                    repl_value_list.append('.'.ljust(cif_column_widths[key]))
+                else:
+                    repl_value_list.append(val.ljust(cif_column_widths[key]))
+            cif_data[key] = repl_value_list
+
+    # Writes output mmCIF file
+    new_cif = open('%s.cif' % file_start, 'w')
+
+    new_cif.write('data_{}\n'.format(file_start))
+    new_cif.write('#\nloop_\n')
+    new_cif.write(
+        '_atom_site.group_PDB\n'
+        '_atom_site.id\n'
+        '_atom_site.type_symbol\n'
+        '_atom_site.label_atom_id\n'
+        '_atom_site.label_alt_id\n'
+        '_atom_site.label_comp_id\n'
+        '_atom_site.label_asym_id\n'
+        '_atom_site.label_entity_id\n'
+        '_atom_site.label_seq_id\n'
+        '_atom_site.pdbx_PDB_ins_code\n'
+        '_atom_site.Cartn_x\n'
+        '_atom_site.Cartn_y\n'
+        '_atom_site.Cartn_z\n'
+        '_atom_site.occupancy\n'
+        '_atom_site.B_iso_or_equiv\n'
+        '_atom_site.pdbx_formal_charge\n'
+        '_atom_site.auth_seq_id\n'
+        '_atom_site.auth_comp_id\n'
+        '_atom_site.auth_asym_id\n'
+        '_atom_site.auth_atom_id\n'
+        '_atom_site.pdbx_PDB_model_num\n'
+    )
+
+    for index in range(len(atom_list)):
+        cif_line = [
+            cif_data['lineID'][index],
+            cif_data['atomNum'][index],
+            cif_data['element'][index],
+            cif_data['origAtomType'][index],
+            cif_data['conformer'][index],
+            cif_data['origResiType'][index],
+            cif_data['origChainID'][index],
+            cif_data['entity_id'][index],
+            cif_data['origResiNum'][index],
+            cif_data['insCode'][index],
+            cif_data['x'][index],
+            cif_data['y'][index],
+            cif_data['z'][index],
+            cif_data['occupancy'][index],
+            cif_data['bFactor'][index],
+            cif_data['charge'][index],
+            cif_data['resiNum'][index],
+            cif_data['resiType'][index],
+            cif_data['chainID'][index],
+            cif_data['atomType'][index],
+            cif_data['model_num'][index]
+        ]
+        cif_line = ' '.join(cif_line)
+        new_cif.write('{}\n'.format(cif_line))
+    new_cif.write('#\n')
+
+    new_cif.close()
+
 class generate_output_files(object):
     def __init__(self, out_file_start, pdb_code, df):
         self.out_file_start = out_file_start
@@ -62,195 +463,6 @@ class generate_output_files(object):
         # Writes properties of each atom considered for BDamage analysis.
         newFile.write(self.df.to_csv(index=False))
         newFile.close()
-
-    def write_output_cif(self, atom_list):
-        """
-        Writes an mmCIF file for the input structure with an additional
-        column of BDamage values for those atoms included in the calculation.
-        """
-
-        import copy
-        import pandas as pd
-
-        cif_data = {'lineID': [None]*len(atom_list),
-                    'atomNum': [None]*len(atom_list),
-                    'origAtomType': [None]*len(atom_list),
-                    'conformer': [None]*len(atom_list),
-                    'origResiType': [None]*len(atom_list),
-                    'origChainID': [None]*len(atom_list),
-                    'origResiNum': [None]*len(atom_list),
-                    'insCode': [None]*len(atom_list),
-                    'x': [None]*len(atom_list),
-                    'y': [None]*len(atom_list),
-                    'z': [None]*len(atom_list),
-                    'occupancy': [None]*len(atom_list),
-                    'bFactor': [None]*len(atom_list),
-                    'element': [None]*len(atom_list),
-                    'charge': [None]*len(atom_list),
-                    'resiNum': [None]*len(atom_list),
-                    'resiType': [None]*len(atom_list),
-                    'chainID': [None]*len(atom_list),
-                    'atomType': [None]*len(atom_list),
-                    'pd': [None]*len(atom_list),
-                    'avrg_bf': [None]*len(atom_list),
-                    'bd': [None]*len(atom_list)}
-        cif_column_widths = {'lineID': 0,
-                             'atomNum': 0,
-                             'origAtomType': 0,
-                             'conformer': 0,
-                             'origResiType': 0,
-                             'origChainID': 0,
-                             'origResiNum': 0,
-                             'insCode': 0,
-                             'x': 0,
-                             'y': 0,
-                             'z': 0,
-                             'occupancy': 0,
-                             'bFactor': 0,
-                             'element': 0,
-                             'charge': 0,
-                             'resiNum': 0,
-                             'resiType': 0,
-                             'chainID': 0,
-                             'atomType': 0,
-                             'pd': 0,
-                             'avrg_bf': 0,
-                             'bd': 0}
-
-        for index, atom in enumerate(atom_list):
-            cif_data['lineID'][index] = atom.lineID
-            if len(cif_data['lineID'][index]) > cif_column_widths['lineID']:
-                cif_column_widths['lineID'] = len(cif_data['lineID'][index])
-            cif_data['atomNum'][index] = str(atom.atomNum)
-            if len(cif_data['atomNum'][index]) > cif_column_widths['atomNum']:
-                cif_column_widths['atomNum'] = len(cif_data['atomNum'][index])
-            cif_data['origAtomType'][index] = atom.origAtomType
-            if len(cif_data['origAtomType'][index]) > cif_column_widths['origAtomType']:
-                cif_column_widths['origAtomType'] = len(cif_data['origAtomType'][index])
-            cif_data['conformer'][index] = atom.conformer
-            if len(cif_data['conformer'][index]) > cif_column_widths['conformer']:
-                cif_column_widths['conformer'] = len(cif_data['conformer'][index])
-            cif_data['origResiType'][index] = atom.origResiType
-            if len(cif_data['origResiType'][index]) > cif_column_widths['origResiType']:
-                cif_column_widths['origResiType'] = len(cif_data['origResiType'][index])
-            cif_data['origChainID'][index] = atom.origChainID
-            if len(cif_data['origChainID'][index]) > cif_column_widths['origChainID']:
-                cif_column_widths['origChainID'] = len(cif_data['origChainID'][index])
-            cif_data['origResiNum'][index] = atom.origResiNum
-            if len(cif_data['origResiNum'][index]) > cif_column_widths['origResiNum']:
-                cif_column_widths['origResiNum'] = len(cif_data['origResiNum'][index])
-            cif_data['insCode'][index] = atom.insCode
-            if len(cif_data['insCode'][index]) > cif_column_widths['insCode']:
-                cif_column_widths['insCode'] = len(cif_data['insCode'][index])
-            cif_data['x'][index] = str(atom.xyzCoords[0][0])
-            if len(cif_data['x'][index]) > cif_column_widths['x']:
-                cif_column_widths['x'] = len(cif_data['x'][index])
-            cif_data['y'][index] = str(atom.xyzCoords[1][0])
-            if len(cif_data['y'][index]) > cif_column_widths['y']:
-                cif_column_widths['y'] = len(cif_data['y'][index])
-            cif_data['z'][index] = str(atom.xyzCoords[2][0])
-            if len(cif_data['z'][index]) > cif_column_widths['z']:
-                cif_column_widths['z'] = len(cif_data['z'][index])
-            cif_data['occupancy'][index] = str(atom.occupancy)
-            if len(cif_data['occupancy'][index]) > cif_column_widths['occupancy']:
-                cif_column_widths['occupancy'] = len(cif_data['occupancy'][index])
-            cif_data['bFactor'][index] = str(atom.bFactor)
-            if len(cif_data['bFactor'][index]) > cif_column_widths['bFactor']:
-                cif_column_widths['bFactor'] = len(cif_data['bFactor'][index])
-            cif_data['element'][index] = atom.element
-            if len(cif_data['element'][index]) > cif_column_widths['element']:
-                cif_column_widths['element'] = len(cif_data['element'][index])
-            cif_data['charge'][index] = atom.charge
-            if len(cif_data['charge'][index]) > cif_column_widths['charge']:
-                cif_column_widths['charge'] = len(cif_data['charge'][index])
-            cif_data['resiNum'][index] = str(atom.resiNum)
-            if len(cif_data['resiNum'][index]) > cif_column_widths['resiNum']:
-                cif_column_widths['resiNum'] = len(cif_data['resiNum'][index])
-            cif_data['resiType'][index] = atom.resiType
-            if len(cif_data['resiType'][index]) > cif_column_widths['resiType']:
-                cif_column_widths['resiType'] = len(cif_data['resiType'][index])
-            cif_data['chainID'][index] = atom.chainID
-            if len(cif_data['chainID'][index]) > cif_column_widths['chainID']:
-                cif_column_widths['chainID'] = len(cif_data['chainID'][index])
-            cif_data['atomType'][index] = atom.atomType
-            if len(cif_data['atomType'][index]) > cif_column_widths['atomType']:
-                cif_column_widths['atomType'] = len(cif_data['atomType'][index])
-            cif_data['pd'][index] = str(atom.pd)
-            if len(cif_data['pd'][index]) > cif_column_widths['pd']:
-                cif_column_widths['pd'] = len(cif_data['pd'][index])
-            cif_data['avrg_bf'][index] = str(atom.avrg_bf)
-            if len(cif_data['avrg_bf'][index]) > cif_column_widths['avrg_bf']:
-                cif_column_widths['avrg_bf'] = len(cif_data['avrg_bf'][index])
-            cif_data['bd'][index] = str(atom.bd)
-            if len(cif_data['bd'][index]) > cif_column_widths['bd']:
-                cif_column_widths['bd'] = len(cif_data['bd'][index])
-
-        for key, value_list in copy.deepcopy(cif_data).items():
-            if set(value_list) == {''}:
-                cif_data[key] = ['?']*len(atom_list)
-            else:
-                repl_value_list = []
-                for val in value_list:
-                    if val == '':
-                        repl_value_list.append('.'.ljust(cif_column_widths[key]))
-                    else:
-                        repl_value_list.append(val.ljust(cif_column_widths[key]))
-                cif_data[key] = repl_value_list
-
-        # Writes output mmCIF file
-        new_cif = open('%s_BDamage.cif' % self.out_file_start, 'w')
-
-        new_cif.write('#\nloop_\n')
-        new_cif.write('_atom_site.group_PDB\n'
-                      '_atom_site.id\n'
-                      '_atom_site.type_symbol\n'
-                      '_atom_site.label_atom_id\n'
-                      '_atom_site.label_alt_id\n'
-                      '_atom_site.label_comp_id\n'
-                      '_atom_site.label_asym_id\n'
-                      '_atom_site.label_seq_id\n'
-                      '_atom_site.pdbx_PDB_ins_code\n'
-                      '_atom_site.Cartn_x\n'
-                      '_atom_site.Cartn_y\n'
-                      '_atom_site.Cartn_z\n'
-                      '_atom_site.occupancy\n'
-                      '_atom_site.B_iso_or_equiv\n'
-                      '_atom_site.B_Damage\n'
-                      '_atom_site.packing_density\n'
-                      '_atom_site.average_B_factor\n'
-                      '_atom_site.pdbx_formal_charge\n'
-                      '_atom_site.auth_seq_id\n'
-                      '_atom_site.auth_comp_id\n'
-                      '_atom_site.auth_asym_id\n'
-                      '_atom_site.auth_atom_id\n')
-        for index in range(len(atom_list)):
-            cif_line = [cif_data['lineID'][index],
-                        cif_data['atomNum'][index],
-                        cif_data['element'][index],
-                        cif_data['origAtomType'][index],
-                        cif_data['conformer'][index],
-                        cif_data['origResiType'][index],
-                        cif_data['origChainID'][index],
-                        cif_data['origResiNum'][index],
-                        cif_data['insCode'][index],
-                        cif_data['x'][index],
-                        cif_data['y'][index],
-                        cif_data['z'][index],
-                        cif_data['occupancy'][index],
-                        cif_data['bFactor'][index],
-                        cif_data['bd'][index],
-                        cif_data['pd'][index],
-                        cif_data['avrg_bf'][index],
-                        cif_data['charge'][index],
-                        cif_data['resiNum'][index],
-                        cif_data['resiType'][index],
-                        cif_data['chainID'][index],
-                        cif_data['atomType'][index]]
-            cif_line = ' '.join(cif_line)
-            new_cif.write('{}\n'.format(cif_line))
-        new_cif.write('#\n')
-
-        new_cif.close()
 
     def make_histogram(self, highlightAtoms):
         """

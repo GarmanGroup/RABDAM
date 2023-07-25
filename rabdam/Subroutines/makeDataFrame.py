@@ -134,7 +134,7 @@ def make_c_pdb(
     ):
     """
     Writes a PDB file containing a complete set of atom information for all
-    atoms in 'atomList', plus header and footer information. All atoms are set
+    atoms in 'atom_list', plus header and footer information. All atoms are set
     to be carbon - suitable for unit cell, 3x3 unit cell and trimmed 3x3 unit
     cell pdb files only
     """

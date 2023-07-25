@@ -152,6 +152,8 @@ def parse_atom_rec_from_mmcif(atom_rec, input_cif, exit):
                 if len(new_atom.atomType) > 3 and '\"' in new_atom.atomType:
                     new_atom.atomType = new_atom.atomType.replace('\"', '')
                 new_atom.origAtomType = line[prop_indices['label_atom_id']].replace('?', '').replace('.', '')
+                new_atom.entity_id = line[prop_indices['label_entity_id']].replace('?', '').replace('.', '')
+
                 new_atom.resiNum = line[prop_indices['auth_seq_id']].replace('?', '').replace('.', '')
                 try:
                     new_atom.resiNum = int(new_atom.resiNum)
@@ -185,10 +187,22 @@ def parse_atom_rec_from_mmcif(atom_rec, input_cif, exit):
                     print('ERROR: Encountered non-numeric B-factor value {}'.format(line[prop_indices['B_iso_or_equiv']]))
                     exit = True
                 try:
-                    atom_coords = ' '.join([str(n) for n in np.array(new_atom.xyzCoords).flatten()])
+                    new_atom.pdb_model_num = float(line[prop_indices['pdbx_PDB_model_num']])
+                    if not new_atom.pdb_model_num == 1:
+                        exit = True
+                        print('\n\nERROR: More than one model in the input mmCIF '
+                              'file.\nPlease submit a PDB file containing a single '
+                              'model for BDamage analysis.\nTerminating RABDAM run.\n')
+                except ValueError:
+                    print('ERROR: Model number not recognised '
+                          '{}'.format(line[prop_indices['pdbx_PDB_model_num']]))
+                    exit = True
+
+                atom_coords = ' '.join([str(n) for n in np.array(new_atom.xyzCoords).flatten()])
+                cctbx_atm = model_atoms_dict[atom_coords]
+                try:
                     if not atom_coords in res_is_prot_dict.keys():
-                        atm = model_atoms_dict[atom_coords]
-                        res_is_prot_dict[atom_coords] = atm.parent().parent().conformers()[0].is_protein()
+                        res_is_prot_dict[atom_coords] = cctbx_atm.parent().parent().conformers()[0].is_protein()
                     new_atom.protein = res_is_prot_dict[atom_coords]
                 except (KeyError, AttributeError):
                     print('ERROR: Unable to identify if atom {} is in a protein'
@@ -196,8 +210,7 @@ def parse_atom_rec_from_mmcif(atom_rec, input_cif, exit):
                     exit = True
                 try:
                     if not atom_coords in res_is_na_dict.keys():
-                        atm = model_atoms_dict[atom_coords]
-                        res_is_na_dict[atom_coords] = atm.parent().parent().conformers()[0].is_na()
+                        res_is_na_dict[atom_coords] = cctbx_atm.parent().parent().conformers()[0].is_na()
                     new_atom.na = res_is_na_dict[atom_coords]
                 except (KeyError, AttributeError):
                     print('ERROR: Unable to identify if atom {} is in a nucleic acid'
@@ -205,8 +218,7 @@ def parse_atom_rec_from_mmcif(atom_rec, input_cif, exit):
                     exit = True
                 try:
                     if not atom_coords in chain_len_dict.keys():
-                        atm = model_atoms_dict[atom_coords]
-                        chain_len_dict[atom_coords] = atm.parent().parent().parent().residue_groups_size()
+                        chain_len_dict[atom_coords] = cctbx_atm.parent().parent().parent().residue_groups_size()
                     new_atom.chain_len = chain_len_dict[atom_coords]
                 except (KeyError, AttributeError):
                     print('ERROR: Unable to identify the length of the parent '
@@ -217,28 +229,17 @@ def parse_atom_rec_from_mmcif(atom_rec, input_cif, exit):
                 none_props = [
                     new_atom.lineID, new_atom.atomNum, new_atom.atomType,
                     new_atom.conformer, new_atom.resiType, new_atom.chainID,
-                    new_atom.resiNum, new_atom.insCode, new_atom.xyzCoords,
-                    new_atom.occupancy, new_atom.bFactor, new_atom.element,
-                    new_atom.charge, new_atom.origResiNum, new_atom.origResiType,
-                    new_atom.origChainID, new_atom.origAtomType,
+                    new_atom.entity_id, new_atom.resiNum, new_atom.insCode,
+                    new_atom.xyzCoords, new_atom.occupancy, new_atom.bFactor,
+                    new_atom.element, new_atom.charge, new_atom.origResiNum,
+                    new_atom.origResiType, new_atom.origChainID,
+                    new_atom.origAtomType, new_atom.pdb_model_num,
                     new_atom.protein, new_atom.na, new_atom.chain_len
                 ]
                 if any(prop is None for prop in none_props):
                     exit = True
                 else:
                     atoms_list.append(new_atom)
-
-                try:
-                    model_num = float(line[prop_indices['pdbx_PDB_model_num']])
-                    if not model_num == 1:
-                        exit = True
-                        print('\n\nERROR: More than one model in the input mmCIF '
-                              'file.\nPlease submit a PDB file containing a single '
-                              'model for BDamage analysis.\nTerminating RABDAM run.\n')
-                except ValueError:
-                    print('ERROR: Model number not recognised '
-                          '{}'.format(line[prop_indices['pdbx_PDB_model_num']]))
-                    exit = True
 
             except (KeyError, IndexError):
                 exit = True
@@ -291,6 +292,8 @@ def parse_atom_rec_from_pdb(atom_rec, input_pdb, exit):
         new_atom.origChainID = line[21:22].strip()
         new_atom.insCode = line[26:27].strip()
         new_atom.element = line[76:78].strip()
+        new_atom.entity_id = '?'
+        new_atom.pdb_model_num = 1
 
         try:
             new_atom.atomNum = int(line[6:11].strip())
@@ -363,11 +366,12 @@ def parse_atom_rec_from_pdb(atom_rec, input_pdb, exit):
         none_props = [
             new_atom.lineID, new_atom.atomNum, new_atom.atomType,
             new_atom.conformer, new_atom.resiType, new_atom.chainID,
-            new_atom.resiNum, new_atom.insCode, new_atom.xyzCoords,
-            new_atom.occupancy, new_atom.bFactor, new_atom.element,
-            new_atom.charge, new_atom.origResiNum, new_atom.origResiType,
-            new_atom.origChainID, new_atom.origAtomType, new_atom.protein,
-            new_atom.na, new_atom.chain_len
+            new_atom.entity_id, new_atom.resiNum, new_atom.insCode,
+            new_atom.xyzCoords, new_atom.occupancy, new_atom.bFactor,
+            new_atom.element, new_atom.charge, new_atom.origResiNum,
+            new_atom.origResiType, new_atom.origChainID, new_atom.origAtomType,
+            new_atom.pdb_model_num, new_atom.protein, new_atom.na,
+            new_atom.chain_len
         ]
         if any(prop is None for prop in none_props):
             exit = True
@@ -447,7 +451,7 @@ def parse_pdb_file(pathToInput):
     return atoms_list, cryst1_line, exit
 
 
-def clean_atom_rec(atoms_list, cryst1_line, file_name_start):
+def clean_atom_rec(atoms_list, file_name_start):
     """
     Filters the ATOM / HETATM records to remove hydrogen atoms and 0 occupancy
     atoms, as well as retaining only the most probable alternate conformers (in
@@ -461,9 +465,9 @@ def clean_atom_rec(atoms_list, cryst1_line, file_name_start):
     import numpy as np
 
     if __name__ == 'Subroutines.PDBCUR':
-        from Subroutines.makeDataFrame import makePDB
+        from Subroutines.output import write_output_cif
     else:
-        from rabdam.Subroutines.makeDataFrame import makePDB
+        from rabdam.Subroutines.output import write_output_cif
 
     exit = False
     pause = False
@@ -491,7 +495,7 @@ def clean_atom_rec(atoms_list, cryst1_line, file_name_start):
     for atom_id, occupancies in atom_ids.items():
         if sum(occupancies.values()) != 1.0:
             pause = True
-            print('ERROR: Atom {} has been refined with sub-1 '
+            print('WARNING: Atom {} has been refined with sub-1 '
                   'occupancy.'.format(atom_id))
 
         # Single conformer selected on a per-atom basis - hence selected atoms
@@ -513,17 +517,13 @@ def clean_atom_rec(atoms_list, cryst1_line, file_name_start):
         print('\n\nERROR: No atoms retained for BDamage analysis after cleaning'
               ' input file')
 
-    clean_au_file = '%s_asymmetric_unit.pdb' % file_name_start
-    pdb_fail = makePDB([cryst1_line], filtered_atoms_list, [], clean_au_file, 'bfactor')
-    if pdb_fail is True:
-        exit  = True
-        print('\n\nERROR: Failed to make asymmetric unit PDB file.\n'
-              'Check formatting of input PDB/mmCIF file input file')
+    clean_au_file = '%s_asymmetric_unit' % file_name_start
+    write_output_cif(filtered_atoms_list, clean_au_file, bdam=False)
 
     return exit, pause, filtered_atoms_list, clean_au_file
 
 
-def gen_unit_cell(clean_au_file):
+def gen_unit_cell(clean_au_file, orig_input):
     """
     Only need xyz coordinates for unit cell atoms => should speed up the code considerably
     """
@@ -533,6 +533,9 @@ def gen_unit_cell(clean_au_file):
 
     dm = DataManager()
     model = dm.get_model(clean_au_file)
+    orig_model = dm.get_model(orig_input)
+    model.set_crystal_symmetry(orig_model.crystal_symmetry())
+
     xray_structure = model.get_xray_structure()
     p1 = xray_structure.expand_to_p1()
     unit_cell_coords = np.array(p1.sites_cart())
