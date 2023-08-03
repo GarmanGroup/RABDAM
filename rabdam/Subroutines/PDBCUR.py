@@ -333,11 +333,11 @@ def parse_atom_rec_from_pdb(atom_rec, input_pdb, exit):
         except IndexError:
             new_atom.charge = ''
         """
+        atom_coords = ' '.join([str(n) for n in np.array(new_atom.xyzCoords).flatten()])
+        cctbx_atm = model_atoms_dict[atom_coords]
         try:
-            atom_coords = ' '.join([str(n) for n in np.array(new_atom.xyzCoords).flatten()])
             if not atom_coords in res_is_prot_dict.keys():
-                atm = model_atoms_dict[atom_coords]
-                res_is_prot_dict[atom_coords] = atm.parent().parent().conformers()[0].is_protein()
+                res_is_prot_dict[atom_coords] = cctbx_atm.parent().parent().conformers()[0].is_protein()
             new_atom.protein = res_is_prot_dict[atom_coords]
         except (KeyError, AttributeError):
             print('ERROR: Unable to identify if atom {} is in a protein'
@@ -345,8 +345,7 @@ def parse_atom_rec_from_pdb(atom_rec, input_pdb, exit):
             exit = True
         try:
             if not atom_coords in res_is_na_dict.keys():
-                atm = model_atoms_dict[atom_coords]
-                res_is_na_dict[atom_coords] = atm.parent().parent().conformers()[0].is_na()
+                res_is_na_dict[atom_coords] = cctbx_atm.parent().parent().conformers()[0].is_na()
             new_atom.na = res_is_na_dict[atom_coords]
         except (KeyError, AttributeError):
             print('ERROR: Unable to identify if atom {} is in a nucleic acid'
@@ -354,8 +353,7 @@ def parse_atom_rec_from_pdb(atom_rec, input_pdb, exit):
             exit = True
         try:
             if not atom_coords in chain_len_dict.keys():
-                atm = model_atoms_dict[atom_coords]
-                chain_len_dict[atom_coords] = atm.parent().parent().parent().residue_groups_size()
+                chain_len_dict[atom_coords] = cctbx_atm.parent().parent().parent().residue_groups_size()
             new_atom.chain_len = chain_len_dict[atom_coords]
         except (KeyError, AttributeError):
             print('ERROR: Unable to identify the length of the parent chain of '

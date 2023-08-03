@@ -453,12 +453,9 @@ def main(test=False):
     Runs RABDAM pipeline
     """
 
-    import argparse
     import math
-    import os
     import sys
     import time
-    import numpy as np
 
     if __name__ == '__main__':
         from Subroutines.CalculateBDamage import rabdam

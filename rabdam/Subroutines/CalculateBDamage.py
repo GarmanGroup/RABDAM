@@ -713,7 +713,8 @@ class rabdam(object):
         #   used to calculate the value of the Bnet summary metric
 
         output = generate_output_files(
-            out_file_start=file_name_start, pdb_code=PDBcode, df=df
+            out_file_start=file_name_start, pdb_code=PDBcode, df=df,
+            prot_or_na=self.protOrNA
         )
 
         if 'csv' in output_options:

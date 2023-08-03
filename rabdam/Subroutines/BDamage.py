@@ -42,10 +42,6 @@ def calc_packing_density(xyz_au_atom, xyz_surr_atom, pack_dens_thresh):
     be considered for BDamage analysis.
     """
 
-    import pickle
-    with open('/Users/kathryn/Desktop/upd_coords.pkl', 'wb') as f:
-        pickle.dump((xyz_surr_atom), f)
-
     num_au_atoms = xyz_au_atom.shape[0]
     packing_density_array = np.zeros([num_au_atoms, 1])
 

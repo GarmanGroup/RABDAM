@@ -421,10 +421,11 @@ def write_all_carbon_cif(atom_list, atom_id_list, file_start):
     new_cif.close()
 
 class generate_output_files(object):
-    def __init__(self, out_file_start, pdb_code, df):
+    def __init__(self, out_file_start, pdb_code, df, prot_or_na):
         self.out_file_start = out_file_start
         self.pdb_code = pdb_code
         self.df = df
+        self.prot_or_na = prot_or_na
 
     def make_csv(self, window):
         """
@@ -643,10 +644,16 @@ class generate_output_files(object):
 
         # Selects Glu / Asp (both the L- and D-amino acids) terminal oxygen
         # atoms from complete DataFrame.
-        prot_df = self.df[(self.df.RESNAME.isin(['GLU', 'ASP', 'DGL', 'DAS']))
-                          & (self.df.ATMNAME.isin(['OE1', 'OE2', 'OD1', 'OD2']))]
-        # Selects atoms of sugar-phosphate C-O bonds from complete DataFrame.
-        na_df = self.df[self.df.ATMNAME.isin(["O3'", "O5'", "C3'", "C5'"])]
+        if self.prot_or_na in ['protein', 'proteinna']:
+            prot_df = self.df[(self.df.RESNAME.isin(['GLU', 'ASP', 'DGL', 'DAS']))
+                            & (self.df.ATMNAME.isin(['OE1', 'OE2', 'OD1', 'OD2']))]
+        else:
+            prot_df = pd.DataFrame({})
+        if self.prot_or_na in ['nucleicacid', 'na', 'proteinna']:
+            # Selects atoms of sugar-phosphate C-O bonds from complete DataFrame.
+            na_df = self.df[self.df.ATMNAME.isin(["O3'", "O5'", "C3'", "C5'"])]
+        else:
+            na_df = pd.DataFrame({})
 
         # Calculates median of BDamage distribution
         median = self.df.BDAM.median()
