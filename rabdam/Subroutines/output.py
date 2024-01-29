@@ -1,6 +1,6 @@
 
 # RABDAM
-# Copyright (C) 2023 Garman Group, University of Oxford
+# Copyright (C) 2024 Garman Group, University of Oxford
 
 # This file is part of RABDAM.
 
@@ -249,9 +249,9 @@ def write_output_cif(atom_list, file_start, bdam):
 
 def write_all_carbon_cif(atom_list, atom_id_list, file_start):
     """
-    Writes an mmCIF file containing a complete set of atom information for all
-    atoms in 'atom_list'. All atoms are set to be carbon - suitable for unit
-    cell, 3x3 unit cell and trimmed 3x3 unit cell pdb files only
+    Writes an mmCIF file of carbon atoms at the xyz coordinates of each atom in
+    'atom_list'. Suitable for unit cell, 3x3x3 unit cell and trimmed 3x3x3 unit
+    cell only (to check that atoms are being translated, trimmed etc. correctly)
     """
 
     import copy
@@ -420,12 +420,109 @@ def write_all_carbon_cif(atom_list, atom_id_list, file_start):
 
     new_cif.close()
 
+
+def calc_bnet(bnet_df, median):
+    """
+    Calculates the Bnet metric. To do this, a kernel density estimate (KDE) is
+    calculated for the BDamage values of all glutamate and aspartate side chain
+    carboxyl group oxygen atoms. The area under the KDE either side of the
+    median BDamage values of all atoms in the structure is calculated; Bnet is
+    then calculated as RHS / LHS, where RHS and LHS are the areas under the KDE
+    to the right and left of the median, respectively.
+    """
+
+    import numpy as np
+    from scipy.stats import gaussian_kde
+
+    # Extracts an array of 100 (x, y) coordinate pairs evenly spaced along
+    # the x(BDamage)-axis from the kernel density plot. Rather than taking
+    # these values directly from the seaborn KDE plot, the KDE plot is
+    # recalculated using scipy to ensure that Bnet values will be resistant
+    # to changes in the default parameters of the kdeplot function in
+    # seaborn. These coordinate pairs are used to calculate, via the
+    # trapezium rule, the area under the curve to the right and left of the
+    # median BDamage value of all atoms in the structure.
+    bandwidth = gaussian_kde(dataset=bnet_df.BDAM.values).scotts_factor()
+    tail_width = bandwidth*np.std(bnet_df.BDAM.values, ddof=0)
+    x_min = min(bnet_df.BDAM.values) - (3*tail_width)
+    x_max = max(bnet_df.BDAM.values) + (3*tail_width)
+
+    kde = gaussian_kde(dataset=bnet_df.BDAM.values, bw_method='scott')
+    x_values = np.linspace(x_min, x_max, 100)
+    y_values = kde(x_values)
+    height = (x_values[-1]-x_values[0]) / (len(x_values)-1)
+
+    total_area_LHS = 0
+    for index, value in enumerate(y_values):
+        if x_values[index] < median:
+            area_LHS = (((y_values[index] + y_values[index+1]) / 2)
+                        * height)
+            total_area_LHS = total_area_LHS + area_LHS
+
+    total_area_RHS = 0
+    for index, value in enumerate(y_values):
+        if x_values[index] >= median and index < len(y_values)-1:
+            area_RHS = (((y_values[index] + y_values[index+1]) / 2)
+                        * height)
+            total_area_RHS = total_area_RHS + area_RHS
+
+    # Calculates area ratio (= Bnet)
+    bnet = total_area_RHS / total_area_LHS
+    
+    return bnet, x_values, y_values
+
+
+def calc_bnet_percentile(bnet, resolution, bnet_database_df):
+    """
+    """
+
+    import copy
+    import numpy as np
+
+    # Check that Bnet is not NaN or infinite, which will prevent Bnet_percentile
+    # from being calculated
+    if np.isnan(bnet) or np.isinf(bnet):
+        print(
+            'WARNING: Cannot calculate Bnet percentile - Bnet value is {}'.format(bnet)
+        )
+        bnet_percentile = np.nan
+        return bnet_percentile
+
+    # Find the 1000 structures closest in resolution to the input structure
+    res_array = copy.deepcopy(bnet_database_df['Resolution (A)']).to_numpy()
+    surr_struct_indices = []
+    surr_struct_vals = []
+    for num in range(1000):
+        nearest_res_index = (np.abs(res_array-resolution)).argmin()
+        nearest_resolution = res_array[nearest_res_index]
+        surr_struct_indices.append(nearest_res_index)
+        surr_struct_vals.append(nearest_resolution)
+        res_array[nearest_res_index] = np.inf
+
+    # Include any other structures that fall in this resolution range
+    min_val = min(surr_struct_vals)
+    max_val = max(surr_struct_vals)
+    for index, num in np.ndenumerate(res_array):
+        if num == min_val or num == max_val:
+            surr_struct_indices.append(index[0])
+
+    # Calculate Bnet_percentile
+    surr_struct_df = copy.deepcopy(bnet_database_df).iloc[surr_struct_indices].reset_index(drop=True)
+    bnet_array = np.sort(surr_struct_df['Bnet'].to_numpy())
+    num_entries = bnet_array.shape[0]
+    nearest_bnet_index = (np.abs(bnet_array-bnet)).argmin()
+    bnet_percentile = ((nearest_bnet_index + 1) / num_entries) * 100
+
+    return bnet_percentile
+
+
 class generate_output_files(object):
-    def __init__(self, out_file_start, pdb_code, df, prot_or_na):
+    def __init__(self, out_file_start, pdb_code, df, prot_or_na, resolution):
         self.out_file_start = out_file_start
         self.pdb_code = pdb_code
         self.df = df
         self.prot_or_na = prot_or_na
+        self.resolution = resolution
 
     def make_csv(self, window):
         """
@@ -465,7 +562,7 @@ class generate_output_files(object):
         newFile.write(self.df.to_csv(index=False))
         newFile.close()
 
-    def make_histogram(self, highlightAtoms):
+    def gen_kde_plot(self, highlightAtoms):
         """
         Returns a kernel density estimate of the BDamage values of every atom
         considered for BDamage analysis. Any atom whose number is listed
@@ -525,16 +622,14 @@ class generate_output_files(object):
         plt.title(self.pdb_code + ' BDamage kernel density plot')
         plt.savefig(self.out_file_start + '_BDamage.svg')
 
-    def plot_Bnet_histogram(self, bnet_df, median, prot_or_na):
+    def gen_Bnet_out_files(self, bnet_df, median, prot_or_na, bnet_database_df):
         """
         """
 
         import os
         import matplotlib.pyplot as plt
-        import numpy as np
         import pandas as pd
         import seaborn as sns
-        from scipy.stats import gaussian_kde
 
         plt.clf()  # Prevents the kernel density estimate of the atoms
         # considered for calculation of the Bnet summary metric from being
@@ -555,74 +650,53 @@ class generate_output_files(object):
         plt.ylabel('Normalised Frequency')
         plt.title(self.pdb_code + ' Bnet kernel density plot')
 
-        # Extracts an array of 100 (x, y) coordinate pairs evenly spaced along
-        # the x(BDamage)-axis from the kernel density plot. Rather than taking
-        # these values directly from the seaborn KDE plot, the KDE plot is
-        # recalculated using scipy to ensure that Bnet values will be resistant
-        # to changes in the default parameters of the kdeplot function in
-        # seaborn. These coordinate pairs are used to calculate, via the
-        # trapezium rule, the area under the curve between the smallest value of
-        # x and the median (= total_area_LHS), and the area under the curve
-        # between the median and the largest value of x (= total_area_RHS). The
-        # Bnet summary metric is then calculated as the ratio of total_area_RHS
-        # to total_area_LHS.
-        bandwidth = gaussian_kde(dataset=bnet_df.BDAM.values).scotts_factor()
-        tail_width = bandwidth*np.std(bnet_df.BDAM.values, ddof=0)
-        x_min = min(bnet_df.BDAM.values) - (3*tail_width)
-        x_max = max(bnet_df.BDAM.values) + (3*tail_width)
+        # Calculate Bnet
+        bnet, x_values, y_values = calc_bnet(bnet_df, median)
+        # Calculate Bnet_percentile
+        bnet_percentile = calc_bnet_percentile(
+            bnet, self.resolution, bnet_database_df
+        )
 
-        kde = gaussian_kde(dataset=bnet_df.BDAM.values, bw_method='scott')
-        x_values = np.linspace(x_min, x_max, 100)
-        y_values = kde(x_values)
-        height = (x_values[-1]-x_values[0]) / (len(x_values)-1)
-
-        total_area_LHS = 0
-        for index, value in enumerate(y_values):
-            if x_values[index] < median:
-                area_LHS = (((y_values[index] + y_values[index+1]) / 2)
-                            * height)
-                total_area_LHS = total_area_LHS + area_LHS
-
-        total_area_RHS = 0
-        for index, value in enumerate(y_values):
-            if x_values[index] >= median and index < len(y_values)-1:
-                area_RHS = (((y_values[index] + y_values[index+1]) / 2)
-                            * height)
-                total_area_RHS = total_area_RHS + area_RHS
-
-        # Calculates area ratio (= Bnet)
-        kde_ratio = total_area_RHS / total_area_LHS
-
-        plt.annotate('Bnet = {:.1f}'.format(kde_ratio),
+        # Annotate KDE plot with Bnet and Bnet_percentile values
+        plt.annotate('Bnet = {:.1f}'.format(bnet),
                      xy=(max(x_values)*0.65, max(y_values)*0.9),
                      fontsize=10)
-        plt.annotate('Median = {:.2f}'.format(median),
+        plt.annotate('Bnet_percentile = {:.1f}'.format(bnet_percentile),
                      xy=(max(x_values)*0.65, max(y_values)*0.85),
+                     fontsize=10)
+        plt.annotate('Median = {:.2f}'.format(median),
+                     xy=(max(x_values)*0.65, max(y_values)*0.8),
                      fontsize=10)
         plt.savefig(self.out_file_start + '_Bnet_{}.svg'.format(prot_or_na))
 
+        # Save output scores as a csv file and as a pickled dataframe
         if not os.path.isfile('Logfiles/Bnet_{}.csv'.format(prot_or_na)):
             bnet_list = open('Logfiles/Bnet_{}.csv'.format(prot_or_na), 'w')
             bnet_list.write('PDB' + ',')
             bnet_list.write('Bnet' + '\n')
+            bnet_list.write('Bnet percentile' + '\n')
             bnet_list.close()
         bnet_list = open('Logfiles/Bnet_{}.csv'.format(prot_or_na), 'a')
-        bnet_list.write('%s,%s\n' % (self.pdb_code, kde_ratio))
+        bnet_list.write('%s,%s,%s\n' % (self.pdb_code, bnet, bnet_percentile))
         bnet_list.close()
 
-        bnet_df = pd.DataFrame({'PDB': [self.pdb_code],
-                                'Bnet': [kde_ratio]})
+        out_df = pd.DataFrame({'PDB': [self.pdb_code],
+                               'Bnet': [bnet],
+                               'Bnet_percentile': [bnet_percentile]})
         if os.path.isfile('Logfiles/Bnet_{}.pkl'.format(prot_or_na)):
-            old_bnet_df = pd.read_pickle('Logfiles/Bnet_{}.pkl'.format(prot_or_na))
+            old_out_df = pd.read_pickle('Logfiles/Bnet_{}.pkl'.format(prot_or_na))
         else:
-            old_bnet_df = pd.DataFrame({'PDB': [],
-                                        'Bnet': []})
-        new_bnet_df = pd.concat(
-            [old_bnet_df, bnet_df], axis=0, ignore_index=True
+            old_out_df = pd.DataFrame({'PDB': [],
+                                       'Bnet': [],
+                                       'Bnet_percentile': []})
+        new_out_df = pd.concat(
+            [old_out_df, out_df], axis=0, ignore_index=True
         ).reset_index(drop=True)
-        new_bnet_df.to_pickle('Logfiles/Bnet_{}.pkl'.format(prot_or_na))
+        new_out_df.to_pickle('Logfiles/Bnet_{}.pkl'.format(prot_or_na))
 
-    def calculate_Bnet(self):
+        return bnet, bnet_percentile
+
+    def calculate_Bnet_and_Bnet_percentile(self, bnet_database_df):
         """
         Plots a kernel density estimate of the BDamage values of Glu O and
         Asp O atoms. The summary metric Bnet is then calculated as the ratio
@@ -630,7 +704,6 @@ class generate_output_files(object):
         overall BDamage distribution).
         """
 
-        import os
         import sys
         # Ensures that seaborn uses scipy for kde bandwidth calculation rather
         # than statsmodels => must be run before import seaborn
@@ -662,13 +735,23 @@ class generate_output_files(object):
             print('\n\nERROR: No sites used for Bnet calculation present in structure\n')
             return
 
+        prot_bnet = None
+        prot_bnet_percentile = None
         if not prot_df.empty:
-            self.plot_Bnet_histogram(prot_df, median, 'protein')
+            prot_bnet, prot_bnet_percentile = self.gen_Bnet_out_files(
+                prot_df, median, 'protein', bnet_database_df
+            )
 
+        na_bnet = None
+        na_bnet_percentile = None
         if not na_df.empty:
-            self.plot_Bnet_histogram(na_df, median, 'NA')
+            na_bnet, na_bnet_percentile = self.gen_Bnet_out_files(
+                na_df, median, 'NA', bnet_database_df
+            )
 
-    def write_html_summary(self, output_options, highlightAtoms):
+        return prot_bnet, prot_bnet_percentile, na_bnet, na_bnet_percentile
+
+    def write_html_summary(self, highlightAtoms):
         """
         Writes an html file summarising the results generated by RABDAM.
         """
@@ -768,9 +851,8 @@ class generate_output_files(object):
                         '      <h1>'+self.pdb_code.replace('_', ' ')+' B<sub>Damage</sub> summary file</h1>\n')
         html_file.write('      <p id="file_info">Created on %02.0f/%02.0f/%04.0f at %02.0f:%02.0f:%02.0f.</p>\n'
                         % (day, month, year, hour, mins, secs))
-        if 'csv' in output_options:
-            html_file.write('      <p id="file_info">**NOTE: Table header abbreviations are as defined in '
-                            '<a href="%s_BDamage.csv">%s_Bdamage.csv</a>.**</p>\n' % (self.pdb_code, self.pdb_code))
+        html_file.write('      <p id="file_info">**NOTE: Table header abbreviations are as defined in '
+                        '<a href="%s_BDamage.csv">%s_Bdamage.csv</a>.**</p>\n' % (self.pdb_code, self.pdb_code))
         html_file.write('    </div>\n')
         # Writes html file BDamage summary
         html_file.write('    <div>\n'

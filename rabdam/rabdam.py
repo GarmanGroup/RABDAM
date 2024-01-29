@@ -1,6 +1,6 @@
 
 # RABDAM
-# Copyright (C) 2023 Garman Group, University of Oxford
+# Copyright (C) 2024 Garman Group, University of Oxford
 
 # This file is part of RABDAM.
 
@@ -21,6 +21,7 @@
 # An outer layer to the pipeline scripts. Depending upon the flags specified
 # in the command line input, this script will run either the complete / a
 # subsection of the pipeline.
+
 
 class ArgumentError(Exception):
     pass
@@ -54,32 +55,31 @@ def parse_command_line_arguments(command_line, test=False):
             else:
                 from rabdam.Subroutines.checkDependencies import check_RABDAM_dependencies
 
-    # Reads in command line inputs. There are three recognised flags: -i, -f
-    # and -o. Program inputs are specified by either the -i or the -f flag;
-    # provision of one of these flags is compulsory. Program outputs are
-    # specified by the optional -r and -o flags.
+    # Reads in command line inputs
     parser = argparse.ArgumentParser()
     input_file_group = parser.add_mutually_exclusive_group(required=True)
-    input_file_group.add_argument('--dependencies', action='store_true',
-                                  help='Checks whether your system has the '
-                                  'necessary packages / programs installed in '
-                                  'order to be able to run RABDAM')
-    input_file_group.add_argument('-i', '--input', help='Absolute path to '
-                                  'input file listing program parameter values')
-    input_file_group.add_argument('-f', '--pdb_or_mmcif_file', nargs='+',
-                                  help='Specifies input pdb file (via either '
-                                  'a 4 character PDB accession code or an '
-                                  'absolute file path) for BDamage analysis - '
-                                  'this option allows the RABDAM program to '
-                                  'be run (using default program parameter '
-                                  'values) without providing an input file '
-                                  'listing program options')
-    parser.add_argument('-r', '--run', help='Specifies whether to run the '
-                        'complete program (= default), to calculate BDamage '
-                        'values only ("df" / "dataframe"), or to analyse '
-                        'pre-calculated BDamage values only ("analysis")')
-    parser.add_argument('-o', '--output', nargs='+', help='Specifies the '
-                        'output files to write (default = all files written)')
+    input_file_group.add_argument(
+        '--dependencies', action='store_true',
+        help='Checks whether your system has the necessary packages / programs '
+        'installed in order to be able to run RABDAM'
+    )
+    input_file_group.add_argument(
+        '-i', '--input', help='Absolute path to input file listing program '
+        'parameter values'
+    )
+    input_file_group.add_argument(
+        '-f', '--pdb_or_mmcif_file', nargs='+',
+        help='Specifies input pdb file (via either a 4 character PDB accession '
+        'code or an absolute file path) for BDamage analysis - this option '
+        'allows the RABDAM program to be run (using default program parameter '
+        'values) without providing an input file listing program options'
+    )
+    parser.add_argument(
+        '-r', '--run', help='Specifies whether to run the complete program (= '
+        '"full", default), to calculate '' BDamage values only ("df" / '
+        '"dataframe"), or to analyse pre-calculated BDamage values only '
+        '("analysis")'
+    )
     args = parser.parse_args(command_line)
 
     # Checks system for RABDAM dependencies
@@ -95,26 +95,9 @@ def parse_command_line_arguments(command_line, test=False):
                 'Specified input file {} does not exist'.format(input_file_path)
             )
 
-    # Checks options specified for output files are allowed. If no output files
-    # are specified, sets default option (= generate all output files).
-    output_options = ['csv', 'pdb', 'cif', 'kde', 'bnet', 'summary']
-    if vars(args)['output'] is None:
-        vars(args)['output'] = output_options
-    vars(args)['output'] = [item.lower() for item in vars(args)['output']]
-
-    unrecognised_options = []
-    for option in vars(args)['output']:
-        if not option in output_options:
-            unrecognised_options.append(option)
-    if len(unrecognised_options) >= 1:
-        raise ArgumentError(
-            'Unrecognised output options {} requested.\nPlease specify one or more '
-            'of the following: {}.\n'.format(unrecognised_options, output_options)
-        )
-
     # Checks options specified for RABDAM run are allowed. If not specified, by
     # default runs the full analysis pipeline.
-    all_run_options = ['dataframe', 'df', 'analysis', None]
+    all_run_options = ['full', 'dataframe', 'df', 'analysis', None]
     if not vars(args)['run'] in all_run_options:
         raise ArgumentError(
             'Unrecognised run option: {}\nPlease either specify one of the '
@@ -122,8 +105,10 @@ def parse_command_line_arguments(command_line, test=False):
             'RABDAM to run the full analysis pipeline).'.format(vars(args)['run'],
              all_run_options)
         )
-    if not vars(args)['run'] is None:
-        vars(args)['run'] = vars(args)['run'].lower()
+    if vars(args)['run'] is None:
+        vars(args)['run'] = 'full'
+    else:
+        vars(args)['run'] = vars(args)['run']
 
     return args
 
@@ -138,11 +123,12 @@ def parse_input_file_arguments(splitArgs):
     # Initialises default program options
     cwd = os.getcwd()
     outputLoc = cwd
-    batchVal = False
+    batchVal = True
     overwriteVal = False
+    filterInput = False
+    outFiles = 'all'
     pdtVal = 7.0
     windowVal = 0.02
-    protOrNAVal = 'protein'
     hetatmVal = False
     removeAtomsList = []
     addAtomsList = []
@@ -167,8 +153,8 @@ def parse_input_file_arguments(splitArgs):
                     'Directory {} does not exist'.format(outputLoc)
                 )
 
-        # Specifies when an error is encountered whether to exit the program
-        # (default) or to continue to the next listed structure
+        # Specifies when an error or warning is encountered whether to exit the
+        # program (default) or to continue to the next listed structure
         elif splitArgs[x][0:13].lower() == 'batchcontinue':
             batchVal = splitArgs[x].split('=')[-1].lower()
             if batchVal in ['true', 'yes', 't', 'y']:
@@ -177,8 +163,14 @@ def parse_input_file_arguments(splitArgs):
                 batchVal = False
             else:
                 raise ArgumentError(
-                    'Unrecognised value for batchcontinue: {}'.format(batchVal)
+                    'Unrecognised value for "batchcontinue": {}\nExpect to be '
+                    'set to "True" or "False"'.format(batchVal)
                 )
+            # If command line output is directed to a file, sets batchVal to
+            # True to prevent program from requiring user input to decide
+            # whether to continue
+            if os.fstat(0) != os.fstat(1):
+                batchVal = True
 
         # Specifies whether or not to overwrite files of the same name as the
         # new output files to be created (default = do not overwrite)
@@ -190,31 +182,48 @@ def parse_input_file_arguments(splitArgs):
                 overwriteVal = False
             else:
                 raise ArgumentError(
-                    'Unrecognised value for overwrite: {}'.format(overwriteVal)
+                    'Unrecognised value for "overwrite": {}\nExpect to be set '
+                    'to "True" or "False"'.format(overwriteVal)
                 )
-
             # If command line output is directed to a file, sets overwriteVal
-            # to True to prevent program from requiring user input to decide
+            # to False to prevent program from requiring user input to decide
             # whether to overwrite any pre-existing file(s) with the same file
             # path(s) as the output file(s) to be written
             if os.fstat(0) != os.fstat(1):
-                overwriteVal = True
+                overwriteVal = False
+
+        # Specifies which output files to write
+        elif splitArgs[x][0:8].lower() == 'outfiles':
+            outFiles = splitArgs[x].split('=')[-1].lower()
+            if not outFiles in ['all', 'bnet']:
+                raise ArgumentError(
+                    'Unrecognised value for "outfiles": {}\n Expect to be set '
+                    'to either "all" (default) or "bnet"'.format(outFiles)
+                )
+
+        # Specifies whether to check if the input model meets requirements 
+        # (defined in Shelley & Garman, 2022) for Bnet calculation
+        elif splitArgs[x][0:6].lower() == 'filter':
+            filterInput = splitArgs[x].split('=')[-1].lower()
+            if filterInput in ['true', 'yes', 't', 'y']:
+                filterInput = True
+            elif filterInput in ['false', 'no', 'f', 'n']:
+                filterInput = False
+            else:
+                raise ArgumentError(
+                    'Unrecognised value for "filter": {}\nExpect to be set to '
+                    '"True" or "False"'.format(filterInput)
+                )
 
         # Specifies packing density threshold (default = 7)
         elif splitArgs[x][0:3].lower() == 'pdt':
             pdtVal = splitArgs[x].split('=')[-1]
             try:
-                if float(pdtVal) != int(pdtVal):
-                    raise ArgumentError(
-                        'Value provided for packing density is not an integer: '
-                        '{}'.format(pdtVal)
-                    )
-                else:
-                    pdtVal = float(pdtVal)
+                pdtVal = float(pdtVal)
             except ValueError:
                 raise ArgumentError(
-                    'Value provided for packing density is not an integer: '
-                    '{}'.format(pdtVal)
+                    'Value provided for packing density is not an integer or a '
+                    'float: {}, type {}'.format(pdtVal, type(pdtVal))
                 )
 
         # Specifies size of sliding window (as a percentage of the total number
@@ -225,24 +234,34 @@ def parse_input_file_arguments(splitArgs):
                 windowVal = float(windowVal)
             except ValueError:
                 raise ArgumentError(
-                    'Value provided for size of sliding window is not a number:'
-                    ' {}'.format(windowVal)
+                    'Value provided for size of sliding window is not a float in the'
+                    ' range 0 - 1: {}, type {}'.format(windowVal, type(windowVal))
                 )
             if not 0 < windowVal < 1:
                 raise ArgumentError(
-                    'Value provided for size of sliding window is not in the '
-                    'range 0 - 1: {}'.format(windowVal)
+                    'Value provided for size of sliding window is not a float '
+                    'in the range 0 - 1: {}'.format(windowVal)
                 )
 
         # Specifies whether to include protein atoms alone, nucleic atoms
         # alone, or both atom types (if present) in the BDamage calculation
+        # NOTE: Disabling this input for now as Bnet has not been validated on
+        # nucleic acid crystal structures
         elif splitArgs[x][0:20].lower() == 'proteinornucleicacid':
+            """
             protOrNAVal = splitArgs[x].split('=')[-1].lower()
             if not protOrNAVal in ['protein', 'na', 'nucleicacid', 'proteinna']:
                 raise ArgumentError(
                     'Unrecognised value for proteinornucleicacid: '
                     '{}'.format(protOrNAVal)
                 )
+            """
+            raise ArgumentError(
+                'Currently RABDAM can only run on the protein component of an '
+                'input model, and so "proteinornucleicacid" is always set to '
+                '"protein".\n Please do not include "proteinornucleicacid" as '
+                'a program input'
+            )
 
         # Specifies whether to remove HETATM from the BDamage calculation or to
         # retain them
@@ -254,7 +273,8 @@ def parse_input_file_arguments(splitArgs):
                 hetatmVal = False
             else:
                 raise ArgumentError(
-                    'Unrecognised value for hetatm: {}'.format(hetatmVal)
+                    'Unrecognised value for hetatm: {}\nPlease set to either '
+                    '"keep" or "remove"'.format(hetatmVal)
                 )
 
         # Lists atoms (via either their atom numbers or their residue names) to
@@ -367,7 +387,8 @@ def parse_input_file_arguments(splitArgs):
                 orig_pdb = False
             else:
                 raise ArgumentError(
-                    'Unrecognised value for createorigpdb: {}'.format(orig_pdb)
+                    'Unrecognised value for createorigpdb: {}\nExpect to be set'
+                    ' to "True" or "False"'.format(orig_pdb)
                 )
 
         # Specifies whether to create a PDB file of the (filtered) asymmetric
@@ -380,7 +401,8 @@ def parse_input_file_arguments(splitArgs):
                 au_pdb = False
             else:
                 raise ArgumentError(
-                    'Unrecognised value for createaupdb: {}'.format(au_pdb)
+                    'Unrecognised value for createaupdb: {}\nExpect to be set '
+                    'to "True" or "False"'.format(au_pdb)
                 )
 
         # Specifies whether to create a PDB file of the unit cell
@@ -392,7 +414,8 @@ def parse_input_file_arguments(splitArgs):
                 uc_pdb = False
             else:
                 raise ArgumentError(
-                    'Unrecognised value for createucpdb: {}'.format(uc_pdb)
+                    'Unrecognised value for createucpdb: {}\nExpect to be set '
+                    'to "True" or "False"'.format(uc_pdb)
                 )
 
         # Specifies whether to create a PDB file of the 3x3x3 unit cell
@@ -405,7 +428,8 @@ def parse_input_file_arguments(splitArgs):
                 auc_pdb = False
             else:
                 raise ArgumentError(
-                    'Unrecognised value for createaucpdb: {}'.format(auc_pdb)
+                    'Unrecognised value for createaucpdb: {}\nExpect to be set '
+                    'to "True" or "False"'.format(auc_pdb)
                 )
 
         # Specifies whether to create a PDB file of the trimmed atoms assembly
@@ -420,7 +444,8 @@ def parse_input_file_arguments(splitArgs):
                 ta_pdb = False
             else:
                 raise ArgumentError(
-                    'Unrecognised value for createtapdb: {}'.format(ta_pdb)
+                    'Unrecognised value for createtapdb: {}\nExpect to be set '
+                    'to "True" or "False"'.format(ta_pdb)
                 )
 
         else:
@@ -432,9 +457,10 @@ def parse_input_file_arguments(splitArgs):
     input_arguments = {'outputDir': outputLoc,
                        'batchRun': batchVal,
                        'overwrite': overwriteVal,
+                       'filter': filterInput,
+                       'outFiles': outFiles,
                        'PDT': pdtVal,
                        'windowSize': windowVal,
-                       'protOrNA': protOrNAVal,
                        'HETATM': hetatmVal,
                        'removeAtoms': removeAtomsList,
                        'addAtoms': addAtomsList,
@@ -458,15 +484,15 @@ def main(test=False):
     import time
 
     if __name__ == '__main__':
-        from Subroutines.CalculateBDamage import rabdam
+        from Subroutines.CalculateBDamage import run_rabdam
     else:
         if sys.version_info[0] < 3:
-            from Subroutines.CalculateBDamage import rabdam
+            from Subroutines.CalculateBDamage import run_rabdam
         else:
-            from rabdam.Subroutines.CalculateBDamage import rabdam
+            from rabdam.Subroutines.CalculateBDamage import run_rabdam
 
     # Parses in command line arguments
-    args = parse_command_line_arguments(sys.argv[1:])
+    args = parse_command_line_arguments(sys.argv[1:], test)
 
     # Initialises program start time
     start = time.time()
@@ -515,14 +541,15 @@ def main(test=False):
     # Runs the BDamage calculation for every specified PDB file
     for item in pathToInputList:
         # Initialises rabdam object
-        pdb = rabdam(
+        pdb = run_rabdam(
             pathToInput=item,
             outputDir=input_arguments['outputDir'],
             batchRun=input_arguments['batchRun'],
             overwrite=input_arguments['overwrite'],
+            outFiles=input_arguments['outFiles'],
+            filterInput=input_arguments['filter'],
             PDT=input_arguments['PDT'],
             windowSize=input_arguments['windowSize'],
-            protOrNA=input_arguments['protOrNA'],
             HETATM=input_arguments['HETATM'],
             removeAtoms=input_arguments['removeAtoms'],
             addAtoms=input_arguments['addAtoms'],
@@ -534,12 +561,20 @@ def main(test=False):
             createTApdb=input_arguments['createTApdb']
         )
 
-        if vars(args)['run'] in [None, 'dataframe', 'df']:
+        if vars(args)['run'] in ['full', 'dataframe', 'df']:
             # Calculates BDamage values and writes them to a DataFrame
             pdb.rabdam_dataframe(test)
-        if vars(args)['run'] in [None, 'analysis']:
+        if vars(args)['run'] in ['full', 'analysis']:
             # Generates output analysis files from pre-calculated BDamage values
-            pdb.rabdam_analysis(output_options=vars(args)['output'])
+            # For now RABDAM only considers protein Bnet and Bnet percentile
+            # values, so the nucleic acid Bnet and Bnet percentile values
+            # returned are ignored
+            bnet, bnet_percentile, *_ = pdb.rabdam_analysis()
+            # Print Bnet and Bnet_percentile values to screen
+            if not bnet is None:
+                print('\n\n{}\nBnet = {}'.format(item, round(bnet, 1)))
+            if not bnet_percentile is None:
+                print('Bnet_percentile = {}\n\n'.format(round(bnet_percentile, 1)))
 
     # Prints total program run time to screen
     runtime = time.time() - start
@@ -551,11 +586,11 @@ def main(test=False):
         print('Program run time: %01.0f min %02.3f sec\n' % (mins, secs))
 
     print('Please cite:\nShelley KL, Dixon TPE, Brooks-Bartlett JC & Garman EF'
-          ' (2018). J Appl Cryst 51, 552-559.\n\n')
+          ' (2018). J Appl Cryst 51, 552-559.\n')
     print('If using BDamage, please cite:\nGerstel M, Deane CM & Garman EF '
-          '(2015).  J Synchrotron Radiat 22, 201-212.\n\n')
-    print('If using Bnet, please cite:\nShelley KL & Garman EF (2022). '
-          'Nat Commun 13, 1314.\n\n')
+          '(2015).  J Synchrotron Radiat 22, 201-212.\n')
+    print('If using Bnet and/or Bnet_percentile, please cite:\nShelley KL & '
+          'Garman EF (2022). Nat Commun 13, 1314.\n\n')
 
 # Runs 'main' function if rabdam.py is run as a script
 if __name__ == '__main__':

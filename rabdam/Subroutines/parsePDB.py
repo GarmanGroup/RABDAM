@@ -1,6 +1,6 @@
 
 # RABDAM
-# Copyright (C) 2023 Garman Group, University of Oxford
+# Copyright (C) 2024 Garman Group, University of Oxford
 
 # This file is part of RABDAM.
 
@@ -104,7 +104,7 @@ def download_mmcif(PDBcode, PDBdirectory, pathToCIF):
     # Checks whether accession code exists - if not, exit program
     # with error message
     exit = False
-    mmcif_url = 'https://files.rcsb.org/view/%s.cif' % PDBcode
+    mmcif_url = 'https://files.rcsb.org/view/%s.cif' % PDBcode.upper()
     header = requests.get(mmcif_url)
     if header.status_code != 200:
         print('\n\nERROR: Failed to download %s mmCIF file with accession '
@@ -207,3 +207,125 @@ def b_damage_atom_list(clean_au_list, HETATM, protOrNA, addAtoms, removeAtoms):
 
     print('Finished reading in atoms --> %d atoms found' % int(len(clean_au_list)))
     return bdamatomList
+
+
+def check_num_bnet_atoms(filtered_atoms_list):
+    """
+    Count the number of Glu/Asp carboxyl group oxygen atoms.
+    """
+
+    o_count = 0
+
+    for atm in filtered_atoms_list:  # Alternate conformers have previously been
+        # removed from this list
+        if (
+                atm.resiType in ['GLU', 'ASP', 'DGL', 'DAS']
+            and atm.atomType in ['OE1', 'OE2', 'OD1', 'OD2']
+        ):
+            o_count += 1
+
+    return o_count
+
+
+def check_per_atom_bfac(filtered_atoms_list, thresh_frac=0.2):
+    """
+    """
+
+    import numpy as np
+
+    # Record the Bfactor values of the backbone atoms of each residue
+    res_backbone_bfactors = {}
+    for atm in filtered_atoms_list:
+        res_num = atm.resiNum
+        atom_type = atm.atomType
+        bfac = atm.bFactor
+        # Compare Bfactor values of backbone atoms only
+        if not atom_type in ['N', 'CA', 'C', 'O']:
+            continue
+        if not res_num in res_backbone_bfactors:
+            res_backbone_bfactors[res_num] = []
+        res_backbone_bfactors[res_num].append(bfac)
+
+    # Count the number of residues whose backbone atoms have the same Bfactor
+    # value
+    per_res_bfactor_count = 0
+    for res_num, bfac_list in res_backbone_bfactors.items():
+        if len(set(bfac_list)) == 1:
+            per_res_bfactor_count += 1
+
+    # Determine if the model has per-residue B-factors
+    total_res_count = len(res_backbone_bfactors)
+    thresh_val = total_res_count * thresh_frac
+    if thresh_val < 3:
+        thresh_val = 3
+    if per_res_bfactor_count >= thresh_val:
+        per_atom_b_factors = False
+    else:
+        per_atom_b_factors = True
+
+    return per_atom_b_factors
+
+
+def suitable_for_bnet_filter(
+    rfree, resolution, temperature, sub_1_asp_glu_occ, contains_protein,
+    filtered_atoms_list, model_id
+):
+    """
+    Check whether a model meets the requirements for Bnet calculation as defined
+    in Shelley & Garman, 2022
+    These requirements are:
+    Rfree < 0.4
+    Resolution <= 3.5
+    80 <= temperature <= 120
+    sub_1_asp_glu_occ = False
+    contains_protein = True
+    glu_asp_o_count >= 20
+    per_atom_bfactors = True 
+    """
+
+    # Count number of Asp/Glu side chain oxygens
+    glu_asp_o_count = check_num_bnet_atoms(filtered_atoms_list)
+    # Determine whether B-factors have been refined per-atom
+    per_atom_b_factors = check_per_atom_bfac(filtered_atoms_list)
+
+    # Determine if model meets Bnet requirements
+    exit = False
+
+    if any(param is None for param in [rfree, resolution, temperature, sub_1_asp_glu_occ]):
+        exit = True
+    else:
+        if rfree >= 0.4:
+            exit = True
+        elif resolution > 3.5:
+            exit = True
+        elif sub_1_asp_glu_occ is True:
+            exit = True
+        elif contains_protein is False:
+            exit = True
+        elif glu_asp_o_count < 20:
+            exit = True
+        elif per_atom_b_factors is False:
+            exit = True
+
+    # Temperature could be a float or a list of floats
+    if type(temperature) == float:
+        temperature = [temperature]
+    for temp in temperature:
+        if temp < 80 or temp > 120:
+                exit = True
+
+    if exit is True:
+        print('Input model {} does not meet the requirements for Bnet '
+              'calculation'.format(model_id))
+        print('Models must meet the following requirements:'
+              '\n  - Include one or more protein chains'
+              '\n  - Rfree < 0.4'
+              '\n  - Resolution <= 3.5 A'
+              '\n  - 80K <= temperature <= 120K'
+              '\n  - No Glu/Asp residues with sub-1 occupancy across all conformers'
+              '\n  - >= 20 side chain carboxyl group oxygen atoms across all Asp/Glu residues'
+              '\n  - Refined with per-atom (as opposed to per-residue) B-factors'
+              '\nIf you would like to calculate Bnet anyway, set filter=False '
+              'in your input file.\n')
+
+    return exit

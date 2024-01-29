@@ -1,6 +1,6 @@
 
 # RABDAM
-# Copyright (C) 2023 Garman Group, University of Oxford
+# Copyright (C) 2024 Garman Group, University of Oxford
 
 # This file is part of RABDAM.
 
@@ -19,18 +19,23 @@
 # <http://www.gnu.org/licenses/>.
 
 
-class rabdam(object):
-    def __init__(self, pathToInput, outputDir, batchRun, overwrite, PDT,
-                 windowSize, protOrNA, HETATM, removeAtoms, addAtoms,
-                 highlightAtoms, createOrigpdb, createAUpdb, createUCpdb,
-                 createAUCpdb, createTApdb):
+class run_rabdam(object):
+    def __init__(
+        self, pathToInput, outputDir, batchRun, overwrite, outFiles,
+        filterInput, PDT, windowSize, HETATM, removeAtoms, addAtoms,
+        highlightAtoms, createOrigpdb, createAUpdb, createUCpdb, createAUCpdb,
+        createTApdb
+    ):
         self.pathToInput = pathToInput
         self.outputDir = outputDir
         self.batchRun = batchRun
         self.overwrite = overwrite
+        self.outFiles = outFiles
+        self.filter = filterInput
         self.PDT = PDT
         self.windowSize = windowSize
-        self.protOrNA = protOrNA
+        self.protOrNA = 'protein'  # NOTE: Disabling this input for now as Bnet
+        # has not been validated on nucleic acid crystal structures
         self.HETATM = HETATM
         self.removeAtoms = removeAtoms
         self.addAtoms = addAtoms
@@ -61,10 +66,12 @@ class rabdam(object):
 
         if __name__ == 'Subroutines.CalculateBDamage':
             from Subroutines.PDBCUR import (
-                parse_mmcif_file, parse_pdb_file, clean_atom_rec, gen_unit_cell
+                parse_mmcif_file, parse_pdb_file, clean_atom_rec, gen_unit_cell,
+                check_for_protein
             )
             from Subroutines.parsePDB import (
-                download_mmcif, copy_input, b_damage_atom_list
+                download_mmcif, copy_input, b_damage_atom_list,
+                suitable_for_bnet_filter
             )
             from Subroutines.translateUnitCell import (
                 convertToCartesian, translateUnitCell, extract_unit_cell_params
@@ -80,10 +87,12 @@ class rabdam(object):
             from Subroutines.output import write_all_carbon_cif
         else:
             from rabdam.Subroutines.PDBCUR import (
-                parse_mmcif_file, parse_pdb_file, clean_atom_rec, gen_unit_cell
+                parse_mmcif_file, parse_pdb_file, clean_atom_rec, gen_unit_cell,
+                check_for_protein
             )
             from rabdam.Subroutines.parsePDB import (
-                download_mmcif, copy_input, b_damage_atom_list
+                download_mmcif, copy_input, b_damage_atom_list,
+                suitable_for_bnet_filter
             )
             from rabdam.Subroutines.translateUnitCell import (
                 convertToCartesian, translateUnitCell, extract_unit_cell_params
@@ -172,7 +181,7 @@ class rabdam(object):
         # If 4 digit PDB accession code has been supplied:
         if len(self.pathToInput) == 4:
             print('Accession code supplied')
-            PDBcode = self.pathToInput.upper()
+            PDBcode = self.pathToInput
             PDBdirectory = 'Logfiles/%s/' % PDBcode
             file_name_start = '%s%s' % (PDBdirectory, PDBcode)
             pathToInput = '%s%s.cif' % (PDBdirectory, PDBcode)
@@ -271,9 +280,8 @@ class rabdam(object):
                     return
 
             print('Filepath to %s file supplied\n' % pathToInput[-4:])
-            splitFilename = splitPath[-1].split('.')
-            PDBcode = splitFilename[-2].upper()
-            fileName = PDBcode + '.' + splitFilename[-1]
+            fileName = splitPath[-1]
+            PDBcode = fileName.split('.')[0]
             PDBdirectory = 'Logfiles/%s/' % PDBcode
             file_name_start = '%s%s' % (PDBdirectory, PDBcode)
             newPathToInput = '%s%s' % (PDBdirectory, fileName)
@@ -334,9 +342,13 @@ class rabdam(object):
         # Extracts ATOM/HETATM records from input PDB/mmCIF format file.
         exit = False
         if pathToInput[-4:] == '.cif':
-            atoms_list, cryst1_line, exit = parse_mmcif_file(pathToInput)
+            (
+                atoms_list, cryst1_line, resolution, rfree, temperature, exit    
+            ) = parse_mmcif_file(pathToInput)
         elif pathToInput[-4:] == '.pdb':
-            atoms_list, cryst1_line, exit = parse_pdb_file(pathToInput)
+            (
+                atoms_list, cryst1_line, resolution, rfree, temperature, exit
+            ) = parse_pdb_file(pathToInput)
 
         if exit is True:
             shutil.rmtree('%s' % PDBdirectory)
@@ -348,16 +360,13 @@ class rabdam(object):
         # Processes the ATOM/HETATM records to remove hydrogen atoms,
         # anisotropic B-factor records, and atoms with zero occupancy, as well
         # as retaining only the most probable alternate conformer for each atom.
-        # These records are written to a PDB file that is fed into PDBCUR (a
-        # program in the CCP4 softare suite); PDBCUR generates the unit cell
-        # assembly from the coordinates of the processed asymmetric unit in the
-        # input PDB file.
+        # These records are written to a PDB file (clean_au_file).
         print('\nProcessing input file to remove hydrogen atoms, anisotropic '
               '\nB factor records, and atoms with zero occupancy, as well as '
               '\nretaining only the most probable alternate conformations\n')
         exit = False
         pause = False
-        exit, pause, clean_au_list, clean_au_file = clean_atom_rec(
+        exit, pause, clean_au_list, clean_au_file, sub_1_asp_glu_occ = clean_atom_rec(
             atoms_list, file_name_start
         )
         clean_au_file = '{}.cif'.format(clean_au_file)
@@ -408,6 +417,9 @@ class rabdam(object):
                 sys.exit()
             elif self.batchRun is True:
                 return
+        
+        # Checks if protein chains in clean_au_file
+        contains_protein = check_for_protein(clean_au_file)
 
         print('****************** End of Process PDB Section ******************\n'
               '****************************************************************\n')
@@ -496,6 +508,20 @@ class rabdam(object):
                 sys.exit()
             elif self.batchRun is True:
                 return
+  
+        # Halts program if filterInput is set to True and the input model does
+        # not meet the filtering requirements for Bnet + Bnet_percentile
+        # calculation.
+        if self.filter is True: 
+            exit = suitable_for_bnet_filter(
+                rfree, resolution, temperature, sub_1_asp_glu_occ,
+                contains_protein, bdamAtomList, self.pathToInput
+            )
+            if exit is True:
+                if self.batchRun is False:
+                    sys.exit()
+                elif self.batchRun is True:
+                    return
 
         auParams = getAUparams(bdamAtomList)
         print('\nObtained asymmetric unit parameters:')
@@ -570,7 +596,7 @@ class rabdam(object):
         storage_file = '%s/%s' % (storage, PDBcode)
         df.to_pickle(storage_file + '_dataframe.pkl')
         with open(storage_file + '_variables.pkl', 'wb') as f:
-            pickle.dump((file_name_start, bdamAtomList, window), f)
+            pickle.dump((file_name_start, bdamAtomList, window, resolution), f)
 
         print('****************************************************************\n'
               '*************** End Of Writing DataFrame Section ***************\n')
@@ -579,7 +605,7 @@ class rabdam(object):
         # rabdam.py script is saved).
         os.chdir('%s' % cwd)
 
-    def rabdam_analysis(self, output_options):
+    def rabdam_analysis(self):
         """
         Uses values in DataFrame returned from calling the 'rabdam_dataframe'
         function to write output analysis files.
@@ -609,6 +635,12 @@ class rabdam(object):
 
         print('**************************** RABDAM ****************************\n')
 
+        # Define database of Bnet values (calculated from the PDB as of 19th
+        # November 2020)
+        file_dir = os.path.dirname(os.path.abspath(__file__))
+        bnet_database_pkl = '{}/201119_PDB_Bnet_scores.pkl'.format(file_dir)
+        bnet_database_df = pd.read_pickle(bnet_database_pkl)
+
         # Changes directory to the specified location for the output 'Logfiles'
         # directory. The default location is the current working directory
         # (i.e. that in which the rabdam.py script is saved).
@@ -627,13 +659,11 @@ class rabdam(object):
         # no = old analysis files are retained, exit program
         # Note that currently there is no option to replace only a subset of
         # the output analysis files.
-
         pathToInput = self.pathToInput.replace('\\', '/')
         splitPath = pathToInput.split('/')
         PDBcode = splitPath[len(splitPath)-1]
         for file_type in ['.pdb', '.cif']:
             PDBcode = PDBcode.replace('%s' % file_type, '')
-        PDBcode = PDBcode.upper()
         PDBdirectory = 'Logfiles/%s/' % PDBcode
         PDB_analysis_file = '%s/%s' % (PDBdirectory, PDBcode)
         storage_directory = '%s/DataFrame' % PDBdirectory
@@ -644,20 +674,23 @@ class rabdam(object):
             if self.batchRun is False:
                 sys.exit('Exiting RABDAM\n')
             elif self.batchRun is True:
-                return
+                return None, None, None, None
 
-        potential_analysis_files = [
+        poten_indv_analysis_files = [
             '_BDamage.csv', '_BDamage.pdb', '_BDamage.cif', '_BDamage.svg',
-            '_Bnet_protein.svg', '_Bnet_protein.pkl', '_Bnet_NA.svg',
-            '_Bnet_NA.pkl', '_BDamage.html'
+            '_Bnet_protein.svg', '_Bnet_NA.svg', '_BDamage.html'
         ]
+        poten_shared_analysis_files = ['_Bnet_protein.pkl', '_Bnet_NA.pkl']
         actual_analysis_files = []
-        for file_name in potential_analysis_files:
+        for file_name in poten_indv_analysis_files:
             if os.path.isfile(PDB_analysis_file + file_name):
                 actual_analysis_files.append(PDB_analysis_file + file_name)
+        for file_name in poten_shared_analysis_files:
+            if os.path.isfile(file_name):
+                actual_analysis_files.append(file_name)
         if len(actual_analysis_files) > 0:
             print('There are one or more RABDAM analysis files already present\n'
-                  'in folder %s' % PDBdirectory)
+                  'for %s' % PDBcode)
             print('Do you want to overwrite the existing analysis files?\n'
                   '--USER INPUT-- type your choice and press RETURN\n'
                   'yes = overwrite ALL analysis files\n'
@@ -681,7 +714,7 @@ class rabdam(object):
                     if self.batchRun is False:
                         sys.exit()
                     elif self.batchRun is True:
-                        return
+                        return None, None, None, None
                     break
                 else:
                     print('Unrecognised input - please answer "yes" or "no"')
@@ -690,7 +723,7 @@ class rabdam(object):
         df = pd.read_pickle(storage_file + '_dataframe.pkl')
         print('Unpickling DataFrame and variables\n')
         with open(storage_file + '_variables.pkl', 'rb') as f:
-            (file_name_start, bdamAtomList, window) = pickle.load(f)
+            (file_name_start, bdamAtomList, window, resolution) = pickle.load(f)
 
         print('************** End Of Processing DataFrame Section *************\n'
               '****************************************************************\n')
@@ -714,35 +747,40 @@ class rabdam(object):
 
         output = generate_output_files(
             out_file_start=file_name_start, pdb_code=PDBcode, df=df,
-            prot_or_na=self.protOrNA
+            prot_or_na=self.protOrNA, resolution=resolution
         )
 
-        if 'csv' in output_options:
+        # Calculate Bnet and Bnet_percentile values
+        print('\nCalculating Bnet and Bnet_percentile')
+        (
+            prot_bnet, prot_bnet_percentile, na_bnet, na_bnet_percentile
+        ) = output.calculate_Bnet_and_Bnet_percentile(
+            bnet_database_df=bnet_database_df
+        )
+
+        if self.outFiles == 'all':
+            # Write csv file
             print('\nWriting csv file')
             output.make_csv(window)
 
-        if 'pdb' in output_options:
+            # Write PDB file with BDamage values in the Bfactor column
             print('\nWriting PDB file with BDamage values replacing Bfactors')
             pdb_file_name = file_name_start + '_BDamage.pdb'
             makePDB([], bdamAtomList, [], pdb_file_name, 'bdamage')
 
-        if 'cif' in output_options:
+            # Write mmCIF file with BDamage entry for each atom record
             print('\nWriting cif file with BDamage column')
             write_output_cif(
                 bdamAtomList, '{}_BDamage'.format(file_name_start), True
             )
 
-        if 'kde' in output_options or 'summary' in output_options:
+            # Plot kernel density estimate
             print('\nPlotting kernel density estimate')
-            output.make_histogram(self.highlightAtoms)
+            output.gen_kde_plot(self.highlightAtoms)
 
-        if 'bnet' in output_options or 'summary' in output_options:
-            print('\nCalculating Bnet')
-            output.calculate_Bnet()
-
-        if 'summary' in output_options:
+            # Make summary html file
             print('\nWriting summary html file\n')
-            output.write_html_summary(output_options, self.highlightAtoms)
+            output.write_html_summary(self.highlightAtoms)
 
         print('************** End of Writing Output Files Section *************\n'
               '****************************************************************\n')
@@ -750,3 +788,5 @@ class rabdam(object):
         # Changes directory back to the 'RABDAM' directory (i.e. that in which
         # the rabdam.py script is saved).
         os.chdir('%s' % cwd)
+
+        return prot_bnet, prot_bnet_percentile, na_bnet, na_bnet_percentile

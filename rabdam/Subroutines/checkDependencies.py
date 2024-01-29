@@ -1,6 +1,6 @@
 
 # RABDAM
-# Copyright (C) 2023 Garman Group, University of Oxford
+# Copyright (C) 2024 Garman Group, University of Oxford
 
 # This file is part of RABDAM.
 
@@ -26,8 +26,6 @@ def check_RABDAM_dependencies():
     """
 
     import imp
-    import os
-    import platform
     import pkg_resources  # Not in standard Python library, but currently I
     # can't find an alternative method to get the version of a Python package
 

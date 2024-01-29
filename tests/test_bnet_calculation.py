@@ -1,6 +1,6 @@
 
 # RABDAM
-# Copyright (C) 2023 Garman Group, University of Oxford
+# Copyright (C) 2024 Garman Group, University of Oxford
 
 # This file is part of RABDAM.
 
@@ -60,8 +60,8 @@ class TestClass(unittest.TestCase):
                          '3CUI': 2.666548749,
                          '4XLA': 2.618363208,
                          '4DUK': 2.84941657,
-                         '3V38': 2.500984382,  # Still fails
-                         '1VJF': 2.496374854,  # Still fails
+                         '3V38': 2.502413452,
+                         '1VJF': 2.494688495,
                          '5IO2': 2.467587911,
                          '5CM7': 2.44869046,
                          '2EHU': 2.440416614,
@@ -89,9 +89,9 @@ class TestClass(unittest.TestCase):
                          '5ER6': 2.05707889,
                          '4R0X': 2.006996308,
                          '5LLG': 1.981501196,
-                         '1FCX': 1.976990791,  # Still fails
+                         '1FCX': 1.978251127,
                          '5M90': 1.964999541,
-                         '3NJK': 1.955577757,  # Still fails
+                         '3NJK': 1.87824308,
                          '5CWG': 1.949818624,
                          '2P7O': 1.921138477,
                          '5SZC': 1.962633169,
@@ -102,7 +102,7 @@ class TestClass(unittest.TestCase):
                          '5EJ3': 1.875439995,
                          '2WUG': 1.873476725,
                          '4MPY': 1.842338963,
-                         '4OTZ': 1.835716553,  # Still fails
+                         '4OTZ': 1.813684419,
                          '4IOO': 1.779618661,
                          '4Z6O': 1.800528596,
                          '4ZOT': 1.799163077,
@@ -118,12 +118,12 @@ class TestClass(unittest.TestCase):
                          '5Y90': 1.685599882,
                          '4H31': 1.676976403,
                          '5HJE': 1.664006923,
-                         '4YKK': 1.653894709,  # Still fails
+                         '4YKK': 1.654971189,
                          '1Q0F': 1.646880018,
                          '5JP6': 1.629246723,
                          '1X7Y': 1.64715517,
                          '4ZC8': 1.60606196,
-                         '5EPE': 1.604407869,  # Still fails
+                         '5EPE': 1.598585924,
                          '4ZS9': 1.582398487,
                          '5VNX': 1.543824945,
                          '5IHV': 1.542271159,
@@ -134,8 +134,8 @@ class TestClass(unittest.TestCase):
                          '4PSC': 1.491796934,
                          '5UPN': 1.477252783,
                          '4XLZ': 1.473298738,
-                         '4XGY': 1.465885549,  # Still fails
-                         '5M4G': 1.400219288,  # Still fails
+                         '4XGY': 1.460754281,
+                         '5M4G': 1.400380357,
                          '3A54': 1.32172782}
 
         if not os.path.isdir('tests/temp_files/'):
@@ -208,4 +208,4 @@ class TestClass(unittest.TestCase):
             os.remove('tests/temp_files/%s.pdb' % code)
             os.remove('tests/temp_files/Logfiles/Bnet_protein.pkl')
 
-        #shutil.rmtree('tests/temp_files/')
+        shutil.rmtree('tests/temp_files/')

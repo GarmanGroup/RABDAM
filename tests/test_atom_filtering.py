@@ -1,6 +1,6 @@
 
 # RABDAM
-# Copyright (C) 2023 Garman Group, University of Oxford
+# Copyright (C) 2024 Garman Group, University of Oxford
 
 # This file is part of RABDAM.
 
@@ -40,6 +40,7 @@ class TestClass(unittest.TestCase):
         new_atom_1.conformer = ''
         new_atom_1.resiType = 'GLY'
         new_atom_1.chainID = 'A'
+        new_atom_1.entity_id = '2'
         new_atom_1.resiNum = 1
         new_atom_1.insCode = ''
         new_atom_1.xyzCoords = [[13.602], [45.768], [30.728]]
@@ -51,6 +52,7 @@ class TestClass(unittest.TestCase):
         new_atom_1.origResiType = 'GLY'
         new_atom_1.origChainID = 'A'
         new_atom_1.origAtomType = 'CA'
+        new_atom_1.pdb_model_num = 2
         new_atom_1.pd = 19
         new_atom_1.avrg_bf = 26.2
         new_atom_1.bd = 1.3
@@ -66,6 +68,7 @@ class TestClass(unittest.TestCase):
         new_atom_2.conformer = ''
         new_atom_2.resiType = 'GLY'
         new_atom_2.chainID = 'A'
+        new_atom_2.entity_id = '?'
         new_atom_2.resiNum = 2
         new_atom_2.insCode = ''
         new_atom_2.xyzCoords = [[13.128], [46.298], [34.342]]
@@ -77,6 +80,7 @@ class TestClass(unittest.TestCase):
         new_atom_2.origResiType = 'GLY'
         new_atom_2.origChainID = 'A'
         new_atom_2.origAtomType = 'CA'
+        new_atom_2.pdb_model_num = 1
         new_atom_2.pd = 30
         new_atom_2.avrg_bf = 25.6
         new_atom_2.bd = 0.97
@@ -92,6 +96,7 @@ class TestClass(unittest.TestCase):
         new_atom_3.conformer = 'X'
         new_atom_3.resiType = 'FAD'
         new_atom_3.chainID = 'B'
+        new_atom_3.entity_id = '.'
         new_atom_3.resiNum = 2
         new_atom_3.insCode = ''
         new_atom_3.xyzCoords = [[29.643], [29.7], [51.402]]
@@ -103,6 +108,7 @@ class TestClass(unittest.TestCase):
         new_atom_3.origResiType = 'FAD'
         new_atom_3.origChainID = 'B'
         new_atom_3.origAtomType = 'PA'
+        new_atom_3.pdb_model_num = 2
         new_atom_3.pd = 26
         new_atom_3.avrg_bf = 20.5
         new_atom_3.bd = 2.0
@@ -142,12 +148,12 @@ class TestClass(unittest.TestCase):
             ''
         ]
         exit_1, pause_1, act_atoms_list_1, file_1 = clean_atom_rec(
-            atoms_list_1, '', 'tests/temp_files/test'
+            atoms_list_1, ''
         )
         self.assertFalse(exit_1)
         self.assertFalse(pause_1)
         self.assertEqual(exp_atoms_list_1, act_atoms_list_1)
-        with open('tests/temp_files/test_asymmetric_unit.pdb', 'r') as f:
+        with open('{}.cif'.format(file_1), 'r') as f:
             act_file_content_1 = f.read().split('\n')
             print(act_file_content_1)
             self.assertEqual(exp_file_content_1, act_file_content_1)

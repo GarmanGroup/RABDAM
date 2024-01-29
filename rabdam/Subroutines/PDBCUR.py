@@ -1,6 +1,6 @@
 
 # RABDAM
-# Copyright (C) 2023 Garman Group, University of Oxford
+# Copyright (C) 2024 Garman Group, University of Oxford
 
 # This file is part of RABDAM.
 
@@ -98,6 +98,116 @@ def make_cryst1_line_from_mmcif(space_group_rec, exit):
                                sGroup.ljust(11), z.rjust(4), '          ', '\n'])
 
     return cryst1_line, exit
+
+
+def get_rfree_from_pdb(remark_rec):
+    """
+    Get Rfree from PDB file header information
+    """
+
+    rfree = None
+
+    # Search for most common Rfree record format
+    for line in remark_rec:
+        line_no_space = line.replace(' ', '')
+        if line_no_space.startswith('REMARK3'):
+            if 'FREERVALUE:' in line_no_space:
+                try:
+                    rfree = float(line_no_space.split(':')[-1])
+                except ValueError:
+                    pass
+                break
+
+    # Search for SHELX Rfree record format
+    if rfree is None:
+        for line in remark_rec:
+            line_no_space = line.replace(' ', '')
+            if line_no_space.startswith('REMARK3'):
+                if 'FREERVALUE(NOCUTOFF):' in line_no_space:
+                    try:
+                        rfree = float(line_no_space.split(':')[-1])
+                    except ValueError:
+                        pass
+                    break
+
+    return rfree
+
+
+def get_res_temp_from_pdb(remark_rec):
+    """
+    Get resolution and temperature from PDB file header information
+    """
+
+    resolution = None
+    temperature = None
+
+    for line in remark_rec:
+        line_no_space = line.replace(' ', '')
+        if line_no_space.startswith('REMARK200'):
+            # Find resolution
+            if 'RESOLUTIONRANGEHIGH(A):' in line_no_space:
+                try:
+                    resolution = float(line_no_space.split(':')[-1])
+                except ValueError:
+                    pass
+            # Find temperature
+            elif 'TEMPERATURE(KELVIN):' in line_no_space:
+                temp_rec = line_no_space.split(':')[-1]
+                if ';' in line_no_space:
+                    try:
+                        temperature = [float(val) for val in temp_rec.split(';')]
+                    except ValueError:
+                        pass
+                else:
+                    try:
+                        temperature = [float(temp_rec)]
+                    except ValueError:
+                        pass
+
+    return resolution, temperature
+
+
+def get_res_rfree_temp_from_mmcif(remark_dict):
+    """
+    Check if structure passes criteria defined in Nat Commun paper for
+    calculating Bnet metric
+    """
+
+    resolution = None
+    rfree = None
+    temperature = None
+
+    for prop, subsection in remark_dict.items():
+        sub_lines = subsection.split('\n')
+
+        if prop == 'resolution':
+            for line in sub_lines:
+                if line.startswith('_refine.ls_d_res_high '):
+                    try:
+                        resolution = float(line.replace('_refine.ls_d_res_high', ''))
+                    except ValueError:
+                        pass
+                    break
+
+        elif prop == 'rfree':
+            for line in sub_lines:
+                if line.startswith('_refine.ls_R_factor_R_free '):
+                    try:
+                        rfree = float(line.replace('_refine.ls_R_factor_R_free', ''))
+                    except ValueError:
+                        pass
+                    break
+
+        elif prop == 'temperature':
+            for line in sub_lines:
+                if line.startswith('_diffrn.ambient_temp '):
+                    try:
+                        temperature = float(line.replace('_diffrn.ambient_temp', ''))
+                    except ValueError:
+                        pass
+                    break
+
+    return resolution, rfree, temperature
 
 
 def parse_atom_rec_from_mmcif(atom_rec, input_cif, exit):
@@ -387,11 +497,6 @@ def parse_mmcif_file(pathToInput):
     Parses input mmCIF file
     """
 
-    if __name__ == 'Subroutines.PDBCUR':
-        from Subroutines.parsePDB import atom
-    else:
-        from rabdam.Subroutines.parsePDB import atom
-
     exit = False
 
     with open('%s' % pathToInput, 'r') as f:
@@ -399,24 +504,33 @@ def parse_mmcif_file(pathToInput):
                      if subsection.strip() != '']
 
     atom_rec = []
+    remark_dict = {}
     space_group = []
 
     for subsection in input_cif:
         if '_atom_site.group_PDB' in subsection:
             atom_rec += [line.strip('\r') for line in subsection.split('\n')
                          if line.strip() != '']
-        elif ('_cell.length_a' in subsection
+        if ('_cell.length_a' in subsection
              or '_symmetry.space_group_name_H-M' in subsection
         ):
             space_group += [line.strip('\r') for line in subsection.split('\n')
                             if not line.strip() in ['', 'loop_']]
+        if '_refine.ls_d_res_high ' in subsection:
+            remark_dict['resolution'] = subsection
+        if '_refine.ls_R_factor_R_free ' in subsection:
+            remark_dict['rfree'] = subsection
+        if '_diffrn.ambient_temp ' in subsection:
+            remark_dict['temperature'] = subsection
 
     # Constructs CRYST1 line of PDB file
     cryst1_line, exit = make_cryst1_line_from_mmcif(space_group, exit)
     # Extracts ATOM / HETATM lines
     atoms_list, exit = parse_atom_rec_from_mmcif(atom_rec, pathToInput, exit)
+    # Find resolution, Rfree and temperature values
+    resolution, rfree, temperature = get_res_rfree_temp_from_mmcif(remark_dict)
 
-    return atoms_list, cryst1_line, exit
+    return atoms_list, cryst1_line, resolution, rfree, temperature, exit
 
 
 def parse_pdb_file(pathToInput):
@@ -426,6 +540,7 @@ def parse_pdb_file(pathToInput):
     exit = False
 
     atom_rec = []
+    remark_rec = []
     cryst1_line = ''
 
     with open('%s' % pathToInput, 'r') as f:
@@ -435,6 +550,8 @@ def parse_pdb_file(pathToInput):
     for line in input_pdb:
         if line[0:6].strip() in ['ATOM', 'HETATM']:
             atom_rec.append(line)
+        elif line[0:6] == 'REMARK':
+            remark_rec.append(line)
         elif line[0:6] == 'CRYST1':
             cryst1_line = line
         elif line[0:5] == 'MODEL':
@@ -445,8 +562,11 @@ def parse_pdb_file(pathToInput):
 
     # Extracts ATOM / HETATM lines
     atoms_list, exit = parse_atom_rec_from_pdb(atom_rec, pathToInput, exit)
+    # Find resolution, temperature and Rfree values
+    resolution, temperature = get_res_temp_from_pdb(remark_rec)
+    rfree = get_rfree_from_pdb(remark_rec)
 
-    return atoms_list, cryst1_line, exit
+    return atoms_list, cryst1_line, resolution, rfree, temperature, exit
 
 
 def clean_atom_rec(atoms_list, file_name_start):
@@ -483,18 +603,22 @@ def clean_atom_rec(atoms_list, file_name_start):
             # occupancy of 1, and that the occupancies of counterpart atoms in
             # alternate conformers sum to 1.
             if atm.occupancy != 1:
-                atom_id = '_'.join([atm.chainID, str(atm.resiNum), atm.insCode, atm.atomType])
+                atom_id = '_'.join([atm.chainID, str(atm.resiNum), atm.resiType,
+                                    atm.insCode, atm.atomType])
                 if not atom_id in atom_ids:
                     atom_ids[atom_id] = {}
                 atom_ids[atom_id][atm.conformer] = atm.occupancy
 
     # Completes check for alternate conformer occupancies summing to 1
     discarded_atoms_list = []
+    sub_1_occ_asp_glu_list = []
     for atom_id, occupancies in atom_ids.items():
         if sum(occupancies.values()) != 1.0:
             pause = True
             print('WARNING: Atom {} has been refined with sub-1 '
                   'occupancy.'.format(atom_id))
+            if atom_id.split('_')[2] in ['GLU', 'ASP', 'DGL', 'DAS']:
+                sub_1_occ_asp_glu_list.append(atom_id)
 
         # Single conformer selected on a per-atom basis - hence selected atoms
         # could be a mix of residue conformer "A" and residue conformer "B"
@@ -505,9 +629,15 @@ def clean_atom_rec(atoms_list, file_name_start):
             in enumerate(conformers) if not index == conformer_index
         ]
 
+    # Check whether any Asp/Glu residues have been refined with sub-1 occupancy
+    sub_1_asp_glu_occ = False
+    if len(sub_1_occ_asp_glu_list) > 0:
+        sub_1_asp_glu_occ = True
+
+
     filtered_atoms_list = [
         atm for atm in filtered_atoms_list if not '_'.join([atm.chainID,
-        str(atm.resiNum), atm.insCode, atm.atomType, atm.conformer])
+        str(atm.resiNum), atm.resiType, atm.insCode, atm.atomType, atm.conformer])
         in discarded_atoms_list
     ]
     if len(filtered_atoms_list) == 0:
@@ -518,7 +648,7 @@ def clean_atom_rec(atoms_list, file_name_start):
     clean_au_file = '%s_asymmetric_unit' % file_name_start
     write_output_cif(filtered_atoms_list, clean_au_file, bdam=False)
 
-    return exit, pause, filtered_atoms_list, clean_au_file
+    return exit, pause, filtered_atoms_list, clean_au_file, sub_1_asp_glu_occ
 
 
 def gen_unit_cell(clean_au_file, orig_input):
@@ -539,6 +669,25 @@ def gen_unit_cell(clean_au_file, orig_input):
     unit_cell_coords = np.array(p1.sites_cart())
 
     return unit_cell_coords, [n for n in range(1, (unit_cell_coords.shape[0] + 1))]
+
+
+def check_for_protein(clean_au_file):
+    """
+    Check that there is at least one protein chain in the asymmetric unit
+    """
+
+    from iotbx.data_manager import DataManager
+
+    dm = DataManager()
+    model = dm.get_model(clean_au_file)
+    
+    contains_protein = False
+    for chain in model.get_hierarchy().chains():
+        if chain.is_protein():
+            contains_protein = True
+            break
+
+    return contains_protein
 
 
 
