@@ -123,10 +123,11 @@ def parse_input_file_arguments(splitArgs):
     # Initialises default program options
     cwd = os.getcwd()
     outputLoc = cwd
-    batchVal = True
+    batchVal = False
     overwriteVal = False
-    filterInput = False
     outFiles = 'all'
+    filterInput = False
+    temperature = None
     pdtVal = 7.0
     windowVal = 0.02
     hetatmVal = False
@@ -214,6 +215,23 @@ def parse_input_file_arguments(splitArgs):
                     'Unrecognised value for "filter": {}\nExpect to be set to '
                     '"True" or "False"'.format(filterInput)
                 )
+            
+        # Specifies the temperature at which the data was collected
+        elif splitArgs[x][0:11].lower() == 'temperature':
+            temperature = splitArgs[x].split('=')[-1]
+            if temperature == 'cryo':
+                temperature = 100
+            elif 'temperature' == 'none':
+                temperature = None
+            else:
+                try:
+                    temperature = float(temperature.rstrip('K'))
+                except ValueError:
+                    raise ArgumentError(
+                        'Value provided for temperature unrecognised: {}\n'
+                        'Expect to be set to "cryo", or to a temperature value '
+                        'in Kelvin'.format(temperature)
+                    )
 
         # Specifies packing density threshold (default = 7)
         elif splitArgs[x][0:3].lower() == 'pdt':
@@ -459,6 +477,7 @@ def parse_input_file_arguments(splitArgs):
                        'overwrite': overwriteVal,
                        'filter': filterInput,
                        'outFiles': outFiles,
+                       'temperature': temperature,
                        'PDT': pdtVal,
                        'windowSize': windowVal,
                        'HETATM': hetatmVal,
@@ -548,6 +567,7 @@ def main(test=False):
             overwrite=input_arguments['overwrite'],
             outFiles=input_arguments['outFiles'],
             filterInput=input_arguments['filter'],
+            temperature=input_arguments['temperature'],
             PDT=input_arguments['PDT'],
             windowSize=input_arguments['windowSize'],
             HETATM=input_arguments['HETATM'],

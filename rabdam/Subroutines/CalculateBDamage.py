@@ -22,9 +22,9 @@
 class run_rabdam(object):
     def __init__(
         self, pathToInput, outputDir, batchRun, overwrite, outFiles,
-        filterInput, PDT, windowSize, HETATM, removeAtoms, addAtoms,
-        highlightAtoms, createOrigpdb, createAUpdb, createUCpdb, createAUCpdb,
-        createTApdb
+        filterInput, temperature, PDT, windowSize, HETATM, removeAtoms,
+        addAtoms, highlightAtoms, createOrigpdb, createAUpdb, createUCpdb,
+        createAUCpdb, createTApdb
     ):
         self.pathToInput = pathToInput
         self.outputDir = outputDir
@@ -32,6 +32,7 @@ class run_rabdam(object):
         self.overwrite = overwrite
         self.outFiles = outFiles
         self.filter = filterInput
+        self.temperature = temperature
         self.PDT = PDT
         self.windowSize = windowSize
         self.protOrNA = 'protein'  # NOTE: Disabling this input for now as Bnet
@@ -343,11 +344,11 @@ class run_rabdam(object):
         exit = False
         if pathToInput[-4:] == '.cif':
             (
-                atoms_list, cryst1_line, resolution, rfree, temperature, exit    
+                atoms_list, cryst1_line, resolution, rfree, temperature_list, exit    
             ) = parse_mmcif_file(pathToInput)
         elif pathToInput[-4:] == '.pdb':
             (
-                atoms_list, cryst1_line, resolution, rfree, temperature, exit
+                atoms_list, cryst1_line, resolution, rfree, temperature_list, exit
             ) = parse_pdb_file(pathToInput)
 
         if exit is True:
@@ -512,11 +513,17 @@ class run_rabdam(object):
         # Halts program if filterInput is set to True and the input model does
         # not meet the filtering requirements for Bnet + Bnet_percentile
         # calculation.
-        if self.filter is True: 
-            exit = suitable_for_bnet_filter(
-                rfree, resolution, temperature, sub_1_asp_glu_occ,
-                contains_protein, bdamAtomList, self.pathToInput
-            )
+        if self.filter is True:
+            if not self.temperature is None:
+                exit = suitable_for_bnet_filter(
+                    rfree, resolution, [self.temperature], sub_1_asp_glu_occ,
+                    contains_protein, bdamAtomList, self.pathToInput
+                )
+            else:
+                exit = suitable_for_bnet_filter(
+                    rfree, resolution, temperature_list, sub_1_asp_glu_occ,
+                    contains_protein, bdamAtomList, self.pathToInput
+                )
             if exit is True:
                 if self.batchRun is False:
                     sys.exit()

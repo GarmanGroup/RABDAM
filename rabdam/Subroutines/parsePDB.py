@@ -307,12 +307,12 @@ def suitable_for_bnet_filter(
         elif per_atom_b_factors is False:
             exit = True
 
-    # Temperature could be a float or a list of floats
-    if type(temperature) == float:
-        temperature = [temperature]
-    for temp in temperature:
-        if temp < 80 or temp > 120:
-                exit = True
+        # Temperature could be a float or a list of floats
+        if type(temperature) == float:
+            temperature = [temperature]
+        for temp in temperature:
+            if temp < 80 or temp > 120:
+                    exit = True
 
     if exit is True:
         print('Input model {} does not meet the requirements for Bnet '
