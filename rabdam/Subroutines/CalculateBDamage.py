@@ -24,7 +24,7 @@ class run_rabdam(object):
         self, pathToInput, outputDir, batchRun, overwrite, outFiles,
         filterInput, temperature, PDT, windowSize, HETATM, removeAtoms,
         addAtoms, highlightAtoms, createOrigpdb, createAUpdb, createUCpdb,
-        createAUCpdb, createTApdb
+        createAUCpdb, createTApdb, phenixImport=False
     ):
         self.pathToInput = pathToInput
         self.outputDir = outputDir
@@ -46,6 +46,7 @@ class run_rabdam(object):
         self.createUCpdb = createUCpdb
         self.createAUCpdb = createAUCpdb
         self.createTApdb = createTApdb
+        self.phenix_import = phenixImport
 
     def rabdam_dataframe(self, test=False):
         """
@@ -65,48 +66,73 @@ class run_rabdam(object):
         else:
             user_input = input
 
-        if __name__ == 'Subroutines.CalculateBDamage':
-            from Subroutines.PDBCUR import (
+        if self.phenix_import is True:
+            from phenix.rabdam.Subroutines.PDBCUR import (
                 parse_mmcif_file, parse_pdb_file, clean_atom_rec, gen_unit_cell,
                 check_for_protein
             )
-            from Subroutines.parsePDB import (
+            from phenix.rabdam.Subroutines.parsePDB import (
                 download_mmcif, copy_input, b_damage_atom_list,
                 suitable_for_bnet_filter
             )
-            from Subroutines.translateUnitCell import (
+            from phenix.rabdam.Subroutines.translateUnitCell import (
                 convertToCartesian, translateUnitCell, extract_unit_cell_params
             )
-            from Subroutines.trimUnitCellAssembly import (
+            from phenix.rabdam.Subroutines.trimUnitCellAssembly import (
                 getAUparams, convertParams, trimAtoms
             )
-            from Subroutines.makeDataFrame import writeDataFrame
-            from Subroutines.BDamage import (
+            from phenix.rabdam.Subroutines.makeDataFrame import writeDataFrame
+            from phenix.rabdam.Subroutines.BDamage import (
                 get_xyz_from_objects, calc_packing_density,
                 write_pckg_dens_to_atoms, calcBDam
             )
-            from Subroutines.output import write_all_carbon_cif
+            from phenix.rabdam.Subroutines.output import write_all_carbon_cif
+
         else:
-            from rabdam.Subroutines.PDBCUR import (
-                parse_mmcif_file, parse_pdb_file, clean_atom_rec, gen_unit_cell,
-                check_for_protein
-            )
-            from rabdam.Subroutines.parsePDB import (
-                download_mmcif, copy_input, b_damage_atom_list,
-                suitable_for_bnet_filter
-            )
-            from rabdam.Subroutines.translateUnitCell import (
-                convertToCartesian, translateUnitCell, extract_unit_cell_params
-            )
-            from rabdam.Subroutines.trimUnitCellAssembly import (
-                getAUparams, convertParams, trimAtoms
-            )
-            from rabdam.Subroutines.makeDataFrame import writeDataFrame
-            from rabdam.Subroutines.BDamage import (
-                get_xyz_from_objects, calc_packing_density,
-                write_pckg_dens_to_atoms, calcBDam
-            )
-            from rabdam.Subroutines.output import write_all_carbon_cif
+            if __name__ == 'Subroutines.CalculateBDamage':
+                from Subroutines.PDBCUR import (
+                    parse_mmcif_file, parse_pdb_file, clean_atom_rec,
+                    gen_unit_cell, check_for_protein
+                )
+                from Subroutines.parsePDB import (
+                    download_mmcif, copy_input, b_damage_atom_list,
+                    suitable_for_bnet_filter
+                )
+                from Subroutines.translateUnitCell import (
+                    convertToCartesian, translateUnitCell,
+                    extract_unit_cell_params
+                )
+                from Subroutines.trimUnitCellAssembly import (
+                    getAUparams, convertParams, trimAtoms
+                )
+                from Subroutines.makeDataFrame import writeDataFrame
+                from Subroutines.BDamage import (
+                    get_xyz_from_objects, calc_packing_density,
+                    write_pckg_dens_to_atoms, calcBDam
+                )
+                from Subroutines.output import write_all_carbon_cif
+            else:
+                from rabdam.Subroutines.PDBCUR import (
+                    parse_mmcif_file, parse_pdb_file, clean_atom_rec,
+                    gen_unit_cell, check_for_protein
+                )
+                from rabdam.Subroutines.parsePDB import (
+                    download_mmcif, copy_input, b_damage_atom_list,
+                    suitable_for_bnet_filter
+                )
+                from rabdam.Subroutines.translateUnitCell import (
+                    convertToCartesian, translateUnitCell,
+                    extract_unit_cell_params
+                )
+                from rabdam.Subroutines.trimUnitCellAssembly import (
+                    getAUparams, convertParams, trimAtoms
+                )
+                from rabdam.Subroutines.makeDataFrame import writeDataFrame
+                from rabdam.Subroutines.BDamage import (
+                    get_xyz_from_objects, calc_packing_density,
+                    write_pckg_dens_to_atoms, calcBDam
+                )
+                from rabdam.Subroutines.output import write_all_carbon_cif
 
         print('**************************** RABDAM ****************************\n')
 
@@ -345,11 +371,11 @@ class run_rabdam(object):
         if pathToInput[-4:] == '.cif':
             (
                 atoms_list, cryst1_line, resolution, rfree, temperature_list, exit    
-            ) = parse_mmcif_file(pathToInput)
+            ) = parse_mmcif_file(pathToInput, self.phenix_import)
         elif pathToInput[-4:] == '.pdb':
             (
                 atoms_list, cryst1_line, resolution, rfree, temperature_list, exit
-            ) = parse_pdb_file(pathToInput)
+            ) = parse_pdb_file(pathToInput, self.phenix_import)
 
         if exit is True:
             shutil.rmtree('%s' % PDBdirectory)
@@ -368,7 +394,7 @@ class run_rabdam(object):
         exit = False
         pause = False
         exit, pause, clean_au_list, clean_au_file, sub_1_asp_glu_occ = clean_atom_rec(
-            atoms_list, file_name_start
+            atoms_list, file_name_start, self.phenix_import
         )
         clean_au_file = '{}.cif'.format(clean_au_file)
 
@@ -629,24 +655,35 @@ class run_rabdam(object):
         else:
             user_input = input
 
-        if __name__ == 'Subroutines.CalculateBDamage':
-            from Subroutines.output import (
-                generate_output_files, write_output_cif
-            )
-            from Subroutines.makeDataFrame import makePDB
+        if self.phenix_import is True:
+            from phenix.rabdam.Subroutines.output import (
+                    generate_output_files, write_output_cif
+                )
+            from phenix.rabdam.Subroutines.makeDataFrame import makePDB
         else:
-            from rabdam.Subroutines.output import (
-                generate_output_files, write_output_cif
-            )
-            from rabdam.Subroutines.makeDataFrame import makePDB
+            if __name__ == 'Subroutines.CalculateBDamage':
+                from Subroutines.output import (
+                    generate_output_files, write_output_cif
+                )
+                from Subroutines.makeDataFrame import makePDB
+            else:
+                from rabdam.Subroutines.output import (
+                    generate_output_files, write_output_cif
+                )
+                from rabdam.Subroutines.makeDataFrame import makePDB
 
         print('**************************** RABDAM ****************************\n')
 
         # Define database of Bnet values (calculated from the PDB as of 19th
         # November 2020)
-        file_dir = os.path.dirname(os.path.abspath(__file__))
-        bnet_database_pkl = '{}/201119_PDB_Bnet_scores.pkl'.format(file_dir)
-        bnet_database_df = pd.read_pickle(bnet_database_pkl)
+        if self.phenix_import is True:
+            file_dir = '{}/modules/phenix/phenix/rabdam/Subroutines'.format(
+                os.environ['PHENIX']
+            )
+        else:
+            file_dir = os.path.dirname(os.path.abspath(__file__))
+        bnet_database_csv = '{}/201119_PDB_Bnet_scores.csv'.format(file_dir)
+        bnet_database_df = pd.read_csv(bnet_database_csv)
 
         # Changes directory to the specified location for the output 'Logfiles'
         # directory. The default location is the current working directory

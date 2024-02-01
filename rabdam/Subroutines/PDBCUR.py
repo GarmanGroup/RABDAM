@@ -210,7 +210,7 @@ def get_res_rfree_temp_from_mmcif(remark_dict):
     return resolution, rfree, temperature
 
 
-def parse_atom_rec_from_mmcif(atom_rec, input_cif, exit):
+def parse_atom_rec_from_mmcif(atom_rec, input_cif, exit, phenix_import):
     """
     Parses ATOM / HETATM records in mmCIF format input file
     """
@@ -218,10 +218,13 @@ def parse_atom_rec_from_mmcif(atom_rec, input_cif, exit):
     from iotbx.data_manager import DataManager
     import numpy as np
 
-    if __name__ == 'Subroutines.PDBCUR':
-        from Subroutines.parsePDB import atom
+    if phenix_import is True:
+        from phenix.rabdam.Subroutines.parsePDB import atom
     else:
-        from rabdam.Subroutines.parsePDB import atom
+        if __name__ == 'Subroutines.PDBCUR':
+            from Subroutines.parsePDB import atom
+        else:
+            from rabdam.Subroutines.parsePDB import atom
 
     dm = DataManager()
     all_models = dm.get_model(input_cif)
@@ -362,7 +365,7 @@ def parse_atom_rec_from_mmcif(atom_rec, input_cif, exit):
     return atoms_list, exit
 
 
-def parse_atom_rec_from_pdb(atom_rec, input_pdb, exit):
+def parse_atom_rec_from_pdb(atom_rec, input_pdb, exit, phenix_import):
     """
     Parses ATOM / HETATM records in PDB format input file
     """
@@ -370,10 +373,13 @@ def parse_atom_rec_from_pdb(atom_rec, input_pdb, exit):
     from iotbx.data_manager import DataManager
     import numpy as np
 
-    if __name__ == 'Subroutines.PDBCUR':
-        from Subroutines.parsePDB import atom
+    if phenix_import is True:
+        from phenix.rabdam.Subroutines.parsePDB import atom
     else:
-        from rabdam.Subroutines.parsePDB import atom
+        if __name__ == 'Subroutines.PDBCUR':
+            from Subroutines.parsePDB import atom
+        else:
+            from rabdam.Subroutines.parsePDB import atom
 
     dm = DataManager()
     all_models = dm.get_model(input_pdb)
@@ -492,7 +498,7 @@ def parse_atom_rec_from_pdb(atom_rec, input_pdb, exit):
     return atoms_list, exit
 
 
-def parse_mmcif_file(pathToInput):
+def parse_mmcif_file(pathToInput, phenix_import):
     """
     Parses input mmCIF file
     """
@@ -526,14 +532,16 @@ def parse_mmcif_file(pathToInput):
     # Constructs CRYST1 line of PDB file
     cryst1_line, exit = make_cryst1_line_from_mmcif(space_group, exit)
     # Extracts ATOM / HETATM lines
-    atoms_list, exit = parse_atom_rec_from_mmcif(atom_rec, pathToInput, exit)
+    atoms_list, exit = parse_atom_rec_from_mmcif(
+        atom_rec, pathToInput, exit, phenix_import
+    )
     # Find resolution, Rfree and temperature values
     resolution, rfree, temperature = get_res_rfree_temp_from_mmcif(remark_dict)
 
     return atoms_list, cryst1_line, resolution, rfree, temperature, exit
 
 
-def parse_pdb_file(pathToInput):
+def parse_pdb_file(pathToInput, phenix_import):
     """
     """
 
@@ -561,7 +569,9 @@ def parse_pdb_file(pathToInput):
                     'Terminating RABDAM run.\n')
 
     # Extracts ATOM / HETATM lines
-    atoms_list, exit = parse_atom_rec_from_pdb(atom_rec, pathToInput, exit)
+    atoms_list, exit = parse_atom_rec_from_pdb(
+        atom_rec, pathToInput, exit, phenix_import
+    )
     # Find resolution, temperature and Rfree values
     resolution, temperature = get_res_temp_from_pdb(remark_rec)
     rfree = get_rfree_from_pdb(remark_rec)
@@ -569,7 +579,7 @@ def parse_pdb_file(pathToInput):
     return atoms_list, cryst1_line, resolution, rfree, temperature, exit
 
 
-def clean_atom_rec(atoms_list, file_name_start):
+def clean_atom_rec(atoms_list, file_name_start, phenix_import):
     """
     Filters the ATOM / HETATM records to remove hydrogen atoms and 0 occupancy
     atoms, as well as retaining only the most probable alternate conformers (in
@@ -582,10 +592,13 @@ def clean_atom_rec(atoms_list, file_name_start):
     import copy
     import numpy as np
 
-    if __name__ == 'Subroutines.PDBCUR':
-        from Subroutines.output import write_output_cif
+    if phenix_import is True:
+        from phenix.rabdam.Subroutines.output import write_output_cif
     else:
-        from rabdam.Subroutines.output import write_output_cif
+        if __name__ == 'Subroutines.PDBCUR':
+            from Subroutines.output import write_output_cif
+        else:
+            from rabdam.Subroutines.output import write_output_cif
 
     exit = False
     pause = False
