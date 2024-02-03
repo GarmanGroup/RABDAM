@@ -487,6 +487,16 @@ def calc_bnet_percentile(bnet, resolution, bnet_database_df):
         )
         bnet_percentile = np.nan
         return bnet_percentile
+    
+    # Check resolution has been correctly parsed from the input file
+    if not type(resolution) in [int, float, np.float32, np.float64]:
+        print(
+            'WARNING: Cannot calculate Bnet percentile - resolution value is {}'
+            ', type {}, RABDAM expects a numeric value'.format(resolution, type(resolution))
+        )
+        bnet_percentile = np.nan
+        return bnet_percentile
+    
 
     # Find the 1000 structures closest in resolution to the input structure
     res_array = copy.deepcopy(bnet_database_df['Resolution (A)']).to_numpy()

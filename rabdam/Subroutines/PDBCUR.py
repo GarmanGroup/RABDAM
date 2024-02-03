@@ -142,18 +142,17 @@ def get_res_temp_from_pdb(remark_rec):
     temperature = None
 
     for line in remark_rec:
-        line_no_space = line.replace(' ', '')
-        if line_no_space.startswith('REMARK200'):
-            # Find resolution
-            if 'RESOLUTIONRANGEHIGH(A):' in line_no_space:
-                try:
-                    resolution = float(line_no_space.split(':')[-1])
-                except ValueError:
+        # Find resolution
+        if line[0:22] == 'REMARK   2 RESOLUTION.':
+            try:
+                resolution = float(line[23:30])
+            except ValueError:
                     pass
+    
             # Find temperature
-            elif 'TEMPERATURE(KELVIN):' in line_no_space:
-                temp_rec = line_no_space.split(':')[-1]
-                if ';' in line_no_space:
+        elif line[0:44] == 'REMARK 200  TEMPERATURE           (KELVIN) :':
+                temp_rec = line.split(':')[-1]
+                if ';' in line:
                     try:
                         temperature = [float(val) for val in temp_rec.split(';')]
                     except ValueError:

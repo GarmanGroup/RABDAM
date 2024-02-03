@@ -22,9 +22,9 @@
 class run_rabdam(object):
     def __init__(
         self, pathToInput, outputDir, batchRun, overwrite, outFiles,
-        filterInput, temperature, PDT, windowSize, HETATM, removeAtoms,
-        addAtoms, highlightAtoms, createOrigpdb, createAUpdb, createUCpdb,
-        createAUCpdb, createTApdb, phenixImport=False
+        filterInput, temperature, resolution, PDT, windowSize, HETATM,
+        removeAtoms, addAtoms, highlightAtoms, createOrigpdb, createAUpdb,
+        createUCpdb, createAUCpdb, createTApdb, phenixImport=False
     ):
         self.pathToInput = pathToInput
         self.outputDir = outputDir
@@ -33,6 +33,7 @@ class run_rabdam(object):
         self.outFiles = outFiles
         self.filter = filterInput
         self.temperature = temperature
+        self.resolution = resolution
         self.PDT = PDT
         self.windowSize = windowSize
         self.protOrNA = 'protein'  # NOTE: Disabling this input for now as Bnet
@@ -60,6 +61,9 @@ class run_rabdam(object):
         import shutil
         import numpy as np
         import pickle
+
+        # Tracks if RABDAM exits early
+        success = True
 
         if sys.version_info[0] < 3:
             user_input = raw_input
@@ -245,17 +249,19 @@ class run_rabdam(object):
                         shutil.rmtree(PDBdirectory)
                         exit = download_mmcif(PDBcode, PDBdirectory, pathToInput)
                         if exit is True:
+                            success = False
                             if self.batchRun is False:
                                 sys.exit()
                             elif self.batchRun is True:
-                                return
+                                return success
                         break
                     elif owChoice == 'no' or owChoice == 'n':
                         print('\nKeeping original folder\n')
+                        success = False
                         if self.batchRun is False:
                             sys.exit()
                         elif self.batchRun is True:
-                            return
+                            return False
                         break
                     else:
                         print('Unrecognised input - please answer "yes" or "no"')
@@ -268,10 +274,11 @@ class run_rabdam(object):
                 shutil.rmtree('%s' % PDBdirectory)
                 print('\n\nERROR: Failed to download and save %s mmCIF file - '
                       'cause unknown' % PDBcode)
+                success = False
                 if self.batchRun is False:
                     sys.exit()
                 elif self.batchRun is True:
-                    return
+                    return success
 
         # If filepath to PDB / mmCIF file has been supplied:
         else:
@@ -292,19 +299,21 @@ class run_rabdam(object):
             os.chdir(disk)
             if not os.path.exists(pathToInput):
                 print('\n\nERROR: Supplied filepath not recognised')
+                success = False
                 if self.batchRun is False:
                     sys.exit()
                 elif self.batchRun is True:
-                    return
+                    return success
             os.chdir(self.outputDir)
 
             if pathToInput[-4:] not in ['.pdb', '.cif']:
                 print('\n\nERROR: Supplied input filepath is not a .pdb or '
                       '.cif file')
+                success = False
                 if self.batchRun is False:
                     sys.exit()
                 elif self.batchRun is True:
-                    return
+                    return success
 
             print('Filepath to %s file supplied\n' % pathToInput[-4:])
             fileName = splitPath[-1]
@@ -338,10 +347,11 @@ class run_rabdam(object):
                         break
                     elif owChoice == 'no' or owChoice == 'n':
                         print('\nKeeping original folder\n')
+                        success = False
                         if self.batchRun is False:
                             sys.exit()
                         elif self.batchRun is True:
-                            return
+                            return success
                         break
                     else:
                         print('Unrecognised input - please answer "yes" '
@@ -356,10 +366,11 @@ class run_rabdam(object):
                 print('\n\nERROR: Failed to copy %s to %s/%s/\n'
                       'Check that supplied file is not in use by another '
                       'program' % (pathToInput, self.outputDir, PDBdirectory))
+                success = False
                 if self.batchRun is False:
                     sys.exit()
                 elif self.batchRun is True:
-                    return
+                    return success
 
             pathToInput = newPathToInput
 
@@ -379,10 +390,11 @@ class run_rabdam(object):
 
         if exit is True:
             shutil.rmtree('%s' % PDBdirectory)
+            success = False
             if self.batchRun is False:
                 sys.exit()
             elif self.batchRun is True:
-                return
+                return success
 
         # Processes the ATOM/HETATM records to remove hydrogen atoms,
         # anisotropic B-factor records, and atoms with zero occupancy, as well
@@ -400,10 +412,11 @@ class run_rabdam(object):
 
         if exit is True:
             shutil.rmtree('%s' % PDBdirectory)
+            success = False
             if self.batchRun is False:
                 sys.exit()
             elif self.batchRun is True:
-                return
+                return success
 
         if pause is True:
             print('\nTo enable damage detection, all macromolecule atoms '
@@ -428,10 +441,11 @@ class run_rabdam(object):
                     break
                 elif owChoice == 'no' or owChoice == 'n':
                     shutil.rmtree('%s' % PDBdirectory)
+                    success = False
                     if self.batchRun is False:
                         sys.exit('\nExiting RABDAM\n')
                     elif self.batchRun is True:
-                        return
+                        return success
                     break
                 else:
                     print('Unrecognised input - please answer "yes" or "no"')
@@ -440,10 +454,11 @@ class run_rabdam(object):
         if len(clean_au_list) < 1:
             print('\n\nERROR: No atoms selected for BDamage calculation')
             shutil.rmtree('%s' % PDBdirectory)
+            success = False
             if self.batchRun is False:
                 sys.exit()
             elif self.batchRun is True:
-                return
+                return success
         
         # Checks if protein chains in clean_au_file
         contains_protein = check_for_protein(clean_au_file)
@@ -501,10 +516,11 @@ class run_rabdam(object):
             print('\n\nERROR: Failed to translate all unit cell atoms to '
                   'create 3x3 unit cell assembly')
             shutil.rmtree('%s' % PDBdirectory)
+            success = False
             if self.batchRun is False:
                 sys.exit()
             elif self.batchRun is True:
-                return
+                return success
 
         # Creates PDB file of 3x3 unit cell assembly. WARNING: VERY slow and
         # RAM-consuming for large structures!
@@ -531,30 +547,32 @@ class run_rabdam(object):
         if len(bdamAtomList) < 1:
             print('\n\nERROR: No atoms selected for BDamage calculation')
             shutil.rmtree('%s' % PDBdirectory)
+            success = False
             if self.batchRun is False:
                 sys.exit()
             elif self.batchRun is True:
-                return
+                return success
   
         # Halts program if filterInput is set to True and the input model does
         # not meet the filtering requirements for Bnet + Bnet_percentile
         # calculation.
+        if not self.temperature is None:
+            temperature_list = [self.temperature]
+        if not self.resolution is None:
+            resolution = self.resolution
+        print('WOOOOOO!!!!!!')
+        print(rfree, resolution, temperature_list, sub_1_asp_glu_occ, contains_protein)
         if self.filter is True:
-            if not self.temperature is None:
-                exit = suitable_for_bnet_filter(
-                    rfree, resolution, [self.temperature], sub_1_asp_glu_occ,
-                    contains_protein, bdamAtomList, self.pathToInput
-                )
-            else:
-                exit = suitable_for_bnet_filter(
-                    rfree, resolution, temperature_list, sub_1_asp_glu_occ,
-                    contains_protein, bdamAtomList, self.pathToInput
-                )
+            exit = suitable_for_bnet_filter(
+                rfree, resolution, temperature_list, sub_1_asp_glu_occ,
+                contains_protein, bdamAtomList, self.pathToInput
+            )
             if exit is True:
+                success = False
                 if self.batchRun is False:
                     sys.exit()
                 elif self.batchRun is True:
-                    return
+                    return success
 
         auParams = getAUparams(bdamAtomList)
         print('\nObtained asymmetric unit parameters:')
@@ -637,6 +655,8 @@ class run_rabdam(object):
         # Changes directory back to the 'RABDAM' directory (that in which the
         # rabdam.py script is saved).
         os.chdir('%s' % cwd)
+
+        return success
 
     def rabdam_analysis(self):
         """

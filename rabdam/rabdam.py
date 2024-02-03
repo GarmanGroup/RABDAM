@@ -128,6 +128,7 @@ def parse_input_file_arguments(splitArgs):
     outFiles = 'all'
     filterInput = False
     temperature = None
+    resolution = None
     pdtVal = 7.0
     windowVal = 0.02
     hetatmVal = False
@@ -231,6 +232,20 @@ def parse_input_file_arguments(splitArgs):
                         'Value provided for temperature unrecognised: {}\n'
                         'Expect to be set to "cryo", or to a temperature value '
                         'in Kelvin'.format(temperature)
+                    )
+                
+        # Specifies the resolution to which the data was collected
+        elif splitArgs[x][0:10].lower() == 'resolution':
+            resolution = splitArgs[x].split('=')[-1]
+            if 'resolution' == 'none':
+                resolution = None
+            else:
+                try:
+                    resolution = float(resolution)
+                except ValueError:
+                    raise ArgumentError(
+                        'Value provided for resolution unrecognised: {}\n'
+                        'Expect to be set to a float.'
                     )
 
         # Specifies packing density threshold (default = 7)
@@ -478,6 +493,7 @@ def parse_input_file_arguments(splitArgs):
                        'filter': filterInput,
                        'outFiles': outFiles,
                        'temperature': temperature,
+                       'resolution': resolution,
                        'PDT': pdtVal,
                        'windowSize': windowVal,
                        'HETATM': hetatmVal,
@@ -568,6 +584,7 @@ def main(test=False):
             outFiles=input_arguments['outFiles'],
             filterInput=input_arguments['filter'],
             temperature=input_arguments['temperature'],
+            resolution=input_arguments['resolution'],
             PDT=input_arguments['PDT'],
             windowSize=input_arguments['windowSize'],
             HETATM=input_arguments['HETATM'],
@@ -581,20 +598,24 @@ def main(test=False):
             createTApdb=input_arguments['createTApdb']
         )
 
+        success = True
         if vars(args)['run'] in ['full', 'dataframe', 'df']:
             # Calculates BDamage values and writes them to a DataFrame
-            pdb.rabdam_dataframe(test)
-        if vars(args)['run'] in ['full', 'analysis']:
-            # Generates output analysis files from pre-calculated BDamage values
-            # For now RABDAM only considers protein Bnet and Bnet percentile
-            # values, so the nucleic acid Bnet and Bnet percentile values
-            # returned are ignored
-            bnet, bnet_percentile, *_ = pdb.rabdam_analysis()
-            # Print Bnet and Bnet_percentile values to screen
-            if not bnet is None:
-                print('\n\n{}\nBnet = {}'.format(item, round(bnet, 1)))
-            if not bnet_percentile is None:
-                print('Bnet_percentile = {}\n\n'.format(round(bnet_percentile, 1)))
+            success = pdb.rabdam_dataframe(test)
+        if success is False:
+            print("RABDAM failed to run for {}".format(item))
+        else:
+            if vars(args)['run'] in ['full', 'analysis']:
+                # Generates output analysis files from pre-calculated BDamage values
+                # For now RABDAM only considers protein Bnet and Bnet percentile
+                # values, so the nucleic acid Bnet and Bnet percentile values
+                # returned are ignored
+                bnet, bnet_percentile, *_ = pdb.rabdam_analysis()
+                # Print Bnet and Bnet_percentile values to screen
+                if not bnet is None:
+                    print('\n\n{}\nBnet = {}'.format(item, round(bnet, 1)))
+                if not bnet_percentile is None:
+                    print('Bnet_percentile = {}\n\n'.format(round(bnet_percentile, 1)))
 
     # Prints total program run time to screen
     runtime = time.time() - start

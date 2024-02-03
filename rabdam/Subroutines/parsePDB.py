@@ -231,8 +231,6 @@ def check_per_atom_bfac(filtered_atoms_list, thresh_frac=0.2):
     """
     """
 
-    import numpy as np
-
     # Record the Bfactor values of the backbone atoms of each residue
     res_backbone_bfactors = {}
     for atm in filtered_atoms_list:
