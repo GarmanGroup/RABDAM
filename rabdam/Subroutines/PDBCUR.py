@@ -145,7 +145,7 @@ def get_res_temp_from_pdb(remark_rec):
         # Find resolution
         if line[0:48] == 'REMARK   3   RESOLUTION RANGE HIGH (ANGSTROMS) :':
             try:
-                resolution = float(line[23:30])
+                resolution = float(line.split(':')[-1])
             except ValueError:
                     pass
     

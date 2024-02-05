@@ -560,8 +560,6 @@ class run_rabdam(object):
             temperature_list = [self.temperature]
         if not self.resolution is None:
             resolution = self.resolution
-        print('WOOOOOO!!!!!!')
-        print(rfree, resolution, temperature_list, sub_1_asp_glu_occ, contains_protein)
         if self.filter is True:
             exit = suitable_for_bnet_filter(
                 rfree, resolution, temperature_list, sub_1_asp_glu_occ,
