@@ -39,6 +39,7 @@ def parse_command_line_arguments(command_line, test=False):
 
     import argparse
     import os
+    import requests
     import sys
 
     if test is True:
@@ -64,6 +65,9 @@ def parse_command_line_arguments(command_line, test=False):
         'installed in order to be able to run RABDAM'
     )
     input_file_group.add_argument(
+        '--version', action='store_true', help='Print RABDAM version'
+    )
+    input_file_group.add_argument(
         '-i', '--input', help='Absolute path to input file listing program '
         'parameter values'
     )
@@ -86,6 +90,17 @@ def parse_command_line_arguments(command_line, test=False):
     if vars(args)['dependencies']:
         check_RABDAM_dependencies()
         sys.exit()
+
+    # Prints RABDAM version to screen then exits
+    if vars(args)['version']:
+        url = 'https://api.github.com/repos/GarmanGroup/RABDAM/releases/latest'
+        response = requests.get(url)
+        if response.status_code == 200:
+            version = response.json()['tag_name']
+            print('RABDAM version: {}'.format(version))
+            sys.exit()
+        else:
+            raise ValueError('Can\'t find RABDAM version number at: {}'.format(url))
 
     # If specified, checks that file path to input file exists
     if vars(args)['input'] is not None:
