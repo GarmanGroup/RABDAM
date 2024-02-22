@@ -31,7 +31,7 @@ class FileDoesNotExistError(Exception):
     pass
 
 
-def parse_command_line_arguments(command_line, test=False):
+def parse_command_line_arguments(command_line, test=False, version=2.0):
     """
     Reads in command line arguments and checks that there are no unexpected
     argument values.
@@ -39,7 +39,6 @@ def parse_command_line_arguments(command_line, test=False):
 
     import argparse
     import os
-    import requests
     import sys
 
     if test is True:
@@ -93,14 +92,8 @@ def parse_command_line_arguments(command_line, test=False):
 
     # Prints RABDAM version to screen then exits
     if vars(args)['version']:
-        url = 'https://api.github.com/repos/GarmanGroup/RABDAM/releases/latest'
-        response = requests.get(url)
-        if response.status_code == 200:
-            version = response.json()['tag_name']
-            print('RABDAM version: {}'.format(version))
-            sys.exit()
-        else:
-            raise ValueError('Can\'t find RABDAM version number at: {}'.format(url))
+        print('RABDAM version: {}'.format(version))
+        sys.exit()
 
     # If specified, checks that file path to input file exists
     if vars(args)['input'] is not None:
