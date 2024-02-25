@@ -421,6 +421,26 @@ def write_all_carbon_cif(atom_list, atom_id_list, file_start):
     new_cif.close()
 
 
+def calc_kde(bdam_vals):
+    """
+    Calculates a KDE using scipy
+    """
+
+    import numpy as np
+    from scipy.stats import gaussian_kde
+
+    bandwidth = gaussian_kde(dataset=bdam_vals).scotts_factor()
+    tail_width = bandwidth*np.std(bdam_vals, ddof=0)
+    x_min = min(bdam_vals) - (3*tail_width)
+    x_max = max(bdam_vals) + (3*tail_width)
+
+    kde = gaussian_kde(dataset=bdam_vals, bw_method='scott')
+    x_values = np.linspace(x_min, x_max, 100)
+    y_values = kde(x_values)
+
+    return x_values, y_values
+
+
 def calc_bnet(bnet_df, median):
     """
     Calculates the Bnet metric. To do this, a kernel density estimate (KDE) is
@@ -430,26 +450,8 @@ def calc_bnet(bnet_df, median):
     then calculated as RHS / LHS, where RHS and LHS are the areas under the KDE
     to the right and left of the median, respectively.
     """
-
-    import numpy as np
-    from scipy.stats import gaussian_kde
-
-    # Extracts an array of 100 (x, y) coordinate pairs evenly spaced along
-    # the x(BDamage)-axis from the kernel density plot. Rather than taking
-    # these values directly from the seaborn KDE plot, the KDE plot is
-    # recalculated using scipy to ensure that Bnet values will be resistant
-    # to changes in the default parameters of the kdeplot function in
-    # seaborn. These coordinate pairs are used to calculate, via the
-    # trapezium rule, the area under the curve to the right and left of the
-    # median BDamage value of all atoms in the structure.
-    bandwidth = gaussian_kde(dataset=bnet_df.BDAM.values).scotts_factor()
-    tail_width = bandwidth*np.std(bnet_df.BDAM.values, ddof=0)
-    x_min = min(bnet_df.BDAM.values) - (3*tail_width)
-    x_max = max(bnet_df.BDAM.values) + (3*tail_width)
-
-    kde = gaussian_kde(dataset=bnet_df.BDAM.values, bw_method='scott')
-    x_values = np.linspace(x_min, x_max, 100)
-    y_values = kde(x_values)
+    
+    x_values, y_values = calc_kde(bnet_df.BDAM.values)
     height = (x_values[-1]-x_values[0]) / (len(x_values)-1)
 
     total_area_LHS = 0
@@ -583,39 +585,21 @@ class generate_output_files(object):
         onto the graph).)
         """
 
-        import sys
-        # Ensures that seaborn uses scipy for kde bandwidth calculation rather
-        # than statsmodels
-        sys.modules['statsmodels']=None
         import matplotlib.pyplot as plt
-        import seaborn as sns
 
-        # Sets figure aesthetics to seaborn defaults
-        sns.set()
-
-        plt.clf()  # Prevents the kernel density estimate of all atoms
-        # considered for BDamage analysis from being plotted on the same axes
-        # as the kernel density estimate of the atoms considered for
-        # calculation of the Bnet summary metric
-
-        sns.rugplot(self.df.BDAM.values)
-        # Generates kernel density plot
-        if sns.__version__.split('.')[0] == '0' and int(sns.__version__.split('.')[1]) < 11:
-            plot = sns.kdeplot(
-                self.df.BDAM.values, bw='scott', color='tab:blue', gridsize=100,
-                cut=3, clip=None
-            )
-        else:
-            plot = sns.kdeplot(
-                self.df.BDAM.values, bw_method='scott', color='tab:blue',
-                gridsize=100, cut=3, clip=None
-            )
+        plt.clf()
+        # Calculate KDE
+        x_values, y_values = calc_kde(self.df.BDAM.values)
+        # Plot rugplot
+        plt.plot(
+            self.df.BDAM.values, [0.05]*len(self.df.BDAM.values), '|',
+            color='#212f3d', alpha=0.25
+        )
+        # Plot KDE
+        plt.plot(x_values, y_values, color='#212f3d')
 
         # Marks on the positions of any atoms whose numbers are listed in the
         # highlightAtoms option specified in the input file.
-        xy_values = plot.get_lines()[0].get_data()
-        y_values = xy_values[1]
-
         highlighted_atoms = []
         for number in highlightAtoms:
             index = self.df.ATMNUM.tolist().index(int(number))
@@ -630,6 +614,9 @@ class generate_output_files(object):
         plt.xlabel('B Damage')
         plt.ylabel('Normalised Frequency')
         plt.title(self.pdb_code + ' BDamage kernel density plot')
+        plt.grid(visible=True, color='white')
+        ax = plt.gca()
+        ax.set_facecolor('#f0f3f7')
         plt.savefig(self.out_file_start + '_BDamage.svg')
 
     def gen_Bnet_out_files(self, bnet_df, median, prot_or_na, bnet_database_df):
@@ -639,26 +626,6 @@ class generate_output_files(object):
         import os
         import matplotlib.pyplot as plt
         import pandas as pd
-        import seaborn as sns
-
-        plt.clf()  # Prevents the kernel density estimate of the atoms
-        # considered for calculation of the Bnet summary metric from being
-        # plotted on the same axes as the kernel density estimate of all
-        # atoms considered for BDamage analysis.
-        sns.rugplot(bnet_df.BDAM.values)
-        if sns.__version__.split('.')[0] == '0' and int(sns.__version__.split('.')[1]) < 11:
-            plot = sns.kdeplot(
-                bnet_df.BDAM.values, bw='scott', color='tab:blue', gridsize=100,
-                cut=3, clip=None
-            )
-        else:
-            plot = sns.kdeplot(
-                bnet_df.BDAM.values, bw_method='scott', color='tab:blue',
-                gridsize=100, cut=3, clip=None
-            )
-        plt.xlabel('B Damage')
-        plt.ylabel('Normalised Frequency')
-        plt.title(self.pdb_code + ' Bnet kernel density plot')
 
         # Calculate Bnet
         bnet, x_values, y_values = calc_bnet(bnet_df, median)
@@ -666,6 +633,17 @@ class generate_output_files(object):
         bnet_percentile = calc_bnet_percentile(
             bnet, self.resolution, bnet_database_df
         )
+
+        # Plot KDE and rugplot
+        plt.clf()
+        plt.plot(
+            bnet_df.BDAM.values, [0.05]*len(bnet_df.BDAM.values), '|',
+            color='#212f3d', alpha=0.5
+        )
+        plt.plot(x_values, y_values, color='#212f3d')
+        plt.xlabel('B Damage')
+        plt.ylabel('Normalised Frequency')
+        plt.title(self.pdb_code + ' Bnet kernel density plot')
 
         # Annotate KDE plot with Bnet and Bnet_percentile values
         plt.annotate('Bnet = {:.1f}'.format(bnet),
@@ -677,13 +655,16 @@ class generate_output_files(object):
         plt.annotate('Median = {:.2f}'.format(median),
                      xy=(max(x_values)*0.65, max(y_values)*0.8),
                      fontsize=10)
+        plt.grid(visible=True, color='white')
+        ax = plt.gca()
+        ax.set_facecolor('#f0f3f7')
         plt.savefig(self.out_file_start + '_Bnet_{}.svg'.format(prot_or_na))
 
         # Save output scores as a csv file and as a pickled dataframe
         if not os.path.isfile('Logfiles/Bnet_{}.csv'.format(prot_or_na)):
             bnet_list = open('Logfiles/Bnet_{}.csv'.format(prot_or_na), 'w')
             bnet_list.write('PDB' + ',')
-            bnet_list.write('Bnet' + '\n')
+            bnet_list.write('Bnet' + ',')
             bnet_list.write('Bnet percentile' + '\n')
             bnet_list.close()
         bnet_list = open('Logfiles/Bnet_{}.csv'.format(prot_or_na), 'a')
@@ -720,10 +701,6 @@ class generate_output_files(object):
         sys.modules['statsmodels']=None
         import pandas as pd
         import matplotlib.pyplot as plt
-        import seaborn as sns
-
-        # Sets figure aesthetics to seaborn defaults
-        sns.set()
 
         # Selects Glu / Asp (both the L- and D-amino acids) terminal oxygen
         # atoms from complete DataFrame.

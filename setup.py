@@ -23,7 +23,7 @@ setup(
     keywords=['radiation damage', 'specific damage', 'atomic Bfactors',
               'atomic displacement parameters', 'BDamage', 'Bnet'],
     install_requires=['numpy>=1.15.0', 'matplotlib>=2.2.0', 'scipy>=1.1.0',
-                      'seaborn>=0.8.0', 'pandas>=0.24.1', 'requests', 'setuptools'],
+                      'pandas>=0.24.1', 'requests', 'setuptools'],
     classifiers=['Programming Language :: Python'],
     python_requires=('>=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*, '
                      '!=3.5.*, <4'),

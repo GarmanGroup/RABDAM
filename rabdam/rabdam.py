@@ -230,7 +230,7 @@ def parse_input_file_arguments(splitArgs):
             temperature = splitArgs[x].split('=')[-1]
             if temperature == 'cryo':
                 temperature = 100
-            elif 'temperature' == 'none':
+            elif temperature == 'none':
                 temperature = None
             else:
                 try:
@@ -245,7 +245,7 @@ def parse_input_file_arguments(splitArgs):
         # Specifies the resolution to which the data was collected
         elif splitArgs[x][0:10].lower() == 'resolution':
             resolution = splitArgs[x].split('=')[-1]
-            if 'resolution' == 'none':
+            if resolution == 'none':
                 resolution = None
             else:
                 try:
