@@ -9,7 +9,7 @@ setup(
     packages=find_packages(),
     package_data={'rabdam': ['Subroutines/HTML_stylesheet.css',
                              'Subroutines/HTML_stylesheet.js']},
-    version='1.6.4',
+    version='2.0',
     description=('RABDAM: A program to identify and quantify specific '
                  'radiation damage within individual protein crystal '
                  'structures'),
