@@ -27,11 +27,7 @@ class ArgumentError(Exception):
     pass
 
 
-class FileDoesNotExistError(Exception):
-    pass
-
-
-def parse_command_line_arguments(command_line, test=False, version=2.0):
+def parse_command_line_arguments(command_line, test=False, version='2.0'):
     """
     Reads in command line arguments and checks that there are no unexpected
     argument values.
@@ -87,19 +83,25 @@ def parse_command_line_arguments(command_line, test=False, version=2.0):
 
     # Checks system for RABDAM dependencies
     if vars(args)['dependencies']:
-        check_RABDAM_dependencies()
-        sys.exit()
+        if test is True:
+            return args
+        else:
+            check_RABDAM_dependencies()
+            sys.exit()
 
     # Prints RABDAM version to screen then exits
     if vars(args)['version']:
-        print('RABDAM version: {}'.format(version))
-        sys.exit()
+        if test is True:
+            return args, version
+        else:
+            print('RABDAM version: {}'.format(version))
+            sys.exit()
 
     # If specified, checks that file path to input file exists
     if vars(args)['input'] is not None:
         input_file_path = vars(args)['input']
         if not os.path.isfile(input_file_path):
-            raise FileDoesNotExistError(
+            raise FileNotFoundError(
                 'Specified input file {} does not exist'.format(input_file_path)
             )
 
@@ -159,7 +161,7 @@ def parse_input_file_arguments(splitArgs):
                 outputLoc = cwd
             outputLoc = outputLoc.replace('\\', '/')
             if not os.path.isdir(outputLoc):
-                raise FileDoesNotExistError(
+                raise FileNotFoundError(
                     'Directory {} does not exist'.format(outputLoc)
                 )
 
@@ -498,8 +500,8 @@ def parse_input_file_arguments(splitArgs):
     input_arguments = {'outputDir': outputLoc,
                        'batchRun': batchVal,
                        'overwrite': overwriteVal,
-                       'filter': filterInput,
                        'outFiles': outFiles,
+                       'filter': filterInput,
                        'temperature': temperature,
                        'resolution': resolution,
                        'PDT': pdtVal,

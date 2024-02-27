@@ -251,14 +251,13 @@ class TestClass(unittest.TestCase):
 
     def test_bnet_values(self):
         """
-        Checks that RABDAM calculates expected Bnet values for a selection of
-        PDB entries
+        Checks that RABDAM calculates expected Bnet and Bnet-percentile values
+        for a selection of PDB entries
         """
 
         import os
         import requests
         import shutil
-        import pandas as pd
 
         if not os.path.isdir('tests/temp_files/'):
             os.mkdir('tests/temp_files/')
