@@ -247,7 +247,7 @@ class run_rabdam(object):
                     if owChoice == 'yes' or owChoice == 'y':
                         print('\nOverwriting existing folder')
                         shutil.rmtree(PDBdirectory)
-                        exit = download_mmcif(PDBcode, PDBdirectory, pathToInput)
+                        exit = download_mmcif(PDBcode, pathToInput)
                         if exit is True:
                             success = False
                             if self.batchRun is False:
@@ -266,7 +266,15 @@ class run_rabdam(object):
                     else:
                         print('Unrecognised input - please answer "yes" or "no"')
             else:
-                download_mmcif(PDBcode, PDBdirectory, pathToInput)
+                os.makedirs(PDBdirectory)
+                print('\nDirectory %s created' % PDBdirectory)
+                exit = download_mmcif(PDBcode, pathToInput)
+                if exit is True:
+                    success = False
+                    if self.batchRun is False:
+                        sys.exit()
+                    elif self.batchRun is True:
+                        return success
 
             # Checks that mmCIF file has been successfully downloaded and saved
             # to the 'Logfiles' directory

@@ -93,12 +93,11 @@ class atom(object):
                self.chain_len == other.chain_len
 
 
-def download_mmcif(PDBcode, PDBdirectory, pathToCIF):
+def download_mmcif(PDBcode, pathToCIF):
     """
     Downloads and saves mmCif file from the RSCB PDB website.
     """
 
-    import os
     import requests
 
     # Checks whether accession code exists - if not, exit program
@@ -111,17 +110,20 @@ def download_mmcif(PDBcode, PDBdirectory, pathToCIF):
               'code %s:\nCheck that a structure with this accession code '
               'exists.' % (mmcif_url[-4:], PDBcode))
         exit = True
+        return exit
 
     # Downloads and saves mmCIF file
-    os.makedirs(PDBdirectory)
-    print('\nDirectory %s created' % PDBdirectory)
-
     origCIF = requests.get(mmcif_url)
     print('Downloaded mmCIF file from %s' % mmcif_url)
-    cif_file = open(pathToCIF, 'w')
-    cif_file.write(origCIF.text)
-    print('mmCIF file saved to %s/%s' % (PDBdirectory, pathToCIF))
-    cif_file.close()
+    try:
+        cif_file = open(pathToCIF, 'w')
+        cif_file.write(origCIF.text)
+        print('mmCIF file saved to %s' % pathToCIF)
+        cif_file.close()    
+    except FileNotFoundError:
+        pdb_directory = '/'.join(pathToCIF.split('/'))
+        print('\n\nERROR: Directory %s not found' % pdb_directory)
+        exit = True
 
     return exit
 

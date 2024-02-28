@@ -325,11 +325,14 @@ def write_all_carbon_cif(atom_list, atom_id_list, file_start):
         cif_data['insCode'][index] = '?'
         cif_column_widths['insCode'] = len(cif_data['insCode'][index])
         cif_data['x'][index] = str(atom_list[index][0])
-        cif_column_widths['x'] = len(cif_data['x'][index])
+        if len(cif_data['x'][index]) > cif_column_widths['x']:
+            cif_column_widths['x'] = len(cif_data['x'][index])
         cif_data['y'][index] = str(atom_list[index][1])
-        cif_column_widths['y'] = len(cif_data['y'][index])
+        if len(cif_data['y'][index]) > cif_column_widths['y']:
+            cif_column_widths['y'] = len(cif_data['y'][index])
         cif_data['z'][index] = str(atom_list[index][2])
-        cif_column_widths['z'] = len(cif_data['z'][index])
+        if len(cif_data['z'][index]) > cif_column_widths['z']:
+            cif_column_widths['z'] = len(cif_data['z'][index])
         cif_data['occupancy'][index] = '1.00'
         cif_column_widths['occupancy'] = len(cif_data['occupancy'][index])
         cif_data['bFactor'][index] = '50.0'

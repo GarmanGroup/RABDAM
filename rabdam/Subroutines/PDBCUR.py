@@ -270,45 +270,58 @@ def parse_atom_rec_from_mmcif(atom_rec, input_cif, exit, phenix_import):
                 try:
                     new_atom.resiNum = int(new_atom.resiNum)
                 except ValueError:
-                    print('ERROR: Encountered non-numeric residue number {}'.format(line[prop_indices['auth_seq_id']]))
+                    print('\n\nERROR: Encountered non-numeric residue number '
+                          '{}'.format(line[prop_indices['auth_seq_id']]))
                     exit = True
+                    break
                 new_atom.origResiNum = line[prop_indices['label_seq_id']].replace('?', '').replace('.', '')
                 try:
                     new_atom.atomNum = int(line[prop_indices['id']])
                 except ValueError:
-                    print('ERROR: Encountered non-numeric atom number {}'.format(line[prop_indices['id']]))
+                    print('\n\nERROR: Encountered non-numeric atom number '
+                          '{}'.format(line[prop_indices['id']]))
                     exit = True
+                    break
                 try:
                     new_atom.xyzCoords = [[float(line[prop_indices['Cartn_x']])],
                                           [float(line[prop_indices['Cartn_y']])],
                                           [float(line[prop_indices['Cartn_z']])]]
                 except ValueError:
-                    print('ERROR: Encountered non-numeric coordinate: '
+                    print('\n\nERROR: Encountered non-numeric coordinate: '
                           '{}'.format([[line[prop_indices['Cartn_x']]],
                                        [line[prop_indices['Cartn_y']]],
                                        [line[prop_indices['Cartn_z']]]]))
                     exit = True
+                    break
                 try:
                     new_atom.occupancy = float(line[prop_indices['occupancy']])
                 except ValueError:
-                    print('ERROR: Encountered non-numeric occupancy value {}'.format(line[prop_indices['occupancy']]))
+                    print('\n\nERROR: Encountered non-numeric occupancy value '
+                          '{}'.format(line[prop_indices['occupancy']]))
                     exit = True
+                    break
                 try:
                     new_atom.bFactor = float(line[prop_indices['B_iso_or_equiv']])
                 except ValueError:
-                    print('ERROR: Encountered non-numeric B-factor value {}'.format(line[prop_indices['B_iso_or_equiv']]))
+                    print('\n\nERROR: Encountered non-numeric B-factor value '
+                          '{}'.format(line[prop_indices['B_iso_or_equiv']]))
                     exit = True
+                    break
                 try:
                     new_atom.pdb_model_num = float(line[prop_indices['pdbx_PDB_model_num']])
                     if not new_atom.pdb_model_num == 1:
+                        print('\n\nERROR: More than one model in the input '
+                              'mmCIF file.\nPlease submit a PDB file containing'
+                              ' a single model for BDamage analysis.\n')
                         exit = True
-                        print('\n\nERROR: More than one model in the input mmCIF '
-                              'file.\nPlease submit a PDB file containing a single '
-                              'model for BDamage analysis.\nTerminating RABDAM run.\n')
+                        break
+                    else:
+                        new_atom.pdb_model_num = int(new_atom.pdb_model_num)
                 except ValueError:
-                    print('ERROR: Model number not recognised '
+                    print('\n\nERROR: Model number not recognised '
                           '{}'.format(line[prop_indices['pdbx_PDB_model_num']]))
                     exit = True
+                    break
 
                 atom_coords = ' '.join([str(n) for n in np.array(new_atom.xyzCoords).flatten()])
                 cctbx_atm = model_atoms_dict[atom_coords]
@@ -317,25 +330,28 @@ def parse_atom_rec_from_mmcif(atom_rec, input_cif, exit, phenix_import):
                         res_is_prot_dict[atom_coords] = cctbx_atm.parent().parent().conformers()[0].is_protein()
                     new_atom.protein = res_is_prot_dict[atom_coords]
                 except (KeyError, AttributeError):
-                    print('ERROR: Unable to identify if atom {} is in a protein'
+                    print('\n\nERROR: Unable to identify if atom {} is in a protein'
                         ' chain'.format(line[prop_indices['id']]))
                     exit = True
+                    break
                 try:
                     if not atom_coords in res_is_na_dict.keys():
                         res_is_na_dict[atom_coords] = cctbx_atm.parent().parent().conformers()[0].is_na()
                     new_atom.na = res_is_na_dict[atom_coords]
                 except (KeyError, AttributeError):
-                    print('ERROR: Unable to identify if atom {} is in a nucleic acid'
+                    print('\n\nERROR: Unable to identify if atom {} is in a nucleic acid'
                         ' chain'.format(line[prop_indices['id']]))
                     exit = True
+                    break
                 try:
                     if not atom_coords in chain_len_dict.keys():
                         chain_len_dict[atom_coords] = cctbx_atm.parent().parent().parent().residue_groups_size()
                     new_atom.chain_len = chain_len_dict[atom_coords]
                 except (KeyError, AttributeError):
-                    print('ERROR: Unable to identify the length of the parent '
+                    print('\n\nERROR: Unable to identify the length of the parent '
                           'chain of atom {}'.format(line[prop_indices['id']]))
                     exit = True
+                    break
 
                 # Checks all required properties have been assigned to the atom object
                 none_props = [
@@ -348,15 +364,23 @@ def parse_atom_rec_from_mmcif(atom_rec, input_cif, exit, phenix_import):
                     new_atom.origAtomType, new_atom.pdb_model_num,
                     new_atom.protein, new_atom.na, new_atom.chain_len
                 ]
+                
                 if any(prop is None for prop in none_props):
+                    for prop in none_props:
+                        if prop is None:
+                            print('\n\nERROR: Failed to parse {} in ATOM/HETATM'
+                                  ' records'.format(prop))
                     exit = True
+                    break
                 else:
                     atoms_list.append(new_atom)
 
             except (KeyError, IndexError):
                 exit = True
                 print('\n\nERROR: Failed to parse ATOM/HETATM records - check '
-                      'their formatting\n')
+                      'that all column entries expected for a standard format '
+                      'mmCIF file are present\n')
+                break
 
     if exit is True:
         atoms_list = []
@@ -413,33 +437,43 @@ def parse_atom_rec_from_pdb(atom_rec, input_pdb, exit, phenix_import):
         try:
             new_atom.atomNum = int(line[6:11].strip())
         except ValueError:
-            print('ERROR: Encountered non-numeric atom number '
+            print('\n\nERROR: Encountered non-numeric atom number '
                   '{}'.format(line[6:11].strip()))
+            exit = True
+            break
         try:
             new_atom.resiNum = int(line[22:26].strip())
             new_atom.origResiNum = line[22:26].strip()
         except ValueError:
-            print('ERROR: Encountered non-numeric residue number '
+            print('\n\nERROR: Encountered non-numeric residue number '
                   '{}'.format(line[22:26].strip()))
+            exit = True
+            break
         try:
             new_atom.xyzCoords = [[float(line[30:38].strip())],
                                   [float(line[38:46].strip())],
                                   [float(line[46:54].strip())]]
         except ValueError:
-            print('ERROR: Encountered non-numeric coordinates: '
+            print('\n\nERROR: Encountered non-numeric coordinates: '
                   '{}'.format([[line[30:38].strip()],
                                [line[38:46].strip()],
                                [line[46:54].strip()]]))
+            exit = True
+            break
         try:
             new_atom.occupancy = float(line[54:60].strip())
         except ValueError:
-            print('ERROR: Encountered non-numeric occupancy value '
+            print('\n\nERROR: Encountered non-numeric occupancy value '
                   '{}'.format(line[54:60].strip()))
+            exit = True
+            break
         try:
             new_atom.bFactor = float(line[60:66].strip())
         except ValueError:
-            print('ERROR: Encountered non-numeric B-factor value '
+            print('\n\nERROR: Encountered non-numeric B-factor value '
                   '{}'.format(line[60:66].strip()))
+            exit = True
+            break
         new_atom.charge = ''  # Avoids errors when using cctbx to parse
         # clean_au_file to generate a copy of the unit cell
         """
@@ -455,25 +489,28 @@ def parse_atom_rec_from_pdb(atom_rec, input_pdb, exit, phenix_import):
                 res_is_prot_dict[atom_coords] = cctbx_atm.parent().parent().conformers()[0].is_protein()
             new_atom.protein = res_is_prot_dict[atom_coords]
         except (KeyError, AttributeError):
-            print('ERROR: Unable to identify if atom {} is in a protein'
+            print('\n\nERROR: Unable to identify if atom {} is in a protein'
                 ' chain'.format(line[6:11].strip()))
             exit = True
+            break
         try:
             if not atom_coords in res_is_na_dict.keys():
                 res_is_na_dict[atom_coords] = cctbx_atm.parent().parent().conformers()[0].is_na()
             new_atom.na = res_is_na_dict[atom_coords]
         except (KeyError, AttributeError):
-            print('ERROR: Unable to identify if atom {} is in a nucleic acid'
+            print('\n\nERROR: Unable to identify if atom {} is in a nucleic acid'
                 ' chain'.format(line[6:11].strip()))
             exit = True
+            break
         try:
             if not atom_coords in chain_len_dict.keys():
                 chain_len_dict[atom_coords] = cctbx_atm.parent().parent().parent().residue_groups_size()
             new_atom.chain_len = chain_len_dict[atom_coords]
         except (KeyError, AttributeError):
-            print('ERROR: Unable to identify the length of the parent chain of '
-                  'atom {}'.format(line[6:11].strip()))
+            print('\n\nERROR: Unable to identify the length of the parent chain'
+                  ' of atom {}'.format(line[6:11].strip()))
             exit = True
+            break
 
         # Checks all required properties have been assigned to the atom object
         none_props = [
@@ -487,7 +524,12 @@ def parse_atom_rec_from_pdb(atom_rec, input_pdb, exit, phenix_import):
             new_atom.chain_len
         ]
         if any(prop is None for prop in none_props):
+            for prop in none_props:
+                if prop is None:
+                    print('\n\nERROR: Failed to parse {} in ATOM/HETATM'
+                            ' records'.format(prop))
             exit = True
+            break
         else:
             atoms_list.append(new_atom)
 
