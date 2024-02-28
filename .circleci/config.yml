@@ -1,33 +1,19 @@
 
 version: 2.1
 jobs:
-  test3_6:
+  test3_X:
     docker:
-      - image: python:3.6
+      - image: continuumio/miniconda3
     steps:
       - checkout
-      - run: conda install -r requirements.txt
+      - run: conda install --file requirements.txt
       - run: python -m unittest tests.test_parse_input_file
       - run: python -m unittest tests.test_mmcif_parsing
       - run: python -m unittest tests.test_pdb_parsing
       - run: python -m unittest tests.test_atom_filtering
       - run: python -m unittest tests.test_bnet_calculation
-
-  test2_7:
-    docker:
-      - image: python:2.7
-    steps:
-      - checkout
-      - run: conda install -r requirements.txt
-      - run: python -m unittest tests.test_parse_input_file
-      - run: python -m unittest tests.test_mmcif_parsing
-      - run: python -m unittest tests.test_pdb_parsing
-      - run: python -m unittest tests.test_atom_filtering
-      - run: python -m unittest tests.test_bnet_calculation
-
 
 workflows:
   test:
     jobs:
-      - test3_6
-      - test2_7
+      - test3_X

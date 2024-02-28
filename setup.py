@@ -26,6 +26,6 @@ setup(
                       'pandas>=0.24.1', 'requests', 'setuptools'],
     classifiers=['Programming Language :: Python'],
     python_requires=('>=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*, '
-                     '!=3.5.*, <4'),
+                     '!=3.5.*, !=3.5.*, !=3.6.*,!=3.7.*, <4'),
     entry_points={'console_scripts': ['rabdam = rabdam.rabdam:main']}
 )

@@ -1,5 +1,5 @@
 
-cctbx
+conda-forge::cctbx
 numpy >= 1.15.0
 matplotlib >= 2.2.0
 scipy >= 1.1.0
