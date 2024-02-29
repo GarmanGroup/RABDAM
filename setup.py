@@ -9,7 +9,7 @@ setup(
     packages=find_packages(),
     package_data={'rabdam': ['Subroutines/HTML_stylesheet.css',
                              'Subroutines/HTML_stylesheet.js']},
-    version='1.6.4',
+    version='2.0',
     description=('RABDAM: A program to identify and quantify specific '
                  'radiation damage within individual protein crystal '
                  'structures'),
@@ -23,9 +23,9 @@ setup(
     keywords=['radiation damage', 'specific damage', 'atomic Bfactors',
               'atomic displacement parameters', 'BDamage', 'Bnet'],
     install_requires=['numpy>=1.15.0', 'matplotlib>=2.2.0', 'scipy>=1.1.0',
-                      'seaborn>=0.8.0', 'pandas>=0.24.1', 'requests', 'setuptools'],
+                      'pandas>=0.24.1', 'requests', 'setuptools'],
     classifiers=['Programming Language :: Python'],
     python_requires=('>=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*, '
-                     '!=3.5.*, <4'),
+                     '!=3.5.*, !=3.5.*, !=3.6.*,!=3.7.*, <4'),
     entry_points={'console_scripts': ['rabdam = rabdam.rabdam:main']}
 )

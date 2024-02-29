@@ -1,6 +1,6 @@
 
 # RABDAM
-# Copyright (C) 2020 Garman Group, University of Oxford
+# Copyright (C) 2024 Garman Group, University of Oxford
 
 # This file is part of RABDAM.
 
@@ -19,31 +19,7 @@
 # <http://www.gnu.org/licenses/>.
 
 
-def convert_array_to_atom_list(array, all_atoms_list, sub_atoms_list):
-    """
-    Converts numpy array of xyz coordinates into a list of Atom() objects,
-    for use in writing a PDB file
-    """
-
-    import copy
-    import numpy as np
-
-    pdb_atom_list = []
-    for index, atom_id in enumerate(all_atoms_list):
-        for atom in sub_atoms_list:
-            if atom.atomNum == atom_id:
-                new_atom = copy.deepcopy(atom)
-                newXYZ = np.array([[array[index][0]],
-                                   [array[index][1]],
-                                   [array[index][2]]])
-                new_atom.xyzCoords = newXYZ
-                pdb_atom_list.append(new_atom)
-                break
-
-    return pdb_atom_list
-
-
-def makePDB(header_lines, atomList, footer_lines, seqres, newPDBfilename, Bfac):
+def makePDB(header_lines, atomList, footer_lines, newPDBfilename, Bfac):
     """
     Writes a PDB file containing a complete set of atom information for all
     atoms in 'atomList', plus header and footer information.
@@ -70,7 +46,7 @@ def makePDB(header_lines, atomList, footer_lines, seqres, newPDBfilename, Bfac):
         d = atm.conformer.ljust(1)
         if len(d) != 1:
             exit = True
-        e = atm.resiType.ljust(3)
+        e = atm.resiType.rjust(3)
         if len(e) != 3:
             exit = True
         f = atm.chainID.ljust(1)
@@ -100,6 +76,11 @@ def makePDB(header_lines, atomList, footer_lines, seqres, newPDBfilename, Bfac):
             m = '%6.2f' % np.log(atm.bd)
             if len(m) != 6:
                 exit = True
+        else:
+            raise ValueError(
+                'Value {} for Bfac variable not recognised - expect to be '
+                'either \'bfactor\' or \'bdamage\''.format(Bfac)
+            )
         n = atm.element.rjust(2)
         if len(n) != 2:
             exit = True
@@ -120,15 +101,96 @@ def makePDB(header_lines, atomList, footer_lines, seqres, newPDBfilename, Bfac):
 
             # Inserts TER cards
             if index != (len(atomList) - 1):
-                if (
-                        (atm.chainID != atomList[index+1].chainID)
-                    and (atm.resiType in seqres)
-                ):
-                    newPDBfile.write('TER'.ljust(80) + '\n')
+                next_atm = atomList[index+1]
+                if atm.chainID != next_atm.chainID:
+                    if any(_ is True for _ in [atm.protein, atm.na]):
+                        if atm.chain_len > 1:
+                            newPDBfile.write('TER'.ljust(80) + '\n')
+                else:
+                    if atm.protein is True and next_atm.protein is False:
+                        if atm.chain_len > 1:
+                            newPDBfile.write('TER'.ljust(80) + '\n')
+                    if atm.na is True and next_atm.na is False:
+                        if atm.chain_len > 1:
+                            newPDBfile.write('TER'.ljust(80) + '\n')
             else:
-                if atm.resiType in seqres:
-                    newPDBfile.write('TER'.ljust(80) + '\n')
+                if any(_ is True for _ in [atm.protein, atm.na]):
+                    if atm.chain_len > 1:
+                        newPDBfile.write('TER'.ljust(80) + '\n')
 
+    end_line = 'END'.ljust(80) + '\n'
+    if footer_lines == []:
+        footer_lines += [end_line]
+    if footer_lines[-1] != end_line:
+        footer_lines += [end_line]
+    for line in footer_lines:
+        if not line.endswith('\n'):
+            line += '\n'
+        newPDBfile.write(line)
+
+    print('New PDB file saved to %s' % newPDBfilename)
+    newPDBfile.close()
+
+    return exit
+
+
+def make_c_pdb(
+        header_lines, atomList, atomIDList, footer_lines, newPDBfilename
+    ):
+    """
+    Writes a PDB file containing a complete set of atom information for all
+    atoms in 'atom_list', plus header and footer information. All atoms are set
+    to be carbon - suitable for unit cell, 3x3 unit cell and trimmed 3x3 unit
+    cell pdb files only
+    """
+
+    exit = False
+    newPDBfile = open(newPDBfilename, 'w')
+
+    for line in header_lines:
+        if not line.endswith('\n'):
+            line += '\n'
+        newPDBfile.write(line)
+
+    for index, atm in enumerate(atomList):
+        a = 'ATOM'.ljust(4)
+        b = str(atomIDList[index]).rjust(7)[-7:]
+        c = 'C'.ljust(3)
+        d = ''.ljust(1)
+        e = 'GLY'.ljust(3)
+        f = 'A'.ljust(1)
+        g = '1'.rjust(4)[-4:]
+        h = ''.ljust(1)
+        i = '%8.3f' % atomList[index][0]
+        if len(i) != 8:
+            exit = True
+        j = '%8.3f' % atomList[index][1]
+        if len(j) != 8:
+            exit = True
+        k = '%8.3f' % atomList[index][2]
+        if len(k) != 8:
+            exit = True
+        l = '%6.2f' % 1.00
+        m = '%6.2f' % 50.0
+        n = 'C'.rjust(2)
+        o = ''.rjust(2)
+
+        if exit is False:
+            # Atom properties are appropriately ordered and spaced, and reported
+            # to the expected number of significant figures, for the PDB file
+            # format. Note that atomType for some metal ions will not follow
+            # standard PDB file format, but this will not affect the running of
+            # RABDAM (nor most other programs that the user might want to load
+            # the PDB file into, such as PyMol, Chimera, CCP4MG, WinCoot, etc.)
+            newLine = ''.join([a, b, '  ', c, d, e, ' ', f, g, h, '   ', i, j,
+                               k, l, m, '          ', n, o, '\n'])
+            newPDBfile.write(newLine)
+
+    end_line = 'END'.ljust(80) + '\n'
+    if footer_lines == []:
+        footer_lines += [end_line]
+    if footer_lines[-1] != end_line:
+        footer_lines += [end_line]
     for line in footer_lines:
         if not line.endswith('\n'):
             line += '\n'
