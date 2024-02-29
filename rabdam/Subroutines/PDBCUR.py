@@ -655,8 +655,8 @@ def clean_atom_rec(atoms_list, file_name_start, phenix_import):
     atom_ids = {}
 
     for atm in atoms_list:
-        # Extracts non-hydrogen, non-0 B-factor and non-0 occupancy ATOM /
-        # HETATM records
+        # Extracts non-hydrogen, B-factor > 0 and 0 < occupancy <= 1
+        # ATOM/HETATM records
         if atm.element != 'H' and atm.bFactor > 0 and 0 < atm.occupancy <= 1:
             filtered_atoms_list.append(copy.deepcopy(atm))
 
@@ -694,7 +694,6 @@ def clean_atom_rec(atoms_list, file_name_start, phenix_import):
     sub_1_asp_glu_occ = False
     if len(sub_1_occ_asp_glu_list) > 0:
         sub_1_asp_glu_occ = True
-
 
     filtered_atoms_list = [
         atm for atm in filtered_atoms_list if not '_'.join([atm.chainID,

@@ -203,9 +203,12 @@ def b_damage_atom_list(clean_au_list, HETATM, protOrNA, addAtoms, removeAtoms):
     bdamatomSet = set()
     bdamatomList = []
     for atm in bdam_list_filtered:
-        if atm.atomNum not in bdamatomSet:
+        atom_id = '{}_{}_{}_{}'.format(
+            atm.atomNum, atm.xyzCoords[0], atm.xyzCoords[1], atm.xyzCoords[2]
+        )
+        if atom_id not in bdamatomSet:
             bdamatomList.append(atm)
-            bdamatomSet.add(atm.atomNum)
+            bdamatomSet.add(atom_id)
 
     print('Finished reading in atoms --> %d atoms found' % int(len(clean_au_list)))
     return bdamatomList

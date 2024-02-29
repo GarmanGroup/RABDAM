@@ -24,107 +24,16 @@
 import unittest
 from rabdam.Subroutines.parsePDB import atom, b_damage_atom_list
 from rabdam.Subroutines.PDBCUR import clean_atom_rec
+from tests.make_atom_rec import gen_atom_objs_list
 
 class TestClass(unittest.TestCase):
-
-    def make_atoms_list(self):
-        """
-        """
-
-        atoms_list = []
-        # Taken from 2BN1 and 2QTZ
-        new_atom_1 = atom()
-        new_atom_1.lineID = 'ATOM'
-        new_atom_1.atomNum = 1
-        new_atom_1.atomType = 'CA'
-        new_atom_1.conformer = ''
-        new_atom_1.resiType = 'GLY'
-        new_atom_1.chainID = 'A'
-        new_atom_1.entity_id = '2'
-        new_atom_1.resiNum = 1
-        new_atom_1.insCode = ''
-        new_atom_1.xyzCoords = [[13.602], [45.768], [30.728]]
-        new_atom_1.occupancy = 1.0
-        new_atom_1.bFactor = 19.08
-        new_atom_1.element = 'C'
-        new_atom_1.charge = ''
-        new_atom_1.origResiNum = ''
-        new_atom_1.origResiType = 'GLY'
-        new_atom_1.origChainID = 'A'
-        new_atom_1.origAtomType = 'CA'
-        new_atom_1.pdb_model_num = 2
-        new_atom_1.pd = 19
-        new_atom_1.avrg_bf = 26.2
-        new_atom_1.bd = 1.3
-        new_atom_1.protein = True
-        new_atom_1.na = False
-        new_atom_1.chain_len = 100
-        atoms_list.append(new_atom_1)
-
-        new_atom_2 = atom()
-        new_atom_2.lineID = 'ATOM'
-        new_atom_2.atomNum = 2
-        new_atom_2.atomType = 'CA'
-        new_atom_2.conformer = ''
-        new_atom_2.resiType = 'GLY'
-        new_atom_2.chainID = 'A'
-        new_atom_2.entity_id = '?'
-        new_atom_2.resiNum = 2
-        new_atom_2.insCode = ''
-        new_atom_2.xyzCoords = [[13.128], [46.298], [34.342]]
-        new_atom_2.occupancy = 1.0
-        new_atom_2.bFactor = 33.1
-        new_atom_2.element = 'C'
-        new_atom_2.charge = ''
-        new_atom_2.origResiNum = ''
-        new_atom_2.origResiType = 'GLY'
-        new_atom_2.origChainID = 'A'
-        new_atom_2.origAtomType = 'CA'
-        new_atom_2.pdb_model_num = 1
-        new_atom_2.pd = 30
-        new_atom_2.avrg_bf = 25.6
-        new_atom_2.bd = 0.97
-        new_atom_2.protein = True
-        new_atom_2.na = False
-        new_atom_2.chain_len = 100
-        atoms_list.append(new_atom_2)
-
-        new_atom_3 = atom()
-        new_atom_3.lineID = 'HETATM'
-        new_atom_3.atomNum = 3
-        new_atom_3.atomType = 'PA'
-        new_atom_3.conformer = 'X'
-        new_atom_3.resiType = 'FAD'
-        new_atom_3.chainID = 'B'
-        new_atom_3.entity_id = '.'
-        new_atom_3.resiNum = 2
-        new_atom_3.insCode = ''
-        new_atom_3.xyzCoords = [[29.643], [29.7], [51.402]]
-        new_atom_3.occupancy = 1.0
-        new_atom_3.bFactor = 20.52
-        new_atom_3.element = 'P'
-        new_atom_3.charge = ''
-        new_atom_3.origResiNum = ''
-        new_atom_3.origResiType = 'FAD'
-        new_atom_3.origChainID = 'B'
-        new_atom_3.origAtomType = 'PA'
-        new_atom_3.pdb_model_num = 2
-        new_atom_3.pd = 26
-        new_atom_3.avrg_bf = 20.5
-        new_atom_3.bd = 2.0
-        new_atom_3.protein = False
-        new_atom_3.na = False
-        new_atom_3.chain_len = 100
-        atoms_list.append(new_atom_3)
-
-        return atoms_list
     
-    def test_clean_atom_records(self):
+    def test_clean_atom_rec(self):
         """
         Checks that ATOM/HETATM records are filtered appropriately to remove
         hydrogen atoms, 0 occupancy atoms, retain only a single conformer
-        per-residue, and check that disulfide bonds have not been refined to
-        sub-1 occupancy
+        per-residue, and check that Glu and Asp residues have not been refined
+        to sub-1 occupancy (across all conformers)
         """
 
         import copy
@@ -134,294 +43,349 @@ class TestClass(unittest.TestCase):
         if not os.path.isdir('tests/temp_files/'):
             os.mkdir('tests/temp_files/')
 
-        atoms_list_1 = self.make_atoms_list()
+        atoms_list_1 = gen_atom_objs_list()
+        cif_header = [
+            'data_tests/temp_files/test_asymmetric_unit',
+            '#',
+            'loop_',
+            '_atom_site.group_PDB',
+            '_atom_site.id',
+            '_atom_site.type_symbol',
+            '_atom_site.label_atom_id',
+            '_atom_site.label_alt_id',
+            '_atom_site.label_comp_id',
+            '_atom_site.label_asym_id',
+            '_atom_site.label_entity_id',
+            '_atom_site.label_seq_id',
+            '_atom_site.pdbx_PDB_ins_code',
+            '_atom_site.Cartn_x',
+            '_atom_site.Cartn_y',
+            '_atom_site.Cartn_z',
+            '_atom_site.occupancy',
+            '_atom_site.B_iso_or_equiv',
+            '_atom_site.pdbx_formal_charge',
+            '_atom_site.auth_seq_id',
+            '_atom_site.auth_comp_id',
+            '_atom_site.auth_asym_id',
+            '_atom_site.auth_atom_id',
+            '_atom_site.pdbx_PDB_model_num'
+        ]
 
         # Should successfully parse all atoms
         exp_atoms_list_1 = copy.deepcopy(atoms_list_1)
-        exp_file_content_1 = [
-            '',
-            'ATOM      1  CA  GLY A   1      13.602  45.768  30.728  1.00 19.08           C  ',
-            'ATOM      2  CA  GLY A   2      13.128  46.298  34.342  1.00 33.10           C  ',
-            'TER                                                                             ',
-            'HETATM    3  PA XFAD B   2      29.643  29.700  51.402  1.00 20.52           P  ',
-            'END                                                                             ',
+        exp_cif_lines_1 = cif_header + [
+            'ATOM   2    C CA . GLY A 1 1 ? 13.602 45.768 30.728 1.0 19.08 ? 1    GLY A CA 1.0',
+            'HETATM 438  O O  . HOH C 2 . ? 13.128 46.298 34.342 1.0 33.1  ? 2001 HOH B O  1.1',
+            'HETATM 3546 P PA X FAD B 3 . ? 29.643 29.7   51.402 1.0 20.52 ? 700  FAD B PA 12 ',
+            '#',
             ''
         ]
-        exit_1, pause_1, act_atoms_list_1, file_1 = clean_atom_rec(
-            atoms_list_1, ''
-        )
+        (
+            exit_1, pause_1, act_atoms_list_1, clean_au_file_1,
+            sub_1_asp_glu_occ_1
+        ) = clean_atom_rec(atoms_list_1, 'tests/temp_files/test', False)
         self.assertFalse(exit_1)
         self.assertFalse(pause_1)
         self.assertEqual(exp_atoms_list_1, act_atoms_list_1)
-        with open('{}.cif'.format(file_1), 'r') as f:
-            act_file_content_1 = f.read().split('\n')
-            print(act_file_content_1)
-            self.assertEqual(exp_file_content_1, act_file_content_1)
+        with open('{}.cif'.format(clean_au_file_1), 'r') as f:
+            act_cif_lines_1 = f.read().split('\n')
+            self.assertEqual(exp_cif_lines_1, act_cif_lines_1)
+        self.assertFalse(sub_1_asp_glu_occ_1)
 
-        # Hydrogen atoms - should remove atom 1 when set to hydrogen
+        # Check removes atom 1 when it is set to a hydrogen atom
         atoms_list_2 = copy.deepcopy(atoms_list_1)
         atoms_list_2[0].element = 'H'
         exp_atoms_list_2 = copy.deepcopy(atoms_list_2)[1:]
-        exp_file_content_2 = [
-            '',
-            'ATOM      2  CA  GLY A   2      13.128  46.298  34.342  1.00 33.10           C  ',
-            'TER                                                                             ',
-            'HETATM    3  PA XFAD B   2      29.643  29.700  51.402  1.00 20.52           P  ',
-            'END                                                                             ',
+        exp_cif_lines_2 = cif_header + [
+            'HETATM 438  O O  . HOH C 2 ? ? 13.128 46.298 34.342 1.0 33.1  ? 2001 HOH B O  1.1',
+            'HETATM 3546 P PA X FAD B 3 ? ? 29.643 29.7   51.402 1.0 20.52 ? 700  FAD B PA 12 ',
+            '#',
             ''
         ]
-        exit_2, pause_2, act_atoms_list_2, file_2 = clean_atom_rec(
-            atoms_list_2, '', 'tests/temp_files/test'
-        )
+        (
+            exit_2, pause_2, act_atoms_list_2, clean_au_file_2,
+            sub_1_asp_glu_occ_2
+        ) = clean_atom_rec(atoms_list_2, 'tests/temp_files/test', False)
         self.assertFalse(exit_2)
         self.assertFalse(pause_2)
         self.assertEqual(exp_atoms_list_2, act_atoms_list_2)
-        with open('tests/temp_files/test_asymmetric_unit.pdb', 'r') as f:
-            act_file_content_2 = f.read().split('\n')
-            self.assertEqual(exp_file_content_2, act_file_content_2)
+        with open('{}.cif'.format(clean_au_file_2), 'r') as f:
+            act_cif_lines_2 = f.read().split('\n')
+            self.assertEqual(exp_cif_lines_2, act_cif_lines_2)
+        self.assertFalse(sub_1_asp_glu_occ_2)
 
-        # 0 occupancy - should remove atom 2 when occupancy set to 0
+        # Check removes atom 2 when occupancy is set to 0
         atoms_list_3 = copy.deepcopy(atoms_list_1)
-        atoms_list_3[1].occupancy = 0
+        atoms_list_3[1].occupancy = 0.0
         exp_atoms_list_3 = [copy.deepcopy(atoms_list_3)[0], copy.deepcopy(atoms_list_3)[2]]
-        exp_file_content_3 = [
-            '',
-            'ATOM      1  CA  GLY A   1      13.602  45.768  30.728  1.00 19.08           C  ',
-            'TER                                                                             ',
-            'HETATM    3  PA XFAD B   2      29.643  29.700  51.402  1.00 20.52           P  ',
-            'END                                                                             ',
+        exp_cif_lines_3 = cif_header + [
+            'ATOM   2    C CA . GLY A 1 1 ? 13.602 45.768 30.728 1.0 19.08 ? 1   GLY A CA 1.0',
+            'HETATM 3546 P PA X FAD B 3 . ? 29.643 29.7   51.402 1.0 20.52 ? 700 FAD B PA 12 ',
+            '#',
             ''
         ]
-        exit_3, pause_3, act_atoms_list_3, file_3 = clean_atom_rec(
-            atoms_list_3, '', 'tests/temp_files/test'
-        )
+        (
+            exit_3, pause_3, act_atoms_list_3, clean_au_file_3,
+            sub_1_asp_glu_occ_3
+        ) = clean_atom_rec(atoms_list_3, 'tests/temp_files/test', False)
         self.assertFalse(exit_3)
         self.assertFalse(pause_3)
         self.assertEqual(exp_atoms_list_3, act_atoms_list_3)
-        with open('tests/temp_files/test_asymmetric_unit.pdb', 'r') as f:
-            act_file_content_3 = f.read().split('\n')
-            self.assertEqual(exp_file_content_3, act_file_content_3)
+        with open('{}.cif'.format(clean_au_file_3), 'r') as f:
+            act_cif_lines_3 = f.read().split('\n')
+            self.assertEqual(exp_cif_lines_3, act_cif_lines_3)
+        self.assertFalse(sub_1_asp_glu_occ_3)
 
-        # Negative Bfactor - should remove atom 3 when its Bfactor is set to a
-        # value < 0
+        # Check removes atom 3 when Bfactor <= 0
         atoms_list_4 = copy.deepcopy(atoms_list_1)
-        atoms_list_4[2].bFactor = -0.1
+        atoms_list_4[2].bFactor = 0
         exp_atoms_list_4 = copy.deepcopy(atoms_list_4)[:2]
-        exp_file_content_4 = [
-            '',
-            'ATOM      1  CA  GLY A   1      13.602  45.768  30.728  1.00 19.08           C  ',
-            'ATOM      2  CA  GLY A   2      13.128  46.298  34.342  1.00 33.10           C  ',
-            'TER                                                                             ',
-            'END                                                                             ',
+        exp_cif_lines_4 = cif_header + [
+            'ATOM   2   C CA ? GLY A 1 1 ? 13.602 45.768 30.728 1.0 19.08 ? 1    GLY A CA 1.0',
+            'HETATM 438 O O  ? HOH C 2 . ? 13.128 46.298 34.342 1.0 33.1  ? 2001 HOH B O  1.1',
+            '#',
             ''
         ]
-        exit_4, pause_4, act_atoms_list_4, file_4 = clean_atom_rec(
-            atoms_list_4, '', 'tests/temp_files/test'
-        )
+        (
+            exit_4, pause_4, act_atoms_list_4, clean_au_file_4,
+            sub_1_asp_glu_occ_4
+        ) = clean_atom_rec(atoms_list_4, 'tests/temp_files/test', False)
         self.assertFalse(exit_4)
         self.assertFalse(pause_4)
         self.assertEqual(exp_atoms_list_4, act_atoms_list_4)
-        with open('tests/temp_files/test_asymmetric_unit.pdb', 'r') as f:
-            act_file_content_4 = f.read().split('\n')
-            self.assertEqual(exp_file_content_4, act_file_content_4)
+        with open('{}.cif'.format(clean_au_file_4), 'r') as f:
+            act_cif_lines_4 = f.read().split('\n')
+            self.assertEqual(exp_cif_lines_4, act_cif_lines_4)
+        self.assertFalse(sub_1_asp_glu_occ_4)
 
-        # Single sub-1 occupancy - should pause the program (whilst retaining
-        # all atoms)
+        # Check pauses program if non-ASP/GLU atom has sub-1 occupancy
         atoms_list_5 = copy.deepcopy(atoms_list_1)
         atoms_list_5[2].occupancy = 0.7
         exp_atoms_list_5 = copy.deepcopy(atoms_list_5)
-        exp_file_content_5 = [
-            '',
-            'ATOM      1  CA  GLY A   1      13.602  45.768  30.728  1.00 19.08           C  ',
-            'ATOM      2  CA  GLY A   2      13.128  46.298  34.342  1.00 33.10           C  ',
-            'TER                                                                             ',
-            'HETATM    3  PA XFAD B   2      29.643  29.700  51.402  0.70 20.52           P  ',
-            'END                                                                             ',
+        exp_cif_lines_5 = cif_header + [
+            'ATOM   2    C CA . GLY A 1 1 ? 13.602 45.768 30.728 1.0 19.08 ? 1    GLY A CA 1.0',
+            'HETATM 438  O O  . HOH C 2 . ? 13.128 46.298 34.342 1.0 33.1  ? 2001 HOH B O  1.1',
+            'HETATM 3546 P PA X FAD B 3 . ? 29.643 29.7   51.402 0.7 20.52 ? 700  FAD B PA 12 ',
+            '#',
             ''
         ]
-        exit_5, pause_5, act_atoms_list_5, file_5 = clean_atom_rec(
-            atoms_list_5, '', 'tests/temp_files/test'
-        )
+        (
+            exit_5, pause_5, act_atoms_list_5, clean_au_file_5,
+            sub_1_asp_glu_occ_5
+        ) = clean_atom_rec(atoms_list_5, 'tests/temp_files/test', False)
         self.assertFalse(exit_5)
         self.assertTrue(pause_5)
         self.assertEqual(exp_atoms_list_5, act_atoms_list_5)
-        with open('tests/temp_files/test_asymmetric_unit.pdb', 'r') as f:
-            act_file_content_5 = f.read().split('\n')
-            self.assertEqual(exp_file_content_5, act_file_content_5)
+        with open('{}.cif'.format(clean_au_file_5), 'r') as f:
+            act_cif_lines_5 = f.read().split('\n')
+            self.assertEqual(exp_cif_lines_5, act_cif_lines_5)
+        self.assertFalse(sub_1_asp_glu_occ_5)
 
-        # Alternate conformers that sum to 1 - should retain the highest
-        #  occupancy conformer
+        # Check pauses program and sets sub_1_asp_glu_occ to True if
+        # non-ASP/GLU atom has sub-1 occupancy
         atoms_list_6 = copy.deepcopy(atoms_list_1)
-        atoms_list_6[0].conformer = 'A'
-        atoms_list_6[0].occupancy = 0.25
-        atoms_list_6[1].resiNum = 1
-        atoms_list_6[1].conformer = 'B'
-        atoms_list_6[1].occupancy = 0.75
-        exp_atoms_list_6 = copy.deepcopy(atoms_list_6)[1:]
-        exp_file_content_6 = [
-            '',
-            'ATOM      2  CA BGLY A   1      13.128  46.298  34.342  0.75 33.10           C  ',
-            'TER                                                                             ',
-            'HETATM    3  PA XFAD B   2      29.643  29.700  51.402  1.00 20.52           P  ',
-            'END                                                                             ',
+        atoms_list_6[2].resiType = 'GLU'
+        atoms_list_6[2].origResiType = 'GLU'
+        atoms_list_6[2].occupancy = 0.7
+        exp_atoms_list_6 = copy.deepcopy(atoms_list_6)
+        exp_cif_lines_6 = cif_header + [
+            'ATOM   2    C CA . GLY A 1 1 ? 13.602 45.768 30.728 1.0 19.08 ? 1    GLY A CA 1.0',
+            'HETATM 438  O O  . HOH C 2 . ? 13.128 46.298 34.342 1.0 33.1  ? 2001 HOH B O  1.1',
+            'HETATM 3546 P PA X GLU B 3 . ? 29.643 29.7   51.402 0.7 20.52 ? 700  GLU B PA 12 ',
+            '#',
             ''
         ]
-        exit_6, pause_6, act_atoms_list_6, file_6 = clean_atom_rec(
-            atoms_list_6, '', 'tests/temp_files/test'
-        )
+        (
+            exit_6, pause_6, act_atoms_list_6, clean_au_file_6,
+            sub_1_asp_glu_occ_6
+        ) = clean_atom_rec(atoms_list_6, 'tests/temp_files/test', False)
         self.assertFalse(exit_6)
-        self.assertFalse(pause_6)
+        self.assertTrue(pause_6)
         self.assertEqual(exp_atoms_list_6, act_atoms_list_6)
-        with open('tests/temp_files/test_asymmetric_unit.pdb', 'r') as f:
-            act_file_content_6 = f.read().split('\n')
-            self.assertEqual(exp_file_content_6, act_file_content_6)
+        with open('{}.cif'.format(clean_au_file_6), 'r') as f:
+            act_cif_lines_6 = f.read().split('\n')
+            self.assertEqual(exp_cif_lines_6, act_cif_lines_6)
+        self.assertTrue(sub_1_asp_glu_occ_6)
 
-        # Alternate conformers that don't sum to 1 - should pause the program
-        # (whilst retaining only the highest occupancy conformer)
+        # Check retains highest occupancy conformer when occupancies sum to 1
         atoms_list_7 = copy.deepcopy(atoms_list_1)
         atoms_list_7[0].conformer = 'A'
         atoms_list_7[0].occupancy = 0.25
-        atoms_list_7[1].resiNum = 1
-        atoms_list_7[1].conformer = 'B'
-        atoms_list_7[1].occupancy = 0.74
-        exp_atoms_list_7 = copy.deepcopy(atoms_list_7)[1:]
-        exp_file_content_7 = [
-            '',
-            'ATOM      2  CA BGLY A   1      13.128  46.298  34.342  0.74 33.10           C  ',
-            'TER                                                                             ',
-            'HETATM    3  PA XFAD B   2      29.643  29.700  51.402  1.00 20.52           P  ',
-            'END                                                                             ',
-            ''
-        ]
-        exit_7, pause_7, act_atoms_list_7, file_7 = clean_atom_rec(
-            atoms_list_7, '', 'tests/temp_files/test'
-        )
-        self.assertFalse(exit_7)
-        self.assertTrue(pause_7)
-        self.assertEqual(exp_atoms_list_7, act_atoms_list_7)
-        with open('tests/temp_files/test_asymmetric_unit.pdb', 'r') as f:
-            act_file_content_7 = f.read().split('\n')
-            self.assertEqual(exp_file_content_7, act_file_content_7)
 
-        # No atoms left after filtering - should set exit to True
-        atoms_list_8 = copy.deepcopy(atoms_list_1)
-        atoms_list_8[0].element = 'H'
-        atoms_list_8[1].occupancy = 1.4
-        atoms_list_8[2].bFactor = 0
-        exp_atoms_list_8 = []
-        exp_file_content_8 = [
-            '',
-            'END                                                                             ',
+        atoms_list_7[1].chainID = 'A'
+        atoms_list_7[1].resiNum = 1
+        atoms_list_7[1].resiType = 'GLY'
+        atoms_list_7[1].atomType = 'CA'
+        atoms_list_7[1].conformer = 'B'
+        atoms_list_7[1].occupancy = 0.75
+
+        exp_atoms_list_7 = copy.deepcopy(atoms_list_7[1:])
+        exp_cif_lines_7 = cif_header + [
+            'HETATM 438  O O  B HOH C 2 ? ? 13.128 46.298 34.342 0.75 33.1  ? 1   GLY A CA 1.1',
+            'HETATM 3546 P PA X FAD B 3 ? ? 29.643 29.7   51.402 1.0  20.52 ? 700 FAD B PA 12 ',
+            '#',
             ''
         ]
-        exit_8, pause_8, act_atoms_list_8, file_8 = clean_atom_rec(
-            atoms_list_8, '', 'tests/temp_files/test'
-        )
-        self.assertTrue(exit_8)
-        self.assertFalse(pause_8)
+        (
+            exit_7, pause_7, act_atoms_list_7, clean_au_file_7,
+            sub_1_asp_glu_occ_7
+        ) = clean_atom_rec(atoms_list_7, 'tests/temp_files/test', False)
+        self.assertFalse(exit_7)
+        self.assertFalse(pause_7)
+        self.assertEqual(exp_atoms_list_7, act_atoms_list_7)
+        with open('{}.cif'.format(clean_au_file_7), 'r') as f:
+            act_cif_lines_7 = f.read().split('\n')
+            self.assertEqual(exp_cif_lines_7, act_cif_lines_7)
+        self.assertFalse(sub_1_asp_glu_occ_7)
+
+        # Check pauses program when occupancies of alternate conformers do not
+        # sum to 1
+        atoms_list_8 = copy.deepcopy(atoms_list_1)
+        atoms_list_8[0].conformer = 'A'
+        atoms_list_8[0].occupancy = 0.25
+        atoms_list_8[0].resiType = 'DAS'
+
+        atoms_list_8[1].chainID = 'A'
+        atoms_list_8[1].resiNum = 1
+        atoms_list_8[1].resiType = 'DAS'
+        atoms_list_8[1].atomType = 'CA'
+        atoms_list_8[1].conformer = 'B'
+        atoms_list_8[1].occupancy = 0.74
+
+        exp_atoms_list_8 = copy.deepcopy(atoms_list_8[1:])
+        exp_cif_lines_8 = cif_header + [
+            'HETATM 438  O O  B HOH C 2 ? ? 13.128 46.298 34.342 0.74 33.1  ? 1   DAS A CA 1.1',
+            'HETATM 3546 P PA X FAD B 3 ? ? 29.643 29.7   51.402 1.0  20.52 ? 700 FAD B PA 12 ',
+            '#',
+            ''
+        ]
+        (
+            exit_8, pause_8, act_atoms_list_8, clean_au_file_8,
+            sub_1_asp_glu_occ_8
+        ) = clean_atom_rec(atoms_list_8, 'tests/temp_files/test', False)
+        self.assertFalse(exit_8)
+        self.assertTrue(pause_8)
         self.assertEqual(exp_atoms_list_8, act_atoms_list_8)
-        with open('tests/temp_files/test_asymmetric_unit.pdb', 'r') as f:
-            act_file_content_8 = f.read().split('\n')
-            self.assertEqual(exp_file_content_8, act_file_content_8)
+        with open('{}.cif'.format(clean_au_file_8), 'r') as f:
+            act_cif_lines_8 = f.read().split('\n')
+            self.assertEqual(exp_cif_lines_8, act_cif_lines_8)
+        self.assertTrue(sub_1_asp_glu_occ_8)
+
+        # Check sets exit to True when no atoms remain after filtering
+        atoms_list_9 = copy.deepcopy(atoms_list_1)
+        atoms_list_9[0].occupancy = 1.1
+        atoms_list_9[1].bFactor = -20
+        atoms_list_9[2].element = 'H'
+
+        exp_atoms_list_9 = []
+        exp_cif_lines_9 = cif_header + [
+            '#',
+            ''
+        ]
+        (
+            exit_9, pause_9, act_atoms_list_9, clean_au_file_9,
+            sub_1_asp_glu_occ_9
+        ) = clean_atom_rec(atoms_list_9, 'tests/temp_files/test', False)
+        self.assertTrue(exit_9)
+        self.assertFalse(pause_9)
+        self.assertEqual(exp_atoms_list_9, act_atoms_list_9)
+        with open('{}.cif'.format(clean_au_file_9), 'r') as f:
+            act_cif_lines_9 = f.read().split('\n')
+            self.assertEqual(exp_cif_lines_9, act_cif_lines_9)
+        self.assertFalse(sub_1_asp_glu_occ_9)
 
         shutil.rmtree('tests/temp_files/')
 
-    def test_create_list_of_atoms_for_bdamage_analysis(self):
+    def test_b_damage_atom_list(self):
         """
-        Checks that input list of atom objects is correctly filtered
-        according to user-specified program inputs
+        Checks that input list of atom objects is correctly filtered according
+        to user-specified program inputs
         """
 
         import copy
 
-        atoms_list_1 = self.make_atoms_list()
+        atoms_list = gen_atom_objs_list()
 
-        # Remove/keep HETATM
-        # Set to remove HETATM - should remove atom 3
+        """
+        'ATOM   2    C CA . GLY A 1 1 ? 13.602 45.768 30.728 1.0 19.08 ? 1    GLY A CA 1.0',
+        'HETATM 438  O O  . HOH C 2 . ? 13.128 46.298 34.342 1.0 33.1  ? 2001 HOH B O  1.1',
+        'HETATM 3546 P PA X FAD B 3 . ? 29.643 29.7   51.402 1.0 20.52 ? 700  FAD B PA 12 ',
+        """
+
+        # Check discards atoms where protein=False and na=False when HETATM set
+        # to False
+        atoms_list_1 = copy.deepcopy(atoms_list)
         act_atoms_list_1 = b_damage_atom_list(
-            atoms_list_1, False, 'protein', [], []
+            clean_au_list=atoms_list_1, HETATM=False, protOrNA='proteinna',
+            addAtoms=[], removeAtoms=[]
         )
-        exp_atoms_list_1 = copy.deepcopy(atoms_list_1)[:2]
+        exp_atoms_list_1 = copy.deepcopy(atoms_list_1)[1:]
         self.assertEqual(exp_atoms_list_1, act_atoms_list_1)
 
-        # Set to remove HETATM - should keep all three atoms since atom is now
-        # defined as "protein"
-        atoms_list_2 = copy.deepcopy(atoms_list_1)
-        atoms_list_2[2].protein = True
+        # Check keeps all atoms where protein=False and na=False when HETATM set
+        # to True
+        atoms_list_2 = copy.deepcopy(atoms_list)
         act_atoms_list_2 = b_damage_atom_list(
-            atoms_list_2, False, 'protein', [], []
+            clean_au_list=atoms_list_2, HETATM=True, protOrNA='proteinna',
+            addAtoms=[], removeAtoms=[]
         )
         exp_atoms_list_2 = copy.deepcopy(atoms_list_2)
         self.assertEqual(exp_atoms_list_2, act_atoms_list_2)
 
-        # Set to remove HETATM - should remove atom 3 since atom is now
-        # defined as "na", and program is directed to remove non-protein atoms
-        atoms_list_3 = copy.deepcopy(atoms_list_1)
-        atoms_list_3[2].na = True
+        # Check removes nucleic acids if protOrNA is set to 'protein'
+        atoms_list_3 = copy.deepcopy(atoms_list)
         act_atoms_list_3 = b_damage_atom_list(
-            atoms_list_3, False, 'protein', [], []
+            clean_au_list=atoms_list_3, HETATM=True, protOrNA='protein',
+            addAtoms=[], removeAtoms=[]
         )
-        exp_atoms_list_3 = copy.deepcopy(atoms_list_3)[:2]
+        exp_atoms_list_3 = copy.deepcopy(atoms_list_3[:2])
         self.assertEqual(exp_atoms_list_3, act_atoms_list_3)
 
-        # Set to remove HETATM - should keep atom 3 since atom 3 is now
-        # defined as "na", and program is directed to keep nucleic acid atoms
-        atoms_list_4 = copy.deepcopy(atoms_list_1)
-        atoms_list_4[2].na = True
+        # Check removes protein if protOrNA is set to 'na'
+        atoms_list_4 = copy.deepcopy(atoms_list)
+        atoms_list_4[0].protein = True
         act_atoms_list_4 = b_damage_atom_list(
-            atoms_list_4, False, 'na', [], []
+            clean_au_list=atoms_list_4, HETATM=True, protOrNA='protein',
+            addAtoms=[], removeAtoms=[]
         )
-        exp_atoms_list_4 = copy.deepcopy(atoms_list_4)[2:]
+        exp_atoms_list_4 = copy.deepcopy(atoms_list_4[:2])
         self.assertEqual(exp_atoms_list_4, act_atoms_list_4)
 
-        # Set to remove HETATM - should remove all atoms since are all
-        # defined as "protein", and program is directed to remove non-NA atoms
-        atoms_list_5 = copy.deepcopy(atoms_list_1)
-        atoms_list_5[2].protein = True
+        # Check removes atoms 1 and 3 if remove_atoms = ['2', '3546']
+        atoms_list_5 = copy.deepcopy(atoms_list)
         act_atoms_list_5 = b_damage_atom_list(
-            atoms_list_5, False, 'na', [], []
+            clean_au_list=atoms_list_5, HETATM=True, protOrNA='proteinna',
+            addAtoms=[], removeAtoms=['2', '3546']
         )
-        exp_atoms_list_5 = []
+        exp_atoms_list_5 = copy.deepcopy(atoms_list_5[1:2])
         self.assertEqual(exp_atoms_list_5, act_atoms_list_5)
 
-        # Set to keep HETATM - should retain all atoms
-        atoms_list_6 = copy.deepcopy(atoms_list_1)
+        # Check removes atom 1 if remove_atoms = ['GLY']
+        atoms_list_6 = copy.deepcopy(atoms_list)
         act_atoms_list_6 = b_damage_atom_list(
-            atoms_list_6, True, 'protein', [], []
+            clean_au_list=atoms_list_6, HETATM=True, protOrNA='proteinna',
+            addAtoms=[], removeAtoms=['GLY']
         )
-        exp_atoms_list_6 = copy.deepcopy(atoms_list_6)
+        exp_atoms_list_6 = copy.deepcopy(atoms_list_6[1:])
         self.assertEqual(exp_atoms_list_6, act_atoms_list_6)
 
-        # Set to remove HETATM, and keep all protein and NA atoms.
-        atoms_list_7 = copy.deepcopy(atoms_list_1)
-        atoms_list_7[1].na = True
+        # Check adds atom 1 back in but doesn't duplicate atoms 1 or 2 if
+        # add_atoms = ['2', '438', 'GLY']
+        atoms_list_7 = copy.deepcopy(atoms_list)
         atoms_list_7[1].protein = False
         act_atoms_list_7 = b_damage_atom_list(
-            atoms_list_7, False, 'proteinna', [], []
+            clean_au_list=atoms_list_7, HETATM=False, protOrNA='na',
+            addAtoms=[], removeAtoms=[]
         )
-        exp_atoms_list_7 = copy.deepcopy(atoms_list_7)[:2]
+        exp_atoms_list_7 = copy.deepcopy(atoms_list_7[1:])
         self.assertEqual(exp_atoms_list_7, act_atoms_list_7)
 
-        # Remove atoms -should remove atoms 1 and 3
-        atoms_list_8 = copy.deepcopy(atoms_list_1)
+        atoms_list_8 = copy.deepcopy(atoms_list)
+        atoms_list_8[1].protein = False
         act_atoms_list_8 = b_damage_atom_list(
-            atoms_list_8, True, 'proteinna', [], ['1', '3']
+            clean_au_list=atoms_list_8, HETATM=False, protOrNA='na',
+            addAtoms=['2', '438', 'GLY'], removeAtoms=[]
         )
-        exp_atoms_list_8 = copy.deepcopy(atoms_list_8)[1:2]
+        exp_atoms_list_8 = copy.deepcopy(atoms_list_8)
         self.assertEqual(exp_atoms_list_8, act_atoms_list_8)
 
-        # Should remove all atoms in GLY residues
-        atoms_list_9 = copy.deepcopy(atoms_list_1)
-        act_atoms_list_9 = b_damage_atom_list(
-            atoms_list_9, True, 'proteinna', [], ['GLY']
-        )
-        exp_atoms_list_9 = copy.deepcopy(atoms_list_9)[2:]
-        self.assertEqual(exp_atoms_list_9, act_atoms_list_9)
-
-        # Should remove atoms 1 and 3, then add back in any atoms in GLY residues
-        atoms_list_10 = copy.deepcopy(atoms_list_1)
-        act_atoms_list_10 = b_damage_atom_list(
-            atoms_list_10, True, 'proteinna', ['GLY'], ['1', '3']
-        )
-        exp_atoms_list_10 = copy.deepcopy(atoms_list_10)[:2]
-        self.assertEqual(exp_atoms_list_10, act_atoms_list_10)

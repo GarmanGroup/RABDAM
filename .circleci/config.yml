@@ -10,9 +10,9 @@ jobs:
       - run: python -m unittest tests.test_parse_input_file
       - run: python -m unittest tests.test_mmcif_parsing
       - run: python -m unittest tests.test_pdb_parsing
+      - run: python -m unittest tests.test_atom_filtering
       - run: python -m unittest tests.test_model_filtering
       - run: python -m unittest tests.test_bnet_calculation
-      - run: python -m unittest tests.test_atom_filtering
 
 workflows:
   test:
