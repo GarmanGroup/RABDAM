@@ -253,6 +253,7 @@ class run_rabdam(object):
                             if self.batchRun is False:
                                 sys.exit()
                             elif self.batchRun is True:
+                                os.chdir('%s' % cwd)
                                 return success
                         break
                     elif owChoice == 'no' or owChoice == 'n':
@@ -261,7 +262,8 @@ class run_rabdam(object):
                         if self.batchRun is False:
                             sys.exit()
                         elif self.batchRun is True:
-                            return False
+                            os.chdir('%s' % cwd)
+                            return success
                         break
                     else:
                         print('Unrecognised input - please answer "yes" or "no"')
@@ -274,6 +276,7 @@ class run_rabdam(object):
                     if self.batchRun is False:
                         sys.exit()
                     elif self.batchRun is True:
+                        os.chdir('%s' % cwd)
                         return success
 
             # Checks that mmCIF file has been successfully downloaded and saved
@@ -286,6 +289,7 @@ class run_rabdam(object):
                 if self.batchRun is False:
                     sys.exit()
                 elif self.batchRun is True:
+                    os.chdir('%s' % cwd)
                     return success
 
         # If filepath to PDB / mmCIF file has been supplied:
@@ -311,6 +315,7 @@ class run_rabdam(object):
                 if self.batchRun is False:
                     sys.exit()
                 elif self.batchRun is True:
+                    os.chdir('%s' % cwd)
                     return success
             os.chdir(self.outputDir)
 
@@ -321,6 +326,7 @@ class run_rabdam(object):
                 if self.batchRun is False:
                     sys.exit()
                 elif self.batchRun is True:
+                    os.chdir('%s' % cwd)
                     return success
 
             print('Filepath to %s file supplied\n' % pathToInput[-4:])
@@ -359,6 +365,7 @@ class run_rabdam(object):
                         if self.batchRun is False:
                             sys.exit()
                         elif self.batchRun is True:
+                            os.chdir('%s' % cwd)
                             return success
                         break
                     else:
@@ -378,6 +385,7 @@ class run_rabdam(object):
                 if self.batchRun is False:
                     sys.exit()
                 elif self.batchRun is True:
+                    os.chdir('%s' % cwd)
                     return success
 
             pathToInput = newPathToInput
@@ -402,6 +410,7 @@ class run_rabdam(object):
             if self.batchRun is False:
                 sys.exit()
             elif self.batchRun is True:
+                os.chdir('%s' % cwd)
                 return success
 
         # Processes the ATOM/HETATM records to remove hydrogen atoms,
@@ -424,6 +433,7 @@ class run_rabdam(object):
             if self.batchRun is False:
                 sys.exit()
             elif self.batchRun is True:
+                os.chdir('%s' % cwd)
                 return success
 
         if pause is True:
@@ -453,6 +463,7 @@ class run_rabdam(object):
                     if self.batchRun is False:
                         sys.exit('\nExiting RABDAM\n')
                     elif self.batchRun is True:
+                        os.chdir('%s' % cwd)
                         return success
                     break
                 else:
@@ -466,10 +477,20 @@ class run_rabdam(object):
             if self.batchRun is False:
                 sys.exit()
             elif self.batchRun is True:
+                os.chdir('%s' % cwd)
                 return success
         
         # Checks if protein chains in clean_au_file
         contains_protein = check_for_protein(clean_au_file)
+        if contains_protein is False:
+            print('\n\nERROR: No protein atoms selected for BDamage calculation')
+            shutil.rmtree('%s' % PDBdirectory)
+            success = False
+            if self.batchRun is False:
+                sys.exit()
+            elif self.batchRun is True:
+                os.chdir('%s' % cwd)
+                return success
 
         print('****************** End of Process PDB Section ******************\n'
               '****************************************************************\n')
@@ -528,6 +549,7 @@ class run_rabdam(object):
             if self.batchRun is False:
                 sys.exit()
             elif self.batchRun is True:
+                os.chdir('%s' % cwd)
                 return success
 
         # Creates PDB file of 3x3 unit cell assembly. WARNING: VERY slow and
@@ -559,6 +581,7 @@ class run_rabdam(object):
             if self.batchRun is False:
                 sys.exit()
             elif self.batchRun is True:
+                os.chdir('%s' % cwd)
                 return success
   
         # Halts program if filterInput is set to True and the input model does
@@ -578,6 +601,7 @@ class run_rabdam(object):
                 if self.batchRun is False:
                     sys.exit()
                 elif self.batchRun is True:
+                    os.chdir('%s' % cwd)
                     return success
 
         auParams = getAUparams(bdamAtomList)
@@ -744,6 +768,7 @@ class run_rabdam(object):
             if self.batchRun is False:
                 sys.exit('Exiting RABDAM\n')
             elif self.batchRun is True:
+                os.chdir('%s' % cwd)
                 return None, None, None, None
 
         poten_indv_analysis_files = [
@@ -784,6 +809,7 @@ class run_rabdam(object):
                     if self.batchRun is False:
                         sys.exit()
                     elif self.batchRun is True:
+                        os.chdir('%s' % cwd)
                         return None, None, None, None
                     break
                 else:

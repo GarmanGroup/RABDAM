@@ -291,6 +291,8 @@ def suitable_for_bnet_filter(
     # Determine if model meets Bnet requirements
     exit = False
 
+    print(rfree, resolution, temperature, sub_1_asp_glu_occ, glu_asp_o_count, per_atom_b_factors)
+
     if any(param is None for param in [rfree, resolution, temperature, sub_1_asp_glu_occ]):
         exit = True
     else:
