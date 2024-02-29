@@ -69,7 +69,7 @@ Schematic illustrating the calculation of the *B*<sub>Damage</sub> metric. From 
 
 ___
 
-The *B*<sub>net</sub> metric is a derivative of the (per-atom) *B*<sub>Damage</sub> metric: *B*<sub>net</sub> summarises in a single value the total extent of specific radiation damage suffered by a **cryo-temperature protein** crystal structure. One of the best-characterised chemical changes resulting from specific radiation damage that occurs at cryo-temperatures within proteins\* is the decarboxylation of Glu and Asp residues: the *B*<sub>net</sub> metric is calculated from a kernel density estimate of the *B*<sub>Damage</sub> values of a structure’s Glu and Asp side chain oxygen atoms as the ratio of the area under the curve either side of the median of the (overall) *B*<sub>Damage</sub> distribution.
+The *B*<sub>net</sub> metric is a derivative of the (per-atom) *B*<sub>Damage</sub> metric: *B*<sub>net</sub> summarises in a single value the total extent of specific radiation damage suffered by a **cryo-temperature protein** crystal structure. One of the best-characterised chemical changes resulting from specific radiation damage that occurs at cryo-temperatures within proteins is the decarboxylation of Glu and Asp residues: the *B*<sub>net</sub> metric is calculated from a kernel density estimate of the *B*<sub>Damage</sub> values of a structure’s Glu and Asp side chain oxygen atoms as the ratio of the area under the curve either side of the median of the (overall) *B*<sub>Damage</sub> distribution.
 
 *B*<sub>net</sub> is weakly correlated with resolution. To obtain a metric that is not correlated with resolution, *B*<sub>net</sub>-percentile is calculated as the percentile ranking of a model’s *B*<sub>net</sub> value within the subset of models derived from cryo-datasets which are closest in resolution (the 1000 structures closest in resolution in the PDB are first identified, and
 subsequently all structures falling within this resolution range are included in the percentile calculation). Since *B*<sub>net</sub>-percentile is not correlated with resolution, it is the recommended metric for damage comparison between structures.
@@ -83,13 +83,13 @@ The *B*<sub>net</sub> metric is calculated by first plotting a kernel density es
 
 ___
 
-RABDAM will calculate the *B*<sub>Damage</sub>, *B*<sub>net</sub> and *B*<sub>net</sub>-percentile metrics for any standard format PDB or mmCIF file to identify potential individual sites, plus the total extent, of specific radiation damage within the structure. *B*<sub>Damage</sub> values can be calculated for any macromolecule type; because the *B*<sub>net</sub> and *B*<sub>net</sub>-percentile metrics are based upon a damage artefact characterised in cryo-temperature protein crystal structures, accordingly they should only be calculated for cryo-temperature protein crystal structures.
+RABDAM will calculate the *B*<sub>Damage</sub>, *B*<sub>net</sub> and *B*<sub>net</sub>-percentile metrics for any standard format PDB or mmCIF file to identify potential individual sites, plus the total extent, of specific radiation damage within the structure. *B*<sub>Damage</sub> values can be calculated for any macromolecule type; because the *B*<sub>net</sub> and *B*<sub>net</sub>-percentile metrics are based upon a damage artefact characterised in cryo-temperature protein crystal structures, accordingly they should only be calculated for such structures.
 
 ___
 
 ## Usage
 #### Installation
-1. RABDAM can be downloaded / cloned from GitHub. You can then either run RABDAM as a script from the RABDAM directory, or alternatively you can install RABDAM as a package (which can be run from any directory) by navigating to the RABDAM directory and executing:<br>
+1. RABDAM can be downloaded/cloned from GitHub. You can then either run RABDAM as a script from the RABDAM directory, or alternatively you can install RABDAM as a package (which can be run from any directory) by navigating to the RABDAM directory and executing:<br>
 `python setup.py install`<br>
 
 2. RABDAM is incorporated as part of the [CCP4 software suite](http://www.ccp4.ac.uk/). It is currently available as a command line package.
@@ -104,7 +104,7 @@ RABDAM requires Python 3.8 or above (owing to its dependency on cctbx). In addit
 - scipy >= 1.1.0
 - pandas >= 0.24.1
 
-To check whether your computer is missing any of the packages / programs required to run RABDAM, execute:
+To check whether your computer is missing any of the packages required to run RABDAM, execute:
 
 `python rabdam.py --dependencies`
 
@@ -118,35 +118,37 @@ RABDAM can be run on any standard format PDB or mmCIF file of a single model of 
 ____
 
 #### Running RABDAM
-\*\*RABDAM can be run either as a script or as a package (see the [Installation](#installation) section for further details). The example commands provided below are for running the program as a script. If you are running RABDAM as a package, simply replace `python rabdam.py` with `rabdam`.\*\*
+RABDAM can be run either as a script or as a package (see the [Installation](#installation) section for further details). The example commands provided below are for running the program as a script. If you are running RABDAM as a package, simply replace `python rabdam.py` with `rabdam`.
 
+<br></br>
 RABDAM is a command line program. There are three main command line flags that control the program run:
 
 -	`-i` / `--input`
 -	`-f` / `--pdb_file`
 -	`-r` / `--run`
 
-<br></br>
 The `-i` and `-f` flags control the input to the program. One of these two mutually exclusive flags is required for RABDAM to run.
 
 The `-i` flag is used to specify the path to an input txt file that lists your selected program parameter values (see the "*Constructing an input file*" section below for details of what this input file should include).
 
 `python rabdam.py -i /path/to/input_file.txt`
 
-Alternatively, if you wish to perform a run of RABDAM using entirely default parameter values, it is possible to run RABDAM without an input file; in this case the `-f` flag is used to provide RABDAM with either a 4 character PDB accession code (XXXX), or a file path (path/to/pdb_file.pdb or path/to/mmcif_file.cif), of the model to be analysed:
+Alternatively, if you wish to perform a run of RABDAM using entirely default parameter values, it is possible to run RABDAM without an input file; in this case the `-f` flag is used to provide RABDAM with either a 4 character PDB accession code (XXXX), or a file path (/path/to/pdb_file.pdb or /path/to/mmcif_file.cif), of the model to be analysed:
 
-`python rabdam.py -f XXXX` / `python rabdam.py -f /path/to/pdb_file.pdb` / `python rabdam.py -f /path/to/mmcif_file.cif`
+`python rabdam.py -f XXXX`
+`python rabdam.py -f /path/to/pdb_file.pdb`
+`python rabdam.py -f /path/to/mmcif_file.cif`
 
 It is possible to specify multiple inputs following the `-f` flag, *e.g.*:
 
-`python rabdam.py –f /path/to/pdb_file_1.pdb /path/to/mmcif_file_2.cif XXXX /path/to/pdb_file_3.pdb YYYY`
+`python rabdam.py –f /path/to/pdb_file_1.pdb XXXX /path/to/mmcif_file_2.cif YYYY ZZZZ`
 
 **Importantly, note that file path(s) must not contain any spaces.**
 
 <br></br>
-The `-r` is an optional flag that controls the output from the program.
+`-r` is an optional flag that controls the output from the program.
 
-The `-r` flag can be used to instruct RABDAM to run to completion (default), or to stop / start part way through its full run. RABDAM is structured such that it writes the *B*<sub>Damage</sub> values calculated for an input model to a dataframe; this dataframe is then used to write the program output files. Through use of the `-r` flag it is possible to instruct RABDAM to stop (`-r df` / `-r dataframe`) or start (`-r analysis`) its run following dataframe construction. This option will save time if for example you wish to change the formatting of the program output files (which can be controlled using parameters specified in the input txt file - see the “*Constructing an input file*” section below) without changing the *B*<sub>Damage</sub> distribution itself.
+The `-r` flag can be used to instruct RABDAM to run to completion (default), or to stop/start part way through its full run. RABDAM is structured such that it writes the *B*<sub>Damage</sub> values calculated for an input model to a dataframe; this dataframe is then used to write the program output files. Through use of the `-r` flag it is possible to instruct RABDAM to stop (`-r df` / `-r dataframe`) or start (`-r analysis`) its run following dataframe construction. This option will save time if for example you wish to change which output files are generated (which can be controlled using parameters specified in the input txt file - see the “*Constructing an input file*” section below) without changing the *B*<sub>Damage</sub> distribution itself.
 
 <br></br>
 In addition, there are two supplementary command line flags:
@@ -154,20 +156,20 @@ In addition, there are two supplementary command line flags:
 - `--dependencies`
 - `--version`
 
-The `--dependencies` flag directs the program to test whether the system it is being run on has the necessary programs / Python packages installed for RABDAM to run to completion. The `--version` flag prints the version of RABDAM you are running.
+The `--dependencies` flag directs the program to test whether the system it is being run on has the necessary Python packages installed for RABDAM to run to completion. The `--version` flag prints the version of RABDAM you are running.
 
 ___
 
 #### Writing the RABDAM input file
 If you wish to run RABDAM with non-default parameter values, you will need to provide the program with an input file specifying your selected parameter values:
 
-- The name of the PDB / mmCIF file(s) to be analysed
+- The name of the PDB/mmCIF file(s) to be analysed
 
 Either a 4 character PDB accession code, or a file path (which may not include spaces). It is possible to run multiple structures from a single input file by listing the names of each of those structures separated by commas (see below). This is the only parameter not stipulated by a keyword, and which does not have a default value.
 
 -	The output directory, *outputDir*
 
-The location of the directory (specified by its absolute file path) in which you would like the program output files to be written. If not specified, this defaults to the current working directory.
+The directory in which you would like the program output files to be written. If not specified, this defaults to the current working directory.
 
 - Option to ignore recognised errors encountered during the program run, *batchContinue*
 
@@ -175,14 +177,16 @@ When set to *True*, if RABDAM encounters a recognised program error during a run
 
 - Option to overwrite pre-existing files with the same name as the new output files, *overwrite*
 
-Directs the program, if it encounters files of the same name as the output files it is going to write already present in the output directory, to always overwrite these pre-existing files ("*True*"), or to pause and require user input to decide whether to overwrite or not ("*False*", default behaviour).
+Directs the program, if it encounters files of the same name as the output files it is going to write already present in the output directory, to always overwrite these pre-existing files (*True*), or to pause and require user input to decide whether to overwrite or not (*False*, default behaviour).
 
 - Option to specify the output files generated, *outfiles*
-When set to "all" (default), directs the program to write all output files. When set to "bnet", directs the program to just record *B*<sub>net</sub> and *B*<sub>net</sub>-percentile values.
+
+When set to *"all"* (default), directs the program to write all output files. When set to *"bnet"*, directs the program to just record *B*<sub>net</sub> and *B*<sub>net</sub>-percentile values.
 
 - Option to check the input model passes the recommended filters for *B*<sub>net</sub> and *B*<sub>net</sub>-percentile calculation, *filter*
-When set to *True*, directs RABDAM to check the input model meets the recommended filters for *B*<sub>net</sub> and *B*<sub>net</sub>-percentile calculation. 
-These filters are
+
+When set to *True* (default value is *False*), directs RABDAM to check the input model meets the recommended filters for *B*<sub>net</sub> and *B*<sub>net</sub>-percentile calculation. 
+These filters are:
     - Rfree < 0.4
     - Resolution <= 3.5
     - 80 K <= temperature <= 120 K
@@ -190,18 +194,19 @@ These filters are
     - Contains protein
     - Has >= 20 Glu/Asp side chain oxygen atoms
     - Refined with per-atom *B*-factors
-Default value is *False*.
 
 - Option to specify model temperature, *temperature*
+
 Allows user to specify the temperature the dataset was collected at. Default is *None*, i.e. RABDAM will search the input model file for the temperature.
 
 - Option to specify model resolution, *resolution*
+
 Allows user to specify the model's resolution (in Angstroms). Default is *None*, i.e. RABDAM will search the input model file for the resolution.
 
 **Note that if a parameter is not specified in the input file, it will take its default value in the RABDAM run.**
 
 <br></br>
-Below is an example input file instructing RABDAM to analyse the GH7 cellobiohydrolase structures 5MCC and 5MCD, writing the output files to the directory C:\Users\UserName\Documents\RABDAM_test_output, and checking these structures pass the recommended filters for *B*<sub>net</sub> and *B*<sub>net</sub>-percentile calculation.
+Below is an example input file instructing RABDAM to analyse the GH7 cellobiohydrolase structures 5MCC and 5MCD, writing the output files to the directory C:\Users\UserName\Documents\RABDAM_test_output, and checking these structures pass the recommended filters for *B*<sub>net</sub> and *B*<sub>net</sub>-percentile calculation. All other parameters are set to their default values.
 
 ```
 5MCC, 5MCD,
