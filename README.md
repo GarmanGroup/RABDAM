@@ -1,7 +1,6 @@
 # RABDAM – identifying specific radiation damage in PX structures
 
-[![Python Version](https://img.shields.io/badge/python-2.7-blue.svg)](https://www.python.org/download/releases/2.7/)
-[![Python Version](https://img.shields.io/badge/python-3.6-blue.svg)](https://www.python.org/download/releases/3.6/)
+[![Python Version](https://img.shields.io/badge/python-3-blue.svg)](https://www.python.org/download/releases/3/)
 [![LGPL licensed](https://img.shields.io/badge/license-LGPL%20v3-blue.svg)](https://github.com/GarmanGroup/RABDAM/blob/master/COPYING.LESSER)
 [![GarmanGroup](https://circleci.com/gh/GarmanGroup/RABDAM.svg?style=svg)](https://circleci.com/gh/GarmanGroup/RABDAM)
 
@@ -81,10 +80,7 @@ ___
 1. RABDAM can be downloaded / cloned from GitHub. You can then either run RABDAM as a script from the RABDAM directory, or alternatively you can install RABDAM as a package (which can be run from any directory) by navigating to the RABDAM directory and executing:<br>
 `python setup.py install`<br>
 
-2. RABDAM can be installed (as a package) directly from [PyPi](https://pypi.python.org/pypi/rabdam) with `pip`:<br>
-`pip install rabdam`<br>
-
-3. RABDAM is incorporated as part of the [CCP4 software suite](http://www.ccp4.ac.uk/). It is currently available as a command line package, and will shortly be incorporated into the GUI.
+2. RABDAM is incorporated as part of the [CCP4 software suite](http://www.ccp4.ac.uk/). It is currently available as a command line package, and will shortly be incorporated into the GUI.
 
 ___
 
@@ -109,7 +105,7 @@ RABDAM can be run on any standard format PDB or mmCIF file of a single model of 
 ____
 
 #### Running RABDAM
-\*\*RABDAM can be run either as a script or as a package (see the [Installation](#installation) section for further details). The example commands provided below are for running the program as a script. If you are running RABDAM as a package (either the PyPi or CCP4 package), simply replace `python rabdam.py` with `rabdam`.\*\*
+\*\*RABDAM can be run either as a script or as a package (see the [Installation](#installation) section for further details). The example commands provided below are for running the program as a script. If you are running RABDAM as a package, simply replace `python rabdam.py` with `rabdam`.\*\*
 
 RABDAM is a command line program. There are four main command line flags that control the program run:
 
@@ -300,10 +296,4 @@ RABDAM is dependent upon the CCP4 suite program PDBCUR:
 - Winn MD, Ballard CC, Cowtan KD, Dodson EJ, Emsley P, Evans PR, Keegan RM, Krissinel EB, Leslie AGW, McCoy A, McNicholas SJ, Murshudov GN, Pannu NS, Potterton EA, Powell HR, Read RJ, Vagin A, Wilson KS (2011) Overview of the CCP4 suite and current developments. *Acta Crystallogr D* **67**: 235-242
 [https://doi.org/doi:10.1107/S0907444910045749](https://doi.org/doi:10.1107/S0907444910045749)
 
-<br></br>
-RABDAM extracts a list of PDB accession codes with full isotropic (\*but not necessarily atomic) *B*-factors from the *B*-factor Databank:
 
-- Touw WG, Vriend G (2014) BDB: Databank of PDB files with consistent *B*-factors. *Protein Eng Des Sel* **27**: 457-462
-[https://doi.org/10.1093/protein/gzu044](https://doi.org/10.1093/protein/gzu044)
-
-See also [https://github.com/cmbi/bdb](https://github.com/cmbi/bdb).

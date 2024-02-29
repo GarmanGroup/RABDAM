@@ -28,7 +28,7 @@ from rabdam.Subroutines.PDBCUR import (
     parse_atom_rec_from_mmcif
 )
 from rabdam.Subroutines.output import write_output_cif, write_all_carbon_cif
-from tests.make_atom_rec import make_exp_mmcif_rec
+from tests.make_atom_rec import gen_atom_objs_list, make_exp_mmcif_rec
 
 
 class TestClass(unittest.TestCase):
@@ -351,91 +351,8 @@ class TestClass(unittest.TestCase):
         if not os.path.isdir('tests/temp_files/'):
             os.mkdir('tests/temp_files/')
 
-        atoms_list = []
-        # Taken from 2BN1 and 2QTZ
-        new_atom_1 = atom()
-        new_atom_1.lineID = 'ATOM'
-        new_atom_1.atomNum = 2
-        new_atom_1.atomType = 'CA'
-        new_atom_1.conformer = ''
-        new_atom_1.resiType = 'GLY'
-        new_atom_1.chainID = 'A'
-        new_atom_1.entity_id = '1'
-        new_atom_1.resiNum = 1
-        new_atom_1.insCode = ''
-        new_atom_1.xyzCoords = [[13.602], [45.768], [30.728]]
-        new_atom_1.occupancy = 1.0
-        new_atom_1.bFactor = 19.08
-        new_atom_1.element = 'C'
-        new_atom_1.charge = ''
-        new_atom_1.origResiNum = '1'
-        new_atom_1.origResiType = 'GLY'
-        new_atom_1.origChainID = 'A'
-        new_atom_1.origAtomType = 'CA'
-        new_atom_1.pdb_model_num = 1.0
-        new_atom_1.pd = 19
-        new_atom_1.avrg_bf = 26.2
-        new_atom_1.bd = 1.3
-        new_atom_1.protein = False
-        new_atom_1.na = False
-        new_atom_1.chain_len = 64
-        atoms_list.append(new_atom_1)
-
-        new_atom_2 = atom()
-        new_atom_2.lineID = 'HETATM'
-        new_atom_2.atomNum = 438
-        new_atom_2.atomType = 'O'
-        new_atom_2.conformer = ''
-        new_atom_2.resiType = 'HOH'
-        new_atom_2.chainID = 'B'
-        new_atom_2.entity_id = '2'
-        new_atom_2.resiNum = 2001
-        new_atom_2.insCode = ''
-        new_atom_2.xyzCoords = [[13.128], [46.298], [34.342]]
-        new_atom_2.occupancy = 1.0
-        new_atom_2.bFactor = 33.1
-        new_atom_2.element = 'O'
-        new_atom_2.charge = ''
-        new_atom_2.origResiNum = ''
-        new_atom_2.origResiType = 'HOH'
-        new_atom_2.origChainID = 'C'
-        new_atom_2.origAtomType = 'O'
-        new_atom_2.pdb_model_num = 1.1
-        new_atom_2.pd = 30
-        new_atom_2.avrg_bf = 25.6
-        new_atom_2.bd = 0.97
-        new_atom_2.protein = True
-        new_atom_2.na = True
-        new_atom_2.chain_len = 0
-        atoms_list.append(new_atom_2)
-
-        new_atom_3 = atom()
-        new_atom_3.lineID = 'HETATM'
-        new_atom_3.atomNum = 3546
-        new_atom_3.atomType = 'PA'
-        new_atom_3.conformer = 'X'
-        new_atom_3.resiType = 'FAD'
-        new_atom_3.chainID = 'B'
-        new_atom_3.entity_id = '3'
-        new_atom_3.resiNum = 700
-        new_atom_3.insCode = ''
-        new_atom_3.xyzCoords = [[29.643], [29.7], [51.402]]
-        new_atom_3.occupancy = 1.0
-        new_atom_3.bFactor = 20.52
-        new_atom_3.element = 'P'
-        new_atom_3.charge = ''
-        new_atom_3.origResiNum = ''
-        new_atom_3.origResiType = 'FAD'
-        new_atom_3.origChainID = 'B'
-        new_atom_3.origAtomType = 'PA'
-        new_atom_3.pdb_model_num = 12
-        new_atom_3.pd = 26
-        new_atom_3.avrg_bf = 20.5
-        new_atom_3.bd = 2.0
-        new_atom_3.protein = False
-        new_atom_3.na = True
-        new_atom_3.chain_len = 1
-        atoms_list.append(new_atom_3)
+        # Generate list of atom objects
+        atoms_list = gen_atom_objs_list()
 
         exp_cif_lines_1 = [
             'data_tests/temp_files/test',

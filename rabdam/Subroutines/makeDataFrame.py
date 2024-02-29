@@ -46,7 +46,7 @@ def makePDB(header_lines, atomList, footer_lines, newPDBfilename, Bfac):
         d = atm.conformer.ljust(1)
         if len(d) != 1:
             exit = True
-        e = atm.resiType.ljust(3)
+        e = atm.resiType.rjust(3)
         if len(e) != 3:
             exit = True
         f = atm.chainID.ljust(1)
@@ -76,6 +76,11 @@ def makePDB(header_lines, atomList, footer_lines, newPDBfilename, Bfac):
             m = '%6.2f' % np.log(atm.bd)
             if len(m) != 6:
                 exit = True
+        else:
+            raise ValueError(
+                'Value {} for Bfac variable not recognised - expect to be '
+                'either \'bfactor\' or \'bdamage\''.format(Bfac)
+            )
         n = atm.element.rjust(2)
         if len(n) != 2:
             exit = True
@@ -139,8 +144,6 @@ def make_c_pdb(
     cell pdb files only
     """
 
-    import numpy as np
-
     exit = False
     newPDBfile = open(newPDBfilename, 'w')
 
@@ -183,7 +186,6 @@ def make_c_pdb(
                                k, l, m, '          ', n, o, '\n'])
             newPDBfile.write(newLine)
 
-    newPDBfile.write('TER'.ljust(80) + '\n')
     end_line = 'END'.ljust(80) + '\n'
     if footer_lines == []:
         footer_lines += [end_line]

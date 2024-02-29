@@ -421,6 +421,12 @@ def parse_atom_rec_from_pdb(atom_rec, input_pdb, exit, phenix_import):
     for line in atom_rec:
         new_atom = atom()
 
+        if len(line) < 78:
+            print('\n\nERROR: Line is shorter than 78 characters - will be '
+                  'missing required entries\n\'{}\'\n'.format(line))
+            exit = True
+            break
+
         new_atom.lineID = line[0:6].strip()
         new_atom.atomType = line[12:16].strip()
         new_atom.origAtomType = line[12:16].strip()
@@ -604,10 +610,11 @@ def parse_pdb_file(pathToInput, phenix_import):
         elif line[0:6] == 'CRYST1':
             cryst1_line = line
         elif line[0:5] == 'MODEL':
-            exit = True
             print('\n\nERROR: More than one model present in input PDB file.\n'
                     'Please submit a PDB file containing a single model.\n'
                     'Terminating RABDAM run.\n')
+            exit = True
+            break
 
     # Extracts ATOM / HETATM lines
     atoms_list, exit = parse_atom_rec_from_pdb(
@@ -695,9 +702,9 @@ def clean_atom_rec(atoms_list, file_name_start, phenix_import):
         in discarded_atoms_list
     ]
     if len(filtered_atoms_list) == 0:
-        exit = True
         print('\n\nERROR: No atoms retained for BDamage analysis after cleaning'
               ' input file')
+        exit = True
 
     clean_au_file = '%s_asymmetric_unit' % file_name_start
     write_output_cif(filtered_atoms_list, clean_au_file, bdam=False)
