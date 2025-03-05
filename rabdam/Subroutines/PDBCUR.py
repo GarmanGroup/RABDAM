@@ -31,7 +31,6 @@ def make_cryst1_line_from_mmcif(space_group_rec, exit):
     beta = None
     gamma = None
     sGroup = None
-    z = None
 
     for line in space_group_rec:
         if line.startswith('_cell.length_a '):
@@ -82,12 +81,8 @@ def make_cryst1_line_from_mmcif(space_group_rec, exit):
             sGroup = sGroup.strip()
             if len(sGroup) > 11:
                 exit = True
-        elif line.startswith('_cell.Z_PDB '):
-            z = line.split()[-1].strip()
-            if len(z) > 4:
-                exit = True
 
-    if any(x is None for x in [a, b, c, alpha, beta, gamma, sGroup, z]):
+    if any(x is None for x in [a, b, c, alpha, beta, gamma, sGroup]):
         exit = True
 
     if exit is True:
@@ -95,7 +90,7 @@ def make_cryst1_line_from_mmcif(space_group_rec, exit):
         cryst1_line = ''
     else:
         cryst1_line = ''.join(['CRYST1', a, b, c, alpha, beta, gamma, ' ',
-                               sGroup.ljust(11), z.rjust(4), '          ', '\n'])
+                               sGroup.ljust(11), '    ', '          ', '\n'])
 
     return cryst1_line, exit
 
