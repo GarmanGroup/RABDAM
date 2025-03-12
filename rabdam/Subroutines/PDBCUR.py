@@ -78,6 +78,7 @@ def make_cryst1_line_from_mmcif(space_group_rec, exit):
         elif line.startswith('_symmetry.space_group_name_H-M '):
             sGroup = line.replace('_symmetry.space_group_name_H-M', '')
             sGroup = sGroup.replace("'", '')
+            sGroup = sGroup.replace('"', '')
             sGroup = sGroup.strip()
             if len(sGroup) > 11:
                 exit = True
