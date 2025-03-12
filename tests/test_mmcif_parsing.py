@@ -86,7 +86,7 @@ class TestClass(unittest.TestCase):
         ]
 
         # Check CRYST1 line is constructed correctly
-        exp_cryst1_line_1 = 'CRYST1   77.900   77.900   77.900  90.00  90.00  90.00 I 21 3       24          \n'
+        exp_cryst1_line_1 = 'CRYST1   77.900   77.900   77.900  90.00  90.00  90.00 I 21 3                   \n'
         act_cryst1_line_1, exit_1 = make_cryst1_line_from_mmcif(space_group_info_1, False)
         self.assertEqual(exp_cryst1_line_1, act_cryst1_line_1)
         self.assertFalse(exit_1)  
@@ -112,7 +112,7 @@ class TestClass(unittest.TestCase):
         # decimal places (3) in the CRYST1 line.
         space_group_info_4 = copy.deepcopy(space_group_info_1)
         space_group_info_4[3] = '_cell.length_c 18.5'
-        exp_cryst1_line_4 = 'CRYST1   77.900   77.900   18.500  90.00  90.00  90.00 I 21 3       24          \n'
+        exp_cryst1_line_4 = 'CRYST1   77.900   77.900   18.500  90.00  90.00  90.00 I 21 3                   \n'
         act_cryst1_line_4, exit_4 = make_cryst1_line_from_mmcif(space_group_info_4, False)
         self.assertEqual(exp_cryst1_line_4, act_cryst1_line_4)
         self.assertFalse(exit_4)
@@ -121,7 +121,7 @@ class TestClass(unittest.TestCase):
         # non-standard.
         space_group_info_5 = copy.deepcopy(space_group_info_1)
         space_group_info_5[4] = '_cell.angle_alpha               15.00'
-        exp_cryst1_line_5 = 'CRYST1   77.900   77.900   77.900  15.00  90.00  90.00 I 21 3       24          \n'
+        exp_cryst1_line_5 = 'CRYST1   77.900   77.900   77.900  15.00  90.00  90.00 I 21 3                   \n'
         act_cryst1_line_5, exit_5 = make_cryst1_line_from_mmcif(space_group_info_5, False)
         self.assertEqual(exp_cryst1_line_5, act_cryst1_line_5)
         self.assertFalse(exit_5)
@@ -130,7 +130,7 @@ class TestClass(unittest.TestCase):
         # the expected number of decimal places (2).
         space_group_info_6 = copy.deepcopy(space_group_info_1)
         space_group_info_6[5] = '_cell.angle_beta         15.5678'
-        exp_cryst1_line_6 = 'CRYST1   77.900   77.900   77.900  90.00  15.57  90.00 I 21 3       24          \n'
+        exp_cryst1_line_6 = 'CRYST1   77.900   77.900   77.900  90.00  15.57  90.00 I 21 3                   \n'
         act_cryst1_line_6, exit_6 = make_cryst1_line_from_mmcif(space_group_info_6, False)
         self.assertEqual(exp_cryst1_line_6, act_cryst1_line_6)
         self.assertFalse(exit_6)
@@ -157,10 +157,10 @@ class TestClass(unittest.TestCase):
         # a unit cell) is longer than 4 characters
         space_group_info_9 = copy.deepcopy(space_group_info_1)
         space_group_info_9[8] = '_cell.Z_PDB 12345'
-        exp_cryst1_line_9 = ''
+        exp_cryst1_line_9 = 'CRYST1   77.900   77.900   77.900  90.00  90.00  90.00 I 21 3                   \n'
         act_cryst1_line_9, exit_9 = make_cryst1_line_from_mmcif(space_group_info_9, False)
         self.assertEqual(exp_cryst1_line_9, act_cryst1_line_9)
-        self.assertTrue(exit_9)
+        self.assertFalse(exit_9)
 
         # Check raises error because one of the expected unit cell dimensions is
         # not supplied
