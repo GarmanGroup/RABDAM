@@ -3,7 +3,7 @@ version: 2.1
 jobs:
   test3_X:
     docker:
-      - image: chainguard/conda:latest
+      - image: condaforge/miniforge3
     steps:
       - checkout
       - run: conda install --file requirements.txt
