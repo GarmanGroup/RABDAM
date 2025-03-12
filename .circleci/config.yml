@@ -3,7 +3,7 @@ version: 2.1
 jobs:
   test3_X:
     docker:
-      - image: continuumio/miniconda3
+      - image: continuumio/miniconda3:24.11.1-0
     steps:
       - checkout
       - run: conda install --file requirements.txt
