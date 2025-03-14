@@ -1,6 +1,6 @@
 
 # RABDAM
-# Copyright (C) 2024 Garman Group, University of Oxford
+# Copyright (C) 2025 Garman Group, University of Oxford
 
 # This file is part of RABDAM.
 
